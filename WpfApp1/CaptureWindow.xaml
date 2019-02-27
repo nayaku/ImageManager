@@ -1,0 +1,15 @@
+﻿<Window x:Class="WPFCaptureScreenShot.CaptureWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CaptureWindow"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Background="Black"
+        Opacity="0.1"
+        WindowState="Maximized"
+        MouseDown="CaptureWindow_MouseDown"
+        MouseMove="CaptureWindow_MouseMove" KeyDown="Window_KeyDown" Closing="Window_Closing">
+    <Canvas x:Name="CaptureCanvas">
+
+    </Canvas>
+</Window>
