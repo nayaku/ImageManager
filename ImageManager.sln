@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageManager", "ImageManage
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{A0BAF9D3-EAE6-4BE2-AB6D-4C040B8F40ED}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,12 +41,6 @@ Global
 		{A0BAF9D3-EAE6-4BE2-AB6D-4C040B8F40ED}.Release|x64.Build.0 = Release|Any CPU
 		{A0BAF9D3-EAE6-4BE2-AB6D-4C040B8F40ED}.Release|x86.ActiveCfg = Release|Any CPU
 		{A0BAF9D3-EAE6-4BE2-AB6D-4C040B8F40ED}.Release|x86.Build.0 = Release|Any CPU
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Debug|Any CPU.ActiveCfg = Debug
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Debug|x64.ActiveCfg = Debug
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Debug|x86.ActiveCfg = Debug
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Release|Any CPU.ActiveCfg = Release
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Release|x64.ActiveCfg = Release
-		{DC88B92C-D56B-4306-9B27-63A2A5A5B0B5}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
