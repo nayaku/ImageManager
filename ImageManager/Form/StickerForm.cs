@@ -1,13 +1,7 @@
 ﻿using ImageManager.Properties;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ImageManager
@@ -46,16 +40,16 @@ namespace ImageManager
         /// 图片路径（如果从从文件中读取图片的话）
         /// </summary>
         private string _imagePath = null;
-        
+
 
         public StickerForm(string imgPath) : this(ImageReaderFactory.GetInstance().CreateImageReader(imgPath).Read(imgPath))
         {
             //saveImageToolStripMenuItem.Enabled = false;
             _imagePath = imgPath;
             // 判断是否原图过大。如果过大，用压缩过的图片替换源。
-            if (_imagePath!=null && Settings.Default.StickerUseMemoryOptimization&&_sourceImage.Width > Screen.PrimaryScreen.Bounds.Width && _sourceImage.Height > Screen.PrimaryScreen.Bounds.Height)
+            if (_imagePath != null && Settings.Default.StickerUseMemoryOptimization && _sourceImage.Width > Screen.PrimaryScreen.Bounds.Width && _sourceImage.Height > Screen.PrimaryScreen.Bounds.Height)
             {
-                var rate = Math.Max(1f*Screen.PrimaryScreen.Bounds.Width / _sourceImage.Width, 1f*Screen.PrimaryScreen.Bounds.Height / _sourceImage.Height);
+                var rate = Math.Max(1f * Screen.PrimaryScreen.Bounds.Width / _sourceImage.Width, 1f * Screen.PrimaryScreen.Bounds.Height / _sourceImage.Height);
                 _sourceImage = SuperImageReader.ZoomImage(_sourceImage, rate);
                 _zoomRate = 1f * pictureBox.Image.Width / _sourceImage.Width;
                 _isTooLarge = true;
@@ -136,11 +130,17 @@ namespace ImageManager
                 if (point.Y < 25) point.Y = 25;
                 if (imageSize.Width - point.X < 25) point.X = imageSize.Width - 25;
                 if (imageSize.Height - point.Y < 25) point.Y = imageSize.Height - 25;
-                point.X = -point.X + 25;
-                point.Y = -point.Y + 25;
-                pictureBox.Location = point;
+                var pictureLocation = point;
+                pictureLocation.X = -point.X + 25;
+                pictureLocation.Y = -point.Y + 25;
+                pictureBox.Location = pictureLocation;
                 Size = new Size(50, 50);
                 ContextMenuStrip = null;
+                // 设置小窗口的位置为鼠标点击位置
+                var mouseLocation = Location;
+                mouseLocation.X += point.X - 25;
+                mouseLocation.Y += point.Y - 25;
+                Location = mouseLocation;
                 _isFolded = true;
             }
         }
@@ -150,12 +150,19 @@ namespace ImageManager
         /// </summary>
         public void ExpandSticker()
         {
-            
-            if(_isFolded)
+
+            if (_isFolded)
             {
+                // 按照原先位置展开
+                var formLocation = Location;
+                formLocation.X += pictureBox.Location.X;
+                formLocation.Y += pictureBox.Location.Y;
+                Location = formLocation;
+
                 pictureBox.Location = new Point(0, 0);
                 Size = pictureBox.Size = pictureBox.Image.Size;
                 ContextMenuStrip = contextMenuStrip;
+
                 _isFolded = false;
             }
         }
@@ -176,12 +183,12 @@ namespace ImageManager
         private void ZoomImage()
         {
             if (_zoomRate < _minRate) _zoomRate = _minRate;
-            
+
             var oldImage = pictureBox.Image;
             pictureBox.Image = SuperImageReader.ZoomImage((Image)_sourceImage.Clone(), _zoomRate);
             Size = pictureBox.Size = pictureBox.Image.Size;
             if (oldImage != _sourceImage) oldImage.Dispose();
-            
+
         }
 
         private void RotateImage(RotateFlipType rotateFlipType)
@@ -212,8 +219,8 @@ namespace ImageManager
 
         private void SaveImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
-            
+
+
             //_sourceImage.Save(path);
 
         }
@@ -264,7 +271,7 @@ namespace ImageManager
             var dialogResult = numberInputDialog.ShowDialog(this);
 
             //判断返回值
-            if (dialogResult==DialogResult.OK)
+            if (dialogResult == DialogResult.OK)
             {
                 _zoomRate = (float)numberInputDialog.GetValue();
             }
@@ -331,7 +338,7 @@ namespace ImageManager
             var numberInputDialog = new NumberInputDialog(new decimal(0.1f), new Decimal(1), new decimal(Opacity), 2, new decimal(0.1));
             var dialogResult = numberInputDialog.ShowDialog(this);
 
-            if (dialogResult==DialogResult.OK)
+            if (dialogResult == DialogResult.OK)
             {
                 Opacity = (double)numberInputDialog.GetValue();
             }
@@ -386,7 +393,7 @@ namespace ImageManager
             ZoomImage();
         }
 
-        public void OneStickerToolStripMenuItem_Click(object sender,EventArgs e)
+        private void OneStickerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (_isFolded)
             {
@@ -404,15 +411,15 @@ namespace ImageManager
             foreach (var stickerForm in InstanceList)
             {
                 AddInstance(stickerForm);
-                if(stickerForm!=this)
+                if (stickerForm != this)
                     stickerForm.AddInstance(this);
             }
-            
+
         }
 
         private void StickerForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach(var stickerForm in InstanceList)
+            foreach (var stickerForm in InstanceList)
             {
                 stickerForm.RemoveInstance(this);
             }

@@ -2,7 +2,7 @@
 ; 查阅文档获取创建 INNO SETUP 脚本文件的详细资料！
 
 #define MyAppName "素材管理器"
-#define MyAppVersion "2.0.1"
+#define MyAppVersion "2.0.2"
 #define MyAppPublisher "NGMKS"
 #define MyAppURL "im.ngmks.com"
 #define MyAppExeName "ImageManager.exe"
@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\ImageManager
 DefaultGroupName={#MyAppName}
 OutputBaseFilename=素材管理器安装程序
-SetupIconFile=g:\code\C#\ImageManager\ImageManager\20150316140013_JkrVV.ico
+SetupIconFile=e:\code\C#\ImageManager\ImageManager\20150316140013_JkrVV.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -34,8 +34,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "g:\code\C#\ImageManager\ImageManager\bin\Release\ImageManager.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "g:\code\C#\ImageManager\ImageManager\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "E:\code\C#\ImageManager\ImageManager\bin\Release\ImageManager.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "E:\code\C#\ImageManager\ImageManager\bin\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; 注意: 不要在任何共享的系统文件使用 "Flags: ignoreversion"
 
 [Icons]

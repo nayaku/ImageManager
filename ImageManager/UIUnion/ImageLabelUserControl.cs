@@ -31,7 +31,7 @@ namespace ImageManager
             ImageLabel = imgLabel;
             UpdateImageLabel();
             imgLabel.UpdateEventHandler = UpdateImageLabel;
-            
+
         }
 
         /// <summary>

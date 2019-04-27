@@ -8,7 +8,8 @@
         Opacity="0.1"
         WindowState="Maximized"
         MouseDown="CaptureWindow_MouseDown"
-        MouseMove="CaptureWindow_MouseMove" KeyDown="Window_KeyDown" Closing="Window_Closing">
+        MouseMove="CaptureWindow_MouseMove" KeyDown="Window_KeyDown" Closing="Window_Closing"
+        Topmost="True">
     <Canvas x:Name="CaptureCanvas">
 
     </Canvas>
