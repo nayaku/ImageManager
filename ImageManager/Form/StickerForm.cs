@@ -83,7 +83,7 @@ namespace ImageManager
             _minRate = Math.Max(minHeight, minWidth);
 
             //滚轮监听                
-            pictureBox.MouseWheel += new MouseEventHandler(this.PictureBox_MouseWhell);
+            pictureBox.MouseWheel += new MouseEventHandler(PictureBox_MouseWhell);
 
         }
 
