@@ -182,12 +182,15 @@ namespace ImageManager
         /// </summary>
         private void ZoomImage()
         {
-            if (_zoomRate < _minRate) _zoomRate = _minRate;
+            if (!_isFolded)
+            {
+                if (_zoomRate < _minRate) _zoomRate = _minRate;
 
-            var oldImage = pictureBox.Image;
-            pictureBox.Image = SuperImageReader.ZoomImage((Image)_sourceImage.Clone(), _zoomRate);
-            Size = pictureBox.Size = pictureBox.Image.Size;
-            if (oldImage != _sourceImage) oldImage.Dispose();
+                var oldImage = pictureBox.Image;
+                pictureBox.Image = SuperImageReader.ZoomImage((Image)_sourceImage.Clone(), _zoomRate);
+                Size = pictureBox.Size = pictureBox.Image.Size;
+                if (oldImage != _sourceImage) oldImage.Dispose();
+            }
 
         }
 

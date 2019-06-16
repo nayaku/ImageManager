@@ -259,6 +259,7 @@
     <None Include="Resources\LoadError.jpg" />
     <None Include="Resources\background.jpg" />
     <Content Include="20150316140013_JkrVV.ico" />
+    <None Include="Resources\add.png" />
     <Content Include="x64\libwebp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

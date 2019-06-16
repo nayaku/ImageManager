@@ -46,7 +46,7 @@ namespace ImageManager
 
             useGlobalScreenShotHotKeyToolStripMenuItem.Checked = Settings.Default.UseGlobalScreenShotHotKey;
             UseGlobalScreenShotHotKey();
-            
+
         }
 
         /// <summary>
@@ -153,9 +153,9 @@ namespace ImageManager
             Clear();
             ImageLabel[] imageLabels = null;
 
-            if (imageLabelFlowLayoutPanel.Controls.Count != 0)
+            if (imageLabelFlowLayoutPanel.Controls.Count != 1)
             {
-                imageLabels = new ImageLabel[imageLabelFlowLayoutPanel.Controls.Count];
+                imageLabels = new ImageLabel[imageLabelFlowLayoutPanel.Controls.Count-1];
                 for (var index = 0; index < imageLabels.Length; index++)
                 {
                     imageLabels[index] = ((ImageLabelUserControl)imageLabelFlowLayoutPanel.Controls[index]).ImageLabel;
@@ -170,7 +170,7 @@ namespace ImageManager
             var page = 0;
             while (true)
             {
-                AddMyImages(Dao.GetImages(orderBy, page, keywords, imageLabels));
+                AddMyImages(Dao.GetImages(orderBy, page, keywords, imageLabels, isAscSkinCheckBox.Checked));
                 page++;
                 yield return "";
             }
@@ -350,7 +350,7 @@ namespace ImageManager
         /// <param name="myImages"></param>
         private void AddMyImages(MyImage[] myImages)
         {
-            
+
             if (myImages != null)
             {
                 if (myImages.Length != 0)
@@ -358,7 +358,7 @@ namespace ImageManager
                     // 挂起逻辑
                     imagePanel.SuspendLayout();
                 }
-                
+
                 foreach (var myImage in myImages)
                 {
                     var imageUserControl = new ImageUserControl(myImage);
@@ -387,7 +387,7 @@ namespace ImageManager
                     enumerator.MoveNext();
                 }
             }
-            
+
         }
 
         private void ImagePanel_SizeChanged(object sender, EventArgs e)
@@ -441,15 +441,24 @@ namespace ImageManager
 
         }
         #region 来自ImageUserControl类的上报的事件处理
+        public void AddSearchLabel(ImageLabel imageLabel)
+        {
+            var newImageLabelUserControl = new ImageLabelUserControl(imageLabel);
+            // 先删除添加搜索标签的按钮
+            imageLabelFlowLayoutPanel.Controls.RemoveAt(imageLabelFlowLayoutPanel.Controls.Count - 1);
+            imageLabelFlowLayoutPanel.Controls.Add(newImageLabelUserControl);
+            // 再压入添加搜索标签的按钮
+            imageLabelFlowLayoutPanel.Controls.Add(addSearchLabelSkinButton);
+
+            newImageLabelUserControl.XLabel_ClickEventHandler = SearchLabelXLabel_ClickEventHandler;
+            newImageLabelUserControl.ImgLabelNameLabel_ClickEventHander = null;
+        }
         /// <summary>
         /// 图片名字标签被点击事件
         /// </summary>
         public void ImgLabelNameLabel_ClickEvent(object sender, ImageLabelUserControl imageLabelUserControl)
         {
-            var newImageLabelUserControl = new ImageLabelUserControl(imageLabelUserControl.ImageLabel);
-            imageLabelFlowLayoutPanel.Controls.Add(newImageLabelUserControl);
-            newImageLabelUserControl.XLabel_ClickEventHandler = XLabel_ClickEventHandler;
-            newImageLabelUserControl.ImgLabelNameLabel_ClickEventHander = null;
+            AddSearchLabel(imageLabelUserControl.ImageLabel);
         }
 
         public void RemoveImageEvent(object sender, ImageUserControl imageUserControl)
@@ -496,7 +505,7 @@ namespace ImageManager
             }
         }
 
-        public void XLabel_ClickEventHandler(object sender, ImageLabelUserControl imageLabelUserControl)
+        public void SearchLabelXLabel_ClickEventHandler(object sender, ImageLabelUserControl imageLabelUserControl)
         {
             imageLabelFlowLayoutPanel.Controls.Remove(imageLabelUserControl);
         }
@@ -606,6 +615,18 @@ namespace ImageManager
             Settings.Default.UseGlobalScreenShotHotKey = useGlobalScreenShotHotKeyToolStripMenuItem.Checked = !useGlobalScreenShotHotKeyToolStripMenuItem.Checked;
             Settings.Default.Save();
             UseGlobalScreenShotHotKey();
+        }
+
+        private void AddSearchSkinButton_Click(object sender, EventArgs e)
+        {
+            var chooseLabelDialog = new ChooseLabelDialog();
+            var result = chooseLabelDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                var label = chooseLabelDialog.ImageLabel;
+                AddSearchLabel(label);
+            }
+            chooseLabelDialog.Dispose();
         }
     }
 

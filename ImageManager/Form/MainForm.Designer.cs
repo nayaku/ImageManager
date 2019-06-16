@@ -40,6 +40,7 @@
             this.orderByEditTimeSkinRadioButton = new CCWin.SkinControl.SkinRadioButton();
             this.skinLabel1 = new CCWin.SkinControl.SkinLabel();
             this.imageLabelFlowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
+            this.addSearchLabelSkinButton = new CCWin.SkinControl.SkinButton();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.pictureToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,12 +57,14 @@
             this.imagePanel = new System.Windows.Forms.Panel();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.isAscSkinCheckBox = new CCWin.SkinControl.SkinCheckBox();
             topPanel = new System.Windows.Forms.Panel();
             flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
             topPanel.SuspendLayout();
             flowLayoutPanel2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            this.imageLabelFlowLayoutPanel.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,7 +76,7 @@
             topPanel.Dock = System.Windows.Forms.DockStyle.Top;
             topPanel.Location = new System.Drawing.Point(0, 25);
             topPanel.Name = "topPanel";
-            topPanel.Size = new System.Drawing.Size(944, 70);
+            topPanel.Size = new System.Drawing.Size(1054, 70);
             topPanel.TabIndex = 1;
             // 
             // flowLayoutPanel2
@@ -82,10 +85,10 @@
             flowLayoutPanel2.Controls.Add(this.panel1);
             flowLayoutPanel2.Controls.Add(this.flowLayoutPanel1);
             flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Right;
-            flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            flowLayoutPanel2.Location = new System.Drawing.Point(630, 0);
+            flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
+            flowLayoutPanel2.Location = new System.Drawing.Point(711, 0);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new System.Drawing.Size(314, 70);
+            flowLayoutPanel2.Size = new System.Drawing.Size(343, 70);
             flowLayoutPanel2.TabIndex = 1;
             // 
             // panel1
@@ -94,7 +97,7 @@
             this.panel1.Controls.Add(this.saerchTextBox);
             this.panel1.Location = new System.Drawing.Point(3, 3);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(305, 28);
+            this.panel1.Size = new System.Drawing.Size(337, 28);
             this.panel1.TabIndex = 1;
             // 
             // searchSkinButton
@@ -103,7 +106,7 @@
             this.searchSkinButton.BackColor = System.Drawing.Color.Transparent;
             this.searchSkinButton.ControlState = CCWin.SkinClass.ControlState.Normal;
             this.searchSkinButton.DownBack = null;
-            this.searchSkinButton.Location = new System.Drawing.Point(227, 3);
+            this.searchSkinButton.Location = new System.Drawing.Point(259, 3);
             this.searchSkinButton.MouseBack = null;
             this.searchSkinButton.Name = "searchSkinButton";
             this.searchSkinButton.NormlBack = null;
@@ -118,7 +121,7 @@
             this.saerchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.saerchTextBox.Location = new System.Drawing.Point(3, 3);
             this.saerchTextBox.Name = "saerchTextBox";
-            this.saerchTextBox.Size = new System.Drawing.Size(218, 21);
+            this.saerchTextBox.Size = new System.Drawing.Size(250, 21);
             this.saerchTextBox.TabIndex = 0;
             // 
             // flowLayoutPanel1
@@ -127,11 +130,12 @@
             this.flowLayoutPanel1.Controls.Add(this.orderByTitleSkinRadioButton);
             this.flowLayoutPanel1.Controls.Add(this.orderByAddTimeSkinRadioButton);
             this.flowLayoutPanel1.Controls.Add(this.orderByEditTimeSkinRadioButton);
+            this.flowLayoutPanel1.Controls.Add(this.isAscSkinCheckBox);
             this.flowLayoutPanel1.Controls.Add(this.skinLabel1);
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 37);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(302, 27);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(337, 27);
             this.flowLayoutPanel1.TabIndex = 3;
             // 
             // orderByTitleSkinRadioButton
@@ -142,7 +146,7 @@
             this.orderByTitleSkinRadioButton.ControlState = CCWin.SkinClass.ControlState.Normal;
             this.orderByTitleSkinRadioButton.DownBack = null;
             this.orderByTitleSkinRadioButton.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.orderByTitleSkinRadioButton.Location = new System.Drawing.Point(249, 3);
+            this.orderByTitleSkinRadioButton.Location = new System.Drawing.Point(284, 3);
             this.orderByTitleSkinRadioButton.MouseBack = null;
             this.orderByTitleSkinRadioButton.Name = "orderByTitleSkinRadioButton";
             this.orderByTitleSkinRadioButton.NormlBack = null;
@@ -162,7 +166,7 @@
             this.orderByAddTimeSkinRadioButton.ControlState = CCWin.SkinClass.ControlState.Normal;
             this.orderByAddTimeSkinRadioButton.DownBack = null;
             this.orderByAddTimeSkinRadioButton.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.orderByAddTimeSkinRadioButton.Location = new System.Drawing.Point(169, 3);
+            this.orderByAddTimeSkinRadioButton.Location = new System.Drawing.Point(204, 3);
             this.orderByAddTimeSkinRadioButton.MouseBack = null;
             this.orderByAddTimeSkinRadioButton.Name = "orderByAddTimeSkinRadioButton";
             this.orderByAddTimeSkinRadioButton.NormlBack = null;
@@ -182,7 +186,7 @@
             this.orderByEditTimeSkinRadioButton.ControlState = CCWin.SkinClass.ControlState.Normal;
             this.orderByEditTimeSkinRadioButton.DownBack = null;
             this.orderByEditTimeSkinRadioButton.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.orderByEditTimeSkinRadioButton.Location = new System.Drawing.Point(89, 3);
+            this.orderByEditTimeSkinRadioButton.Location = new System.Drawing.Point(124, 3);
             this.orderByEditTimeSkinRadioButton.MouseBack = null;
             this.orderByEditTimeSkinRadioButton.Name = "orderByEditTimeSkinRadioButton";
             this.orderByEditTimeSkinRadioButton.NormlBack = null;
@@ -201,7 +205,7 @@
             this.skinLabel1.BackColor = System.Drawing.Color.Transparent;
             this.skinLabel1.BorderColor = System.Drawing.Color.White;
             this.skinLabel1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.skinLabel1.Location = new System.Drawing.Point(39, 0);
+            this.skinLabel1.Location = new System.Drawing.Point(17, 0);
             this.skinLabel1.Name = "skinLabel1";
             this.skinLabel1.Size = new System.Drawing.Size(44, 17);
             this.skinLabel1.TabIndex = 3;
@@ -209,12 +213,29 @@
             // 
             // imageLabelFlowLayoutPanel
             // 
+            this.imageLabelFlowLayoutPanel.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.imageLabelFlowLayoutPanel.BackColor = System.Drawing.Color.Transparent;
-            this.imageLabelFlowLayoutPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.imageLabelFlowLayoutPanel.Controls.Add(this.addSearchLabelSkinButton);
             this.imageLabelFlowLayoutPanel.Location = new System.Drawing.Point(0, 0);
             this.imageLabelFlowLayoutPanel.Name = "imageLabelFlowLayoutPanel";
-            this.imageLabelFlowLayoutPanel.Size = new System.Drawing.Size(624, 70);
+            this.imageLabelFlowLayoutPanel.Size = new System.Drawing.Size(705, 70);
             this.imageLabelFlowLayoutPanel.TabIndex = 0;
+            // 
+            // addSearchLabelSkinButton
+            // 
+            this.addSearchLabelSkinButton.BackColor = System.Drawing.Color.Transparent;
+            this.addSearchLabelSkinButton.ControlState = CCWin.SkinClass.ControlState.Normal;
+            this.addSearchLabelSkinButton.DownBack = null;
+            this.addSearchLabelSkinButton.DrawType = CCWin.SkinControl.DrawStyle.Img;
+            this.addSearchLabelSkinButton.Image = global::ImageManager.Properties.Resources.add;
+            this.addSearchLabelSkinButton.Location = new System.Drawing.Point(3, 3);
+            this.addSearchLabelSkinButton.MouseBack = null;
+            this.addSearchLabelSkinButton.Name = "addSearchLabelSkinButton";
+            this.addSearchLabelSkinButton.NormlBack = null;
+            this.addSearchLabelSkinButton.Size = new System.Drawing.Size(32, 28);
+            this.addSearchLabelSkinButton.TabIndex = 0;
+            this.addSearchLabelSkinButton.UseVisualStyleBackColor = false;
+            this.addSearchLabelSkinButton.Click += new System.EventHandler(this.AddSearchSkinButton_Click);
             // 
             // menuStrip
             // 
@@ -224,7 +245,7 @@
             this.clearMemoryToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(944, 25);
+            this.menuStrip.Size = new System.Drawing.Size(1054, 25);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -337,7 +358,7 @@
             this.imagePanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.imagePanel.Location = new System.Drawing.Point(0, 95);
             this.imagePanel.Name = "imagePanel";
-            this.imagePanel.Size = new System.Drawing.Size(944, 546);
+            this.imagePanel.Size = new System.Drawing.Size(1054, 546);
             this.imagePanel.TabIndex = 2;
             this.imagePanel.Scroll += new System.Windows.Forms.ScrollEventHandler(this.ImagePanel_Scroll);
             this.imagePanel.SizeChanged += new System.EventHandler(this.ImagePanel_SizeChanged);
@@ -346,6 +367,27 @@
             // 
             this.openFileDialog.Multiselect = true;
             // 
+            // isAscSkinCheckBox
+            // 
+            this.isAscSkinCheckBox.AutoSize = true;
+            this.isAscSkinCheckBox.BackColor = System.Drawing.Color.Transparent;
+            this.isAscSkinCheckBox.Checked = true;
+            this.isAscSkinCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.isAscSkinCheckBox.ControlState = CCWin.SkinClass.ControlState.Normal;
+            this.isAscSkinCheckBox.DownBack = null;
+            this.isAscSkinCheckBox.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.isAscSkinCheckBox.Location = new System.Drawing.Point(67, 3);
+            this.isAscSkinCheckBox.MouseBack = null;
+            this.isAscSkinCheckBox.Name = "isAscSkinCheckBox";
+            this.isAscSkinCheckBox.NormlBack = null;
+            this.isAscSkinCheckBox.SelectedDownBack = null;
+            this.isAscSkinCheckBox.SelectedMouseBack = null;
+            this.isAscSkinCheckBox.SelectedNormlBack = null;
+            this.isAscSkinCheckBox.Size = new System.Drawing.Size(51, 21);
+            this.isAscSkinCheckBox.TabIndex = 4;
+            this.isAscSkinCheckBox.Text = "升序";
+            this.isAscSkinCheckBox.UseVisualStyleBackColor = false;
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -353,7 +395,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::ImageManager.Properties.Resources.background;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(944, 641);
+            this.ClientSize = new System.Drawing.Size(1054, 641);
             this.Controls.Add(this.imagePanel);
             this.Controls.Add(topPanel);
             this.Controls.Add(this.menuStrip);
@@ -373,6 +415,7 @@
             this.panel1.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
+            this.imageLabelFlowLayoutPanel.ResumeLayout(false);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -407,5 +450,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
         private System.Windows.Forms.ToolStripMenuItem useGlobalScreenShotHotKeyToolStripMenuItem;
+        private CCWin.SkinControl.SkinButton addSearchLabelSkinButton;
+        private CCWin.SkinControl.SkinCheckBox isAscSkinCheckBox;
     }
 }

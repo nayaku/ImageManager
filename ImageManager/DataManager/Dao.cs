@@ -164,7 +164,8 @@ namespace ImageManager
         /// <param name="pageIndex">  页号</param>
         /// <param name="keywords">   关键词</param>
         /// <param name="imageLabels">包含的标签</param>
-        public static MyImage[] GetImages(string orderby = "title", int pageIndex = 0, string keywords = "", ImageLabel[] imageLabels = null)
+        /// <param name="isAsc">      是否为升序</param>
+        public static MyImage[] GetImages(string orderby = "title", int pageIndex = 0, string keywords = "", ImageLabel[] imageLabels = null, bool isAsc = true)
         {
             var sqliteParameterList = new LinkedList<SQLiteParameter>();
             var pageNum = Settings.Default.PageNumber;
@@ -172,15 +173,17 @@ namespace ImageManager
             // 时候限定检索标签
             if (imageLabels != null)
             {
-                sql = "SELECT images.id AS images_id, images.path AS images_path, images.title AS images_title FROM images JOIN label_contain ON images.id = label_contain.image_id JOIN labels ON label_contain.label_id = labels.id WHERE (labels.name in ";
-                var imgLabelStringBuilder = new StringBuilder("(");
+                sql = "SELECT images.id AS images_id, images.path AS images_path, images.title AS images_title FROM images JOIN label_contain ON images.id = label_contain.image_id JOIN labels ON label_contain.label_id = labels.id WHERE ( ";
+                var imgLabelStringBuilder = new StringBuilder();
                 for (var index = 0; index < imageLabels.Length; index++)// (var imgLabel in imageLabels)
                 {
                     var imgLabel = imageLabels[index];
-                    imgLabelStringBuilder.Append($"@imgLabel_Name_{index},");
+                    imgLabelStringBuilder.Append($" labels.name = @imgLabel_Name_{index}");
+                    if (index != imageLabels.Length - 1)
+                        imgLabelStringBuilder.Append($" OR");
                     sqliteParameterList.AddLast(new SQLiteParameter($"@imgLabel_Name_{index}", imgLabel.Name));
                 }
-                sql += imgLabelStringBuilder.ToString(0, imgLabelStringBuilder.Length - 1) + ")) AND ";
+                sql += imgLabelStringBuilder.ToString() + " ) AND ";
             }
             else
             {
@@ -216,8 +219,13 @@ namespace ImageManager
                 keywordStringBuilder.Append(")");
             }
             sql += keywordStringBuilder.ToString();
-            sql += $" ORDER BY @orderby ";
-            sqliteParameterList.AddLast(new SQLiteParameter("@orderby", orderby));
+            // 限定标签
+            if (imageLabels != null)
+            {
+                sql += "GROUP BY images.id HAVING count(label_contain.label_id) = " + imageLabels.Length;
+            }
+            sql += $" ORDER BY {orderby} {(isAsc ? "ASC" : "DESC")} ";
+            //sqliteParameterList.AddLast(new SQLiteParameter("@orderby", orderby));
             sql += $"LIMIT @start, @pageNum";
             sqliteParameterList.AddLast(new SQLiteParameter("@start", pageIndex * pageNum));
             sqliteParameterList.AddLast(new SQLiteParameter("@pageNum", pageNum));
@@ -490,7 +498,7 @@ namespace ImageManager
         /// <param name="path"></param>
         /// <param name="md5"> </param>
         /// <returns>存在返回true。此外还返回md5码。</returns>
-        public static (bool,string) IsExistImage(string path, string md5 = null)
+        public static (bool, string) IsExistImage(string path, string md5 = null)
         {
             long t_startTime, t_endTime;
             if (md5 == null)
@@ -510,12 +518,12 @@ namespace ImageManager
                     t_endTime = DateTime.Now.Ticks;
                     t_readDatabaseTime += t_endTime - t_startTime;
                     if (!reader.HasRows)
-                        return (false,md5);
+                        return (false, md5);
                     else
-                        return (true,md5);
+                        return (true, md5);
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -547,7 +555,7 @@ namespace ImageManager
         /// <param name="image">二维数组每行必须包含4列：标题、路径、md5(前面3列为字符串)、最后修改时间(DateTime类型)。</param>
         public static void AddImages(object[,] image)
         {
-            
+
         }
 
         /// <summary>

@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ImageManager
@@ -47,26 +40,29 @@ namespace ImageManager
         /// </summary>
         public void UpdateImageLabel()
         {
-            imgLabelNameLabel.Text = ImageLabel.ToString();
-            skinPanel1.BackColor = ImageLabel.Color;
+            if (ImageLabel != null)
+            {
+                imgLabelNameLabel.Text = ImageLabel.ToString();
+                skinPanel1.BackColor = ImageLabel.Color;
+            }
         }
 
         /// <summary>
         /// 更新标签
         /// </summary>
-        public void UpdateImageLabel(object sender,EventArgs e)
+        public void UpdateImageLabel(object sender, EventArgs e)
         {
-           
-                imgLabelNameLabel.Invoke((MethodInvoker)delegate
-                {
-                    UpdateImageLabel();
-                });
-           
+
+            imgLabelNameLabel.Invoke((MethodInvoker)delegate
+            {
+                UpdateImageLabel();
+            });
+
         }
 
         private void XLabel_Click(object sender, EventArgs e)
         {
-            XLabel_ClickEventHandler?.Invoke(sender,this);
+            XLabel_ClickEventHandler?.Invoke(sender, this);
         }
 
         private void ImgLabelNameLabel_Click(object sender, EventArgs e)
