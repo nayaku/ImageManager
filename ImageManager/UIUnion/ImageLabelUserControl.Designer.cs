@@ -67,7 +67,7 @@
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(2, 2);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(112, 39);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(106, 39);
             this.flowLayoutPanel1.TabIndex = 2;
             // 
             // imgLabelNameLabel
@@ -87,9 +87,9 @@
             // 
             this.xLabel.AutoSize = true;
             this.xLabel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.xLabel.Location = new System.Drawing.Point(114, 2);
+            this.xLabel.Location = new System.Drawing.Point(108, 2);
             this.xLabel.Name = "xLabel";
-            this.xLabel.Size = new System.Drawing.Size(15, 14);
+            this.xLabel.Size = new System.Drawing.Size(21, 14);
             this.xLabel.TabIndex = 1;
             this.xLabel.Text = "✖";
             this.xLabel.Click += new System.EventHandler(this.XLabel_Click);

@@ -2,7 +2,7 @@
 ; 查阅文档获取创建 INNO SETUP 脚本文件的详细资料！
 
 #define MyAppName "素材管理器"
-#define MyAppVersion "2.0.3"
+#define MyAppVersion "2.0.5"
 #define MyAppPublisher "NGMKS"
 #define MyAppURL "im.ngmks.com"
 #define MyAppExeName "ImageManager.exe"

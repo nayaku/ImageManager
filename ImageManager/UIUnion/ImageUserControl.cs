@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace ImageManager
@@ -208,6 +209,8 @@ namespace ImageManager
         private void CopyImagePathToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             var path = Utils.ConvertPath(MyImage.Path);
+            if (!Path.IsPathRooted(path))
+                path = AppDomain.CurrentDomain.BaseDirectory + path;
             Clipboard.SetText(path);
         }
 

@@ -74,57 +74,57 @@
             this.addImgLabelToolStripMenuItem1,
             this.removeImageToolStripMenuItem1});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(161, 148);
+            this.contextMenuStrip.Size = new System.Drawing.Size(181, 170);
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "贴片式打开";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
             // openWithOtherToolStripMenuItem
             // 
             this.openWithOtherToolStripMenuItem.Name = "openWithOtherToolStripMenuItem";
-            this.openWithOtherToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.openWithOtherToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openWithOtherToolStripMenuItem.Text = "用其他程序打开";
             this.openWithOtherToolStripMenuItem.Click += new System.EventHandler(this.OpenWithOtherToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(157, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
             // 
             // copyImageContentToolStripMenuItem
             // 
             this.copyImageContentToolStripMenuItem.Name = "copyImageContentToolStripMenuItem";
-            this.copyImageContentToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.copyImageContentToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.copyImageContentToolStripMenuItem.Text = "拷贝图片内容";
             this.copyImageContentToolStripMenuItem.Click += new System.EventHandler(this.CopyImageContentToolStripMenuItem_Click);
             // 
             // copyImagePathToolStripMenuItem1
             // 
             this.copyImagePathToolStripMenuItem1.Name = "copyImagePathToolStripMenuItem1";
-            this.copyImagePathToolStripMenuItem1.Size = new System.Drawing.Size(160, 22);
+            this.copyImagePathToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.copyImagePathToolStripMenuItem1.Text = "拷贝图片路径";
             this.copyImagePathToolStripMenuItem1.Click += new System.EventHandler(this.CopyImagePathToolStripMenuItem1_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(157, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // addImgLabelToolStripMenuItem1
             // 
             this.addImgLabelToolStripMenuItem1.Name = "addImgLabelToolStripMenuItem1";
-            this.addImgLabelToolStripMenuItem1.Size = new System.Drawing.Size(160, 22);
+            this.addImgLabelToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.addImgLabelToolStripMenuItem1.Text = "添加图片标签";
             this.addImgLabelToolStripMenuItem1.Click += new System.EventHandler(this.AddImgLabelToolStripMenuItem1_Click);
             // 
             // removeImageToolStripMenuItem1
             // 
             this.removeImageToolStripMenuItem1.Name = "removeImageToolStripMenuItem1";
-            this.removeImageToolStripMenuItem1.Size = new System.Drawing.Size(160, 22);
+            this.removeImageToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.removeImageToolStripMenuItem1.Text = "删除图片";
             this.removeImageToolStripMenuItem1.Click += new System.EventHandler(this.RemoveImageToolStripMenuItem1_Click);
             // 

@@ -168,5 +168,15 @@ namespace ImageManager
             }
             
         }
+
+        /// <summary>
+        /// 删除指定路径缓存
+        /// </summary>
+        /// <param name="path"></param>
+        public static void RemoveCache(MyImage myImage)
+        {
+            var path = Utils.ConvertPath(myImage.Path);
+            _cacheDict.TryRemove(path,out var value);
+        }
     }
 }

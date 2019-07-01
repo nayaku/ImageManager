@@ -564,6 +564,9 @@ namespace ImageManager
         /// <param name="myImage">需要移除的图片</param>
         public static void RemoveImage(MyImage myImage)
         {
+            // 尝试删除缩略图缓冲
+            ImageCache.RemoveCache(myImage);
+
             var sql = $"DELETE FROM images WHERE images.id = @myImage_id";
             using (var command = new SQLiteCommand(sql, _connnect))
             {
