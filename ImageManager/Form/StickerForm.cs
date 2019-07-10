@@ -40,6 +40,18 @@ namespace ImageManager
         /// 图片路径（如果从从文件中读取图片的话）
         /// </summary>
         private string _imagePath = null;
+        /// <summary>
+        /// 旋转的角度
+        /// </summary>
+        private int _rotateAngle = 0;
+        /// <summary>
+        /// 是否水平翻转
+        /// </summary>
+        private bool _isFlipX = false;
+        /// <summary>
+        /// 是否垂直翻转
+        /// </summary>
+        private bool _isFlipY = false;
 
 
         public StickerForm(string imgPath) : this(ImageReaderFactory.GetInstance().CreateImageReader(imgPath).Read(imgPath))
@@ -190,6 +202,34 @@ namespace ImageManager
                 pictureBox.Image = SuperImageReader.ZoomImage((Image)_sourceImage.Clone(), _zoomRate);
                 Size = pictureBox.Size = pictureBox.Image.Size;
                 if (oldImage != _sourceImage) oldImage.Dispose();
+                // 对之前的旋转和翻转处理
+                if (_isFlipX && _isFlipY)
+                {
+                    RotateImage(RotateFlipType.RotateNoneFlipXY);
+                    if (_rotateAngle == 180) _rotateAngle = 0;
+                }
+                else if (_isFlipX)
+                {
+                    RotateImage(RotateFlipType.RotateNoneFlipX);
+                }
+                else if (_isFlipY)
+                {
+                    RotateImage(RotateFlipType.RotateNoneFlipY);
+                }
+
+                if (_rotateAngle == 90)
+                {
+                    RotateImage(RotateFlipType.Rotate90FlipNone);
+                }
+                else if (_rotateAngle == 180)
+                {
+                    RotateImage(RotateFlipType.Rotate180FlipNone);
+                }
+                else if (_rotateAngle == 270)
+                {
+                    RotateImage(RotateFlipType.Rotate270FlipNone);
+                }
+
             }
 
         }
@@ -284,27 +324,34 @@ namespace ImageManager
 
         private void Rotate90FilpToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _rotateAngle = (_rotateAngle + 90) % 360;
             RotateImage(RotateFlipType.Rotate90FlipNone);
 
         }
 
         private void Rotate180FlipToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _rotateAngle = (_rotateAngle + 180) % 360;
             RotateImage(RotateFlipType.Rotate180FlipNone);
         }
 
         private void Rotate270FlipToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _rotateAngle = (_rotateAngle + 270) % 360;
             RotateImage(RotateFlipType.Rotate270FlipNone);
         }
 
         private void VerticalFlipToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _rotateAngle = (_rotateAngle + 180) % 360;
+            _isFlipY = !_isFlipY;
             RotateImage(RotateFlipType.RotateNoneFlipY);
         }
 
         private void HorizontalFilpToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _rotateAngle = (360 - _rotateAngle) % 360;
+            _isFlipX = !_isFlipX;
             RotateImage(RotateFlipType.RotateNoneFlipX);
         }
 

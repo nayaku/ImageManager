@@ -403,8 +403,6 @@ namespace ImageManager
         /// <summary>
         /// 图片加载完成调用
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void LoadImageFinish(string path, Image image)
         {
             //测试
