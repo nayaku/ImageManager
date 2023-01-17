@@ -1,0 +1,210 @@
+﻿<hc:Window
+    x:Class="ImageManager.Views.RootView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewModels="clr-namespace:ImageManager.ViewModels"
+    Title="素材管理器"
+    Width="1280"
+    Height="768"
+    d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
+    Icon="pack://application:,,,/icon.ico"
+    MouseDown="{s:Action WindowMouseDown}"
+    ShowIcon="True"
+    ShowTitle="False"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <hc:Window.Resources>
+        <RoutedUICommand x:Key="AddPictures" Text="添加图片" />
+        <RoutedUICommand x:Key="SelectAll" Text="选择全部" />
+        <RoutedUICommand x:Key="SelectNone" Text="取消选择" />
+        <RoutedUICommand x:Key="SelectInvert" Text="反向选择" />
+        <RoutedUICommand x:Key="CopyPicture" Text="拷贝图片" />
+        <RoutedUICommand x:Key="DeletPicture" Text="删除图片" />
+    </hc:Window.Resources>
+    <hc:Window.InputBindings>
+        <KeyBinding
+            Key="O"
+            Command="{StaticResource AddPictures}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="A"
+            Command="{StaticResource SelectAll}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="D"
+            Command="{StaticResource SelectNone}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="I"
+            Command="{StaticResource SelectInvert}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="C"
+            Command="{StaticResource CopyPicture}"
+            Modifiers="Ctrl" />
+        <KeyBinding Key="Delete" Command="{StaticResource DeletPicture}" />
+    </hc:Window.InputBindings>
+    <hc:Window.CommandBindings>
+        <CommandBinding Command="{StaticResource AddPictures}" Executed="{s:Action AddPictures}" />
+        <CommandBinding Command="{StaticResource SelectAll}" Executed="{s:Action SelectAll}" />
+        <CommandBinding Command="{StaticResource SelectNone}" Executed="{s:Action SelectNone}" />
+        <CommandBinding Command="{StaticResource SelectInvert}" Executed="{s:Action SelectInvert}" />
+        <CommandBinding Command="{StaticResource CopyPicture}" Executed="{s:Action CopyPicture}" />
+        <CommandBinding Command="{StaticResource DeletPicture}" Executed="{s:Action DeletePicture}" />
+    </hc:Window.CommandBindings>
+    <hc:Window.NonClientAreaContent>
+        <Grid MouseDown="Grid_MouseDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Menu HorizontalAlignment="Left">
+                <MenuItem Header="文件">
+                    <MenuItem Command="{StaticResource AddPictures}" InputGestureText="Ctrl+O" />
+                    <Separator />
+                    <MenuItem Header="退出" />
+                </MenuItem>
+                <MenuItem Header="选择">
+                    <MenuItem Command="{StaticResource SelectAll}" InputGestureText="Ctrl+A" />
+                    <MenuItem Command="{StaticResource SelectInvert}" InputGestureText="Ctrl+D" />
+                    <MenuItem Command="{StaticResource SelectNone}" InputGestureText="Ctrl+I" />
+                </MenuItem>
+                <MenuItem Header="关于" />
+            </Menu>
+            <hc:SearchBar
+                Name="SearchLabelBar"
+                Grid.Column="1"
+                Width="240"
+                HorizontalAlignment="Right"
+                hc:InfoElement.Placeholder="搜索"
+                hc:InfoElement.TitlePlacement="Left"
+                Command="{s:Action SearchStarted}"
+                CommandParameter="{Binding Text, RelativeSource={RelativeSource Self}}"
+                GotFocus="{s:Action SearchBarGotFocus}"
+                LostFocus="{s:Action SearchBarLostFocus}"
+                Style="{StaticResource SearchBarPlus}"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="{s:Action UpdateSearchedLabels}" />
+            <Popup
+                Grid.Column="1"
+                Width="240"
+                AllowsTransparency="True"
+                IsOpen="{Binding ShowLabelPopup}"
+                Placement="Bottom"
+                PlacementTarget="{Binding ElementName=SearchLabelBar}">
+                <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding SearchedLabels}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="data:Label">
+                            <Button
+                                Margin="0"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{s:Action LabelClick}"
+                                CommandParameter="{Binding}">
+                                <Button.Content>
+                                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            x:Name="LabelName"
+                                            Grid.Column="0"
+                                            Text="{Binding Name}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Right"
+                                            Foreground="{DynamicResource ThirdlyTextBrush}"
+                                            Text="{Binding NumToString}" />
+                                    </Grid>
+                                </Button.Content>
+                                <Button.Template>
+                                    <ControlTemplate TargetType="{x:Type Button}">
+                                        <ContentPresenter
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Content="{TemplateBinding Content}"
+                                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                            RecognizesAccessKey="True" />
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Popup>
+            <Button
+                Name="ThemeConfigButton"
+                Grid.Column="2"
+                HorizontalAlignment="Right"
+                hc:IconElement.Geometry="{StaticResource ConfigGeometry}"
+                Command="{s:Action ShowThemeConfig}"
+                Foreground="{DynamicResource PrimaryTextBrush}"
+                Style="{StaticResource ButtonIcon}" />
+            <Popup
+                Grid.Column="1"
+                AllowsTransparency="True"
+                HorizontalOffset="-35"
+                IsOpen="{Binding ThemeConfigShow}"
+                PlacementTarget="{Binding ElementName=ThemeConfigButton}"
+                StaysOpen="False"
+                VerticalOffset="6">
+                <Border
+                    Margin="16"
+                    Background="{DynamicResource SecondaryRegionBrush}"
+                    CornerRadius="4"
+                    Effect="{StaticResource EffectShadow2}">
+                    <StackPanel>
+                        <hc:Divider
+                            Width="200"
+                            Margin="0,10"
+                            Content="主题颜色" />
+                        <StackPanel
+                            Margin="0,0,0,10"
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal">
+                            <Button
+                                Command="{s:Action ChangeTheme}"
+                                CommandParameter="{x:Static hc:ApplicationTheme.Light}"
+                                Style="{StaticResource ButtonCustom}">
+                                <Border
+                                    Width="32"
+                                    Height="21"
+                                    Background="White"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="2" />
+                            </Button>
+                            <Button
+                                Margin="10,0,0,0"
+                                Command="{s:Action ChangeTheme}"
+                                CommandParameter="{x:Static hc:ApplicationTheme.Dark}"
+                                Style="{StaticResource ButtonCustom}">
+                                <Border
+                                    Width="32"
+                                    Height="21"
+                                    Background="Black"
+                                    BorderBrush="{DynamicResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="2" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </Grid>
+    </hc:Window.NonClientAreaContent>
+
+    <ContentControl x:Name="MainPage" s:View.Model="{Binding MainPageViewModel}" />
+
+</hc:Window>

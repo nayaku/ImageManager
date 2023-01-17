@@ -1,0 +1,35 @@
+﻿<hc:Window
+    x:Class="ImageManager.Views.ProgressView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewModels="clr-namespace:ImageManager.ViewModels"
+    Title="{Binding Title}"
+    Width="600"
+    Height="Auto"
+    d:DataContext="{d:DesignInstance Type=viewModels:ProgressViewModel}"
+    Loaded="{Binding DoTask}"
+    ResizeMode="NoResize"
+    ShowNonClientArea="False"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+        <ProgressBar
+            Height="30"
+            Margin="1"
+            HorizontalAlignment="Stretch"
+            Value="{Binding Progress}" />
+        <TextBlock Margin="4,2" Text="{Binding Message}" />
+        <Button
+            Width="100"
+            Margin="4,8,4,4"
+            hc:BorderElement.CornerRadius="1"
+            Command="{Binding CancelCommand}"
+            Content="取     消"
+            Style="{StaticResource ButtonDanger.Small}" />
+    </StackPanel>
+</hc:Window>
