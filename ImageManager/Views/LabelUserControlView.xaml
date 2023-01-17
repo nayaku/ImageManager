@@ -1,0 +1,19 @@
+﻿<UserControl
+    x:Class="ImageManager.Views.LabelUserControlView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:LabelUserControlViewModel}"
+    d:DesignHeight="25"
+    d:DesignWidth="140"
+    mc:Ignorable="d">
+    <hc:Tag
+        Closed="{s:Action TagClosed}"
+        Content="{Binding Label.Name}"
+        ShowCloseButton="{Binding CanDelete}" />
+</UserControl>

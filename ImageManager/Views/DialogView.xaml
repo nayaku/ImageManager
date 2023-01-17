@@ -1,0 +1,70 @@
+﻿<hc:Window
+    x:Class="ImageManager.Views.DialogView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
+    Title="{Binding Title}"
+    Width="200"
+    Height="90"
+    d:DataContext="{d:DesignInstance Type=viewmodels:DialogViewModel}"
+    KeyDown="{s:Action WindowKeyDown}"
+    MouseDown="{s:Action WindowMouseDown}"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    SizeToContent="Height"
+    WindowStyle="ToolWindow"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <hc:ThemeResources />
+                <hc:Theme />
+                <ResourceDictionary>
+                    <local:StyleConverter x:Key="StyleConverter" />
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border
+            Grid.Row="0"
+            HorizontalAlignment="Stretch"
+            Background="{StaticResource DefaultBrush}">
+            <TextBlock Margin="0,14" HorizontalAlignment="Center" Text="{Binding Message}" />
+        </Border>
+
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,6"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Orientation="Horizontal">
+            <Button
+                Width="60"
+                Margin="0"
+                Command="{s:Action OK}"
+                CommandParameter="True"
+                Content="{Binding ConfirmText}"
+                Style="{Binding ConfirmButtonStyle, Converter={StaticResource StyleConverter}}" />
+            <Border Width="30" Visibility="{Binding ShowCancel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+            <Button
+                Width="60"
+                Margin="0"
+                Command="{s:Action OK}"
+                CommandParameter="False"
+                Content="{Binding CancelText}"
+                Style="{Binding CancelButtonStyle, Converter={StaticResource StyleConverter}}"
+                Visibility="{Binding ShowCancel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+        </StackPanel>
+
+    </Grid>
+</hc:Window>

@@ -1,0 +1,23 @@
+﻿<hc:Window
+    x:Class="ImageManager.Views.AddImageView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
+    Title="添加图片"
+    Width="900"
+    Height="600"
+    d:DataContext="{d:DesignInstance Type=viewmodels:AddImageViewModel}"
+    ShowMinButton="False"
+    mc:Ignorable="d">
+    <hc:Window.NonClientAreaContent>
+        <Grid>
+            <Menu HorizontalAlignment="Right" />
+        </Grid>
+    </hc:Window.NonClientAreaContent>
+    <Grid />
+</hc:Window>
