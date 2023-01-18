@@ -13,6 +13,8 @@ using System.Linq.Dynamic.Core;
 using System.Windows.Media;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using static ImageManager.Data.UserSettingData;
 
 namespace ImageManager.ViewModels
 {
@@ -29,16 +31,12 @@ namespace ImageManager.ViewModels
         public string Message { get; set; }
         public BindableCollection<SelectableItemWrapper<Picture>> Pictures { get; set; }
         public IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
-        //public enum SelectedModeEnum { None = 0, Single = 1, Multiply = 2 }
-        //public SelectedModeEnum SelectedMode => (SelectedModeEnum)SelectedPictures.Take(2).Count();
-        //public bool IsAnySelected => Pictures.Any(x => x.IsSelected);
-        public bool IsDesc { get; set; }
-        public enum OrderByEnum { AddTime, Title }
-        public OrderByEnum OrderBy { get; set; }
+        public bool IsDesc { get => UserSetting.IsDesc; set => UserSetting.IsDesc = value; }
+        public OrderByEnum OrderBy { get => UserSetting.OrderBy; set => UserSetting.OrderBy = value; }
         public bool IsOrderByAddTime => OrderBy == OrderByEnum.AddTime;
         public bool IsOrderByTitle => OrderBy == OrderByEnum.Title;
         public string SearchText => _rootViewModel.SearchText;
-        public bool IsGroup { get; set; }
+        public bool IsGroup { get => UserSetting.IsGroup; set => UserSetting.IsGroup = value; }
         public List<IGrouping<string, SelectableItemWrapper<Picture>>>? PictureGroups
         {
             get
@@ -64,16 +62,13 @@ namespace ImageManager.ViewModels
             set
             {
                 UserSetting.CardWidth = value;
-                _saveUserSettingTimer.Stop();
-                _saveUserSettingTimer.Start();
             }
         }
         public double MaxCardWidth { get; set; }
-        public int GroupNum => Math.Max(Math.Min(Pictures.Count, (int)(MaxCardWidth / CardWidth)), 1);
+        //public int WaterfallGroupNum => Math.Max(Math.Min(Pictures.Count, (int)(MaxCardWidth / CardWidth)), 1);
         public BindableCollection<Label> FilterLabels { get; set; } = new();
 
         public bool ShowFilterLabelPanel { get; set; }
-        private System.Timers.Timer _saveUserSettingTimer;
 
         public MainPageViewModel(RootViewModel rootViewModel, IWindowManager windowManager, IContainer container)
         {
@@ -81,12 +76,6 @@ namespace ImageManager.ViewModels
             _windowManager = windowManager;
             _container = container;
 
-            // 设置保存用户设置的定时器
-            _saveUserSettingTimer = new(200)
-            {
-                AutoReset = false
-            };
-            _saveUserSettingTimer.Elapsed += (object? sender, ElapsedEventArgs e) => UserSetting.Save();
             // 筛选标签更变
             FilterLabels.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) =>
             {
@@ -251,6 +240,12 @@ namespace ImageManager.ViewModels
                 IsDesc = isDesc;
                 UpdatePicture();
             }
+        }
+        public void SetGroup(string isGroupString)
+        {
+            var isGroup = Boolean.Parse(isGroupString);
+            IsGroup = isGroup;
+            UpdatePicture();
         }
         #endregion
 

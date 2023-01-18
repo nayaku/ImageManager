@@ -21,8 +21,8 @@
                         x:Key="PictureListBox"
                         BasedOn="{StaticResource WrapPanelHorizontalListBox}"
                         TargetType="ListBox">
-                        <Setter Property="HorizontalAlignment" Value="Center" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <!--<Setter Property="HorizontalAlignment" Value="Center" />-->
+                        <!--<Setter Property="VerticalAlignment" Value="Center" />-->
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="SelectionMode" Value="Extended" />
                         <Setter Property="Margin" Value="0" />
@@ -30,21 +30,10 @@
                             <Setter.Value>
                                 <ItemsPanelTemplate>
                                     <hc:WaterfallPanel
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
+                                        Margin="0,8"
                                         hc:PanelElement.FluidMoveBehavior="{StaticResource BehaviorXY200}"
-                                        Groups="{Binding GroupNum}" />
-                                </ItemsPanelTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="ItemsPanel">
-                            <Setter.Value>
-                                <ItemsPanelTemplate>
-                                    <hc:WaterfallPanel
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        hc:PanelElement.FluidMoveBehavior="{StaticResource BehaviorXY200}"
-                                        Groups="{Binding GroupNum}" />
+                                        AutoGroup="True"
+                                        DesiredLength="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
                                 </ItemsPanelTemplate>
                             </Setter.Value>
                         </Setter>
@@ -53,6 +42,7 @@
                                 <DataTemplate>
                                     <hc:Card
                                         Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                        Margin="0,8"
                                         BorderThickness="0"
                                         Effect="{StaticResource EffectShadow2}">
                                         <!--  卡片主体部分  -->
@@ -182,8 +172,46 @@
                 hc:Tag.Closing="{s:Action DeletePictureLabel}"
                 ItemsSource="{Binding Pictures}"
                 SelectionChanged="{s:Action PictureSelectionChange}"
-                Style="{DynamicResource PictureListBox}" />
-
+                Style="{DynamicResource PictureListBox}"
+                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+            <ScrollViewer
+                Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
+                Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
+                Margin="0"
+                HorizontalScrollBarVisibility="Auto">
+                <ItemsControl
+                    hc:Tag.Closing="{s:Action DeletePictureLabel}"
+                    ItemsSource="{Binding PictureGroups}"
+                    Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Expander
+                                Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
+                                Background="{DynamicResource DefaultBrush}"
+                                BorderThickness="1"
+                                Style="{DynamicResource ExpanderBaseStyle}"
+                                IsExpanded="True">
+                                <Expander.Header>
+                                    <TextBlock
+                                        Margin="4,0,0,0"
+                                        FontSize="{DynamicResource LargeFontSize}"
+                                        Text="{Binding Key}" />
+                                </Expander.Header>
+                                <ListBox
+                                    ItemsSource="{Binding}"
+                                    PreviewMouseWheel="InnerLB_PreviewMouseWheel"
+                                    SelectionChanged="{s:Action PictureSelectionChange}"
+                                    Style="{DynamicResource PictureListBox}" />
+                            </Expander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
             <Canvas.ContextMenu>
                 <ContextMenu>
                     <MenuItem
@@ -236,6 +264,31 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
+                    <MenuItem
+                        Command="{s:Action SetGroup}"
+                        CommandParameter="False"
+                        Header="不分组">
+                        <MenuItem.Icon>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="●"
+                                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Command="{s:Action SetGroup}"
+                        CommandParameter="True"
+                        Header="分组">
+                        <MenuItem.Icon>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="●"
+                                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
                     <MenuItem Command="{s:Action UpdatePicture}" Header="刷新" />
                 </ContextMenu>
             </Canvas.ContextMenu>
@@ -255,7 +308,6 @@
                     Value="{Binding CardWidth}" />
             </Grid>
         </StackPanel>
-
     </Grid>
 
 </UserControl>

@@ -206,5 +206,5 @@
     </hc:Window.NonClientAreaContent>
 
     <ContentControl x:Name="MainPage" s:View.Model="{Binding MainPageViewModel}" />
-
+    
 </hc:Window>
