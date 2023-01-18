@@ -177,6 +177,26 @@ namespace ImageManager.Views
                 Canvas.SetTop(_currentBoxSelectedBorder, endPoint.Y);
         }
 
-        
+        /// <summary>
+        /// 问题：内层的ListBox拦截了鼠标滚轮事件，导致外层ListBox不能用鼠标滚轮滑动。
+        /// 办法：内层ListBox拦截鼠标滚轮事件后，再手动激发一个鼠标滚轮事件，让事件冒泡给外层ListBox接收到。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void InnerLB_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                // 内层ListBox拦截鼠标滚轮事件
+                e.Handled = true;
+
+                // 激发一个鼠标滚轮事件，冒泡给外层ListBox接收到
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+                eventArg.Source = sender;
+                var parent = ((Control)sender).Parent as UIElement;
+                parent.RaiseEvent(eventArg);
+            }
+        }
     }
 }

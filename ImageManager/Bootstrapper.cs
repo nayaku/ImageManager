@@ -10,7 +10,7 @@ namespace ImageManager
     {
         protected override void ConfigureIoC(IStyletIoCBuilder builder)
         {
-            builder.Bind<UserSettingData>().ToInstance(UserSettingData.Instance);
+            builder.Bind<UserSettingData>().ToInstance(UserSettingData.Default);
             // create Database context
             builder.Bind<ImageContext>().ToSelf().InSingletonScope();
 

@@ -17,6 +17,12 @@ namespace ImageManager.Data
         private static readonly string _settingDataFile = "UserSettings.xml";
 
         /// <summary>
+        /// 自动保存设置
+        /// </summary>
+        [XmlIgnore]
+        public bool AutoSave { get; set; } = true;
+
+        /// <summary>
         /// 总存储路径
         /// </summary>
         public string StorePath { get; set; } = "SD";
@@ -28,15 +34,28 @@ namespace ImageManager.Data
         public double CardWidth { get; set; } = 240;
         public ApplicationTheme Theme { get; set; } = ApplicationTheme.Light;
         public bool ClearUnUsedLabel { get; set; } = true;
+        public enum OrderByEnum { AddTime, Title }
+        public OrderByEnum OrderBy { get; set; } = OrderByEnum.AddTime;
+        public bool IsDesc { get; set; } = false;
+        public bool IsGroup { get; set; } = false;
 
-        private static UserSettingData _instance;
-        public static UserSettingData Instance => _instance ??= Load();
+        private static UserSettingData _default;
+        public static UserSettingData Default => _default ??= Load();
+        private System.Timers.Timer _saveUserSettingTimer;
+        public UserSettingData()
+        {
+            _saveUserSettingTimer = new System.Timers.Timer(500)
+            {
+                AutoReset = false
+            };
+            _saveUserSettingTimer.Elapsed += (s, e) => Save();
+        }
 
         /// <summary>
         /// 加载
         /// </summary>
         /// <returns></returns>
-        private static UserSettingData Load()
+        public static UserSettingData Load()
         {
             if (File.Exists(_settingDataFile))
             {
@@ -55,6 +74,17 @@ namespace ImageManager.Data
             var writer = new XmlSerializer(typeof(UserSettingData));
             using var file = File.Create(_settingDataFile);
             writer.Serialize(file, this);
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            base.OnPropertyChanged(propertyName);
+            if (AutoSave)
+            {
+                _saveUserSettingTimer.Stop();
+                _saveUserSettingTimer.Start();
+            }
         }
     }
 }

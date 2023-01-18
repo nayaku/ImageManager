@@ -61,7 +61,7 @@ namespace ImageManager.Data.Model
         public static string ImageFolderPath { get; }
         static Picture()
         {
-            var path = UserSettingData.Instance.ImageFolderPath;
+            var path = UserSettingData.Default.ImageFolderPath;
             if (!System.IO.Path.IsPathRooted(path))
                 path = System.IO.Path.Join(AppDomain.CurrentDomain.BaseDirectory, path);
             ImageFolderPath = path;
