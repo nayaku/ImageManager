@@ -1,9 +1,11 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Themes;
 using HandyControl.Tools;
+using ImageManager.Tools;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 
 namespace ImageManager.Views
@@ -15,9 +17,5 @@ namespace ImageManager.Views
             InitializeComponent();
         }
 
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
     }
 }

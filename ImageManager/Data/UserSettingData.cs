@@ -40,9 +40,9 @@ namespace ImageManager.Data
         public bool IsDesc { get; set; } = false;
         public bool IsGroup { get; set; } = false;
 
-        public List<String> WaitToDeleteFiles { get; set; }
+        public List<string> WaitToDeleteFiles { get; set; }
 
-        private static UserSettingData _default;
+        private static UserSettingData? _default = null;
         public static UserSettingData Default => _default ??= Load();
         private System.Timers.Timer _saveUserSettingTimer;
         public UserSettingData()

@@ -3,6 +3,7 @@ using ImageManager.ViewModels;
 using Stylet;
 using StyletIoC;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace ImageManager
@@ -25,7 +26,6 @@ namespace ImageManager
                         File.Delete(file);
                 }
                 userSettingData.WaitToDeleteFiles = null;
-                userSettingData.Save();
                 foreach (var file in Directory.GetFiles(userSettingData.TempFolderPath))
                 {
                     if (File.Exists(file))

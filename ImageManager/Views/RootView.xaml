@@ -12,69 +12,108 @@
     Height="768"
     d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
     Icon="pack://application:,,,/icon.ico"
-    MouseDown="{s:Action WindowMouseDown}"
     ShowIcon="True"
     ShowTitle="False"
     WindowStartupLocation="CenterScreen"
+    WindowState="{Binding WindowState}"
+    Loaded="{s:Action Loaded}"
     mc:Ignorable="d">
-    <hc:Window.Resources>
-        <RoutedUICommand x:Key="AddPictures" Text="添加图片" />
-        <RoutedUICommand x:Key="SelectAll" Text="选择全部" />
-        <RoutedUICommand x:Key="SelectNone" Text="取消选择" />
-        <RoutedUICommand x:Key="SelectInvert" Text="反向选择" />
-        <RoutedUICommand x:Key="CopyPicture" Text="拷贝图片" />
-        <RoutedUICommand x:Key="DeletPicture" Text="删除图片" />
-    </hc:Window.Resources>
     <hc:Window.InputBindings>
+        <KeyBinding Command="{s:Action ScreenShot}" Gesture="Ctrl+Alt+Shift+X" />
         <KeyBinding
             Key="O"
-            Command="{StaticResource AddPictures}"
+            Command="{s:Action AddPictures}"
             Modifiers="Ctrl" />
         <KeyBinding
             Key="A"
-            Command="{StaticResource SelectAll}"
+            s:View.ActionTarget="{Binding MainPageViewModel}"
+            Command="{s:Action SelectAll}"
             Modifiers="Ctrl" />
         <KeyBinding
             Key="D"
-            Command="{StaticResource SelectNone}"
+            s:View.ActionTarget="{Binding MainPageViewModel}"
+            Command="{s:Action SelectNone}"
             Modifiers="Ctrl" />
         <KeyBinding
             Key="I"
-            Command="{StaticResource SelectInvert}"
+            s:View.ActionTarget="{Binding MainPageViewModel}"
+            Command="{s:Action SelectInvert}"
             Modifiers="Ctrl" />
         <KeyBinding
             Key="C"
-            Command="{StaticResource CopyPicture}"
+            s:View.ActionTarget="{Binding MainPageViewModel}"
+            Command="{s:Action CopyPicture}"
             Modifiers="Ctrl" />
-        <KeyBinding Key="Delete" Command="{StaticResource DeletPicture}" />
+        <KeyBinding
+            Key="Delete"
+            s:View.ActionTarget="{Binding MainPageViewModel}"
+            Command="{s:Action DeletPicture}" />
     </hc:Window.InputBindings>
-    <hc:Window.CommandBindings>
-        <CommandBinding Command="{StaticResource AddPictures}" Executed="{s:Action AddPictures}" />
-        <CommandBinding Command="{StaticResource SelectAll}" Executed="{s:Action SelectAll}" />
-        <CommandBinding Command="{StaticResource SelectNone}" Executed="{s:Action SelectNone}" />
-        <CommandBinding Command="{StaticResource SelectInvert}" Executed="{s:Action SelectInvert}" />
-        <CommandBinding Command="{StaticResource CopyPicture}" Executed="{s:Action CopyPicture}" />
-        <CommandBinding Command="{StaticResource DeletPicture}" Executed="{s:Action DeletePicture}" />
-    </hc:Window.CommandBindings>
     <hc:Window.NonClientAreaContent>
-        <Grid MouseDown="Grid_MouseDown">
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Menu HorizontalAlignment="Left">
-                <MenuItem Header="文件">
-                    <MenuItem Command="{StaticResource AddPictures}" InputGestureText="Ctrl+O" />
-                    <Separator />
-                    <MenuItem Header="退出" />
+                <MenuItem Header="图片">
+                    <MenuItem
+                        Command="{s:Action AddPictures}"
+                        Header="添加图片"
+                        InputGestureText="Ctrl+O" />
+                    <MenuItem
+                        Command="{s:Action ScreenShot}"
+                        Header="截图"
+                        InputGestureText="Ctrl+Alt+Shift+X" />
                 </MenuItem>
                 <MenuItem Header="选择">
-                    <MenuItem Command="{StaticResource SelectAll}" InputGestureText="Ctrl+A" />
-                    <MenuItem Command="{StaticResource SelectInvert}" InputGestureText="Ctrl+D" />
-                    <MenuItem Command="{StaticResource SelectNone}" InputGestureText="Ctrl+I" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action SelectAll}"
+                        Header="选择全部"
+                        InputGestureText="Ctrl+A" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action SelectNone}"
+                        Header="取消选择"
+                        InputGestureText="Ctrl+D" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action SelectInvert}"
+                        Header="反向选择"
+                        InputGestureText="Ctrl+I" />
+                    <Separator />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action OpenPictureCommand}"
+                        Header="贴片式打开" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action OpenPictureWithexternalProgram}"
+                        Header="使用外部程序打开" />
+                    <Separator />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action CopyPicture}"
+                        Header="拷贝图片"
+                        InputGestureText="Ctrl+C" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action CopyPicturePath}"
+                        Header="拷贝图片路径" />
+                    <Separator />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action AddPictureLabel}"
+                        Header="添加标签" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action DeletePicture}"
+                        Header="删除图片"
+                        InputGestureText="Delete" />
                 </MenuItem>
-                <MenuItem Header="关于" />
+                <!--<MenuItem Header="关于" />-->
             </Menu>
             <hc:SearchBar
                 Name="SearchLabelBar"
