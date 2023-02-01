@@ -28,6 +28,7 @@ namespace ImageManager.Data
         public string StorePath { get; set; } = "SD";
         public string ImageFolderPath => Path.Join(StorePath, "IMG");
         public string TempFolderPath => Path.Join(StorePath, "TMP");
+        public int ThumbnailWidth { get; set; } = 600;
         /// <summary>
         /// 卡片宽度
         /// </summary>
@@ -39,6 +40,8 @@ namespace ImageManager.Data
         public bool IsDesc { get; set; } = false;
         public bool IsGroup { get; set; } = false;
 
+        public List<String> WaitToDeleteFiles { get; set; }
+
         private static UserSettingData _default;
         public static UserSettingData Default => _default ??= Load();
         private System.Timers.Timer _saveUserSettingTimer;
@@ -49,6 +52,11 @@ namespace ImageManager.Data
                 AutoReset = false
             };
             _saveUserSettingTimer.Elapsed += (s, e) => Save();
+            // 创建目录
+            if (!Directory.Exists(ImageFolderPath))
+                Directory.CreateDirectory(ImageFolderPath);
+            if (!Directory.Exists(TempFolderPath))
+                Directory.CreateDirectory(TempFolderPath);
         }
 
         /// <summary>

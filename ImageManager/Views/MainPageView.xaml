@@ -37,7 +37,7 @@
                                         Text="  ">
                                         <hc:SimplePanel>
                                             <Border CornerRadius="4,4,0,0">
-                                                <Image Source="{Binding Item.ImageSource}" Stretch="UniformToFill" />
+                                                <Image Source="{Binding Item.ImageSource, Mode=OneTime}" Stretch="UniformToFill" />
                                             </Border>
                                             <CheckBox
                                                 HorizontalAlignment="Left"
@@ -356,7 +356,7 @@
                     Width="100"
                     HorizontalAlignment="Right"
                     Maximum="{Binding MaxCardWidth, Mode=OneWay}"
-                    Minimum="10"
+                    Minimum="40"
                     Orientation="Horizontal"
                     Value="{Binding CardWidth}" />
             </Grid>

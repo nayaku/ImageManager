@@ -22,7 +22,7 @@ namespace ImageManager.ViewModels
     public class MainPageViewModel : PropertyChangedBase, IInjectionAware
     {
         private readonly object _fatherViewModel;
-        
+
         [Inject]
         public IWindowManager WindowManager;
         [Inject]
@@ -229,7 +229,15 @@ namespace ImageManager.ViewModels
                 Context.Pictures.RemoveRange(deletePictures.Select(p => p.Item));
                 Context.SaveChanges();
                 Pictures.RemoveRange(deletePictures);
-                deletePictures.ForEach(p => p.Item.DeleteFile());
+                var deleteFiles = new List<string>();
+                deletePictures.ForEach(p =>
+                {
+                    deleteFiles.Add(Path.Join(p.Item.ImageFolderPath, p.Item.Path));
+                    if (p.Item.ThumbnailPath != null)
+                        deleteFiles.Add(Path.Join(p.Item.ImageFolderPath, p.Item.ThumbnailPath));
+                });
+                UserSetting.WaitToDeleteFiles = deleteFiles;
+                UserSetting.Save();
             }
         }
 

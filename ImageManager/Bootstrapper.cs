@@ -3,6 +3,7 @@ using ImageManager.ViewModels;
 using Stylet;
 using StyletIoC;
 using System;
+using System.IO;
 
 namespace ImageManager
 {
@@ -10,10 +11,27 @@ namespace ImageManager
     {
         protected override void ConfigureIoC(IStyletIoCBuilder builder)
         {
-            builder.Bind<UserSettingData>().ToInstance(UserSettingData.Default);
+            var userSettingData = UserSettingData.Default;
+            builder.Bind<UserSettingData>().ToInstance(userSettingData);
             // create Database context
             builder.Bind<ImageContext>().ToSelf().InSingletonScope();
 
+            // 清理文件
+            Task.Run(() =>
+            {
+                foreach (var file in userSettingData.WaitToDeleteFiles)
+                {
+                    if (File.Exists(file))
+                        File.Delete(file);
+                }
+                userSettingData.WaitToDeleteFiles = null;
+                userSettingData.Save();
+                foreach (var file in Directory.GetFiles(userSettingData.TempFolderPath))
+                {
+                    if (File.Exists(file))
+                        File.Delete(file);
+                }
+            });
         }
     }
 }

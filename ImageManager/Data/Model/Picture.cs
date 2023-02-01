@@ -80,34 +80,35 @@ namespace ImageManager.Data.Model
             if (setDefaultPath)
                 SetDefaultImageFolderPath();
         }
-        public Bitmap Bitmap
+        //public Bitmap Bitmap
+        //{
+        //    get
+        //    {
+        //        var fileName = ThumbnailPath ?? Path;
+        //        var filePath = System.IO.Path.Join(ImageFolderPath, fileName);
+        //        var fif = FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN;
+        //        return FreeImageAPI.FreeImage.LoadBitmap(filePath, FreeImageAPI.FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref fif);
+        //    }
+        //}
+        public BitmapImage ImageSource
         {
             get
             {
                 var fileName = ThumbnailPath ?? Path;
                 var filePath = System.IO.Path.Join(ImageFolderPath, fileName);
-                var fif = FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN;
-                return FreeImageAPI.FreeImage.LoadBitmap(filePath, FreeImageAPI.FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref fif);
-            }
-        }
-        public BitmapImage ImageSource
-        {
-            get
-            {
-                using var bitmap = Bitmap;
-                return ImageUtility.BitmapToImageSource(bitmap);
-            }
-        }
-        public void DeleteFile()
-        {
-            var filePath = System.IO.Path.Join(ImageFolderPath, Path);
-            if (File.Exists(filePath))
-                File.Delete(filePath);
-            if (ThumbnailPath != null)
-            {
-                filePath = System.IO.Path.Join(ImageFolderPath, ThumbnailPath);
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
+                //var bi = new BitmapImage();
+                //bi.BeginInit();
+                //bi.CacheOption = BitmapCacheOption.OnLoad;
+                //using (Stream ms = new MemoryStream(File.ReadAllBytes(filePath)))
+                //{
+                //    bi.StreamSource = ms;
+                //    bi.EndInit();
+                //    bi.Freeze();
+                //}
+                //return bi;
+                return new BitmapImage(new Uri(filePath));
+                //using var bitmap = Bitmap;
+                //return ImageUtility.BitmapToImageSource(bitmap);
             }
         }
         public void CopyTo(string folderPath)
