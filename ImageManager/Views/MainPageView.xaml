@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dataModels="clr-namespace:ImageManager.Data.Model"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
@@ -18,11 +19,89 @@
                 <hc:Theme />
                 <ResourceDictionary>
                     <Style
+                        x:Key="PictureCard"
+                        BasedOn="{StaticResource CardBaseStyle}"
+                        TargetType="hc:Card">
+                        <Setter Property="Margin" Value="0,8" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Effect" Value="{StaticResource EffectShadow2}" />
+                        <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate DataType="viewModels:PictureSelectableItemWrapper">
+                                    <!--  卡片主体部分  -->
+                                    <hc:Badge
+                                        ShowBadge="{Binding IsConflict}"
+                                        Status="Text"
+                                        Style="{StaticResource BadgeDanger}"
+                                        Text="  ">
+                                        <hc:SimplePanel>
+                                            <Border CornerRadius="4,4,0,0">
+                                                <Image Source="{Binding Item.ImageSource}" Stretch="UniformToFill" />
+                                            </Border>
+                                            <CheckBox
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                IsChecked="{Binding AcceptToAdd}"
+                                                IsEnabled="{Binding IsEnabled}"
+                                                Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                                        </hc:SimplePanel>
+                                    </hc:Badge>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="FooterTemplate">
+                            <Setter.Value>
+                                <DataTemplate DataType="viewModels:PictureSelectableItemWrapper">
+                                    <!--  Card 脚部  -->
+                                    <StackPanel Margin="0,10,0,4" Visibility="{Binding Item.HasTitleOrLabel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Style="{StaticResource TextBlockTitleBold}"
+                                            Text="{Binding Item.Title}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <hc:TagContainer
+                                            Margin="5,5,5,0"
+                                            BorderThickness="0"
+                                            ItemsSource="{Binding Item.Labels}"
+                                            Visibility="{Binding Item.Labels, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                            <hc:TagContainer.ItemTemplate>
+                                                <DataTemplate DataType="dataModels:Label">
+                                                    <Button
+                                                        Margin="0"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Command="{s:Action PictureLabelClick}"
+                                                        CommandParameter="{Binding}"
+                                                        Content="{Binding Name}" />
+                                                </DataTemplate>
+                                            </hc:TagContainer.ItemTemplate>
+                                            <hc:TagContainer.ItemContainerStyle>
+                                                <Style BasedOn="{StaticResource TagBaseStyle}" TargetType="hc:Tag">
+                                                    <Setter Property="Content" Value="{Binding}" />
+                                                    <Setter Property="Margin" Value="5" />
+                                                </Style>
+                                            </hc:TagContainer.ItemContainerStyle>
+                                        </hc:TagContainer>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextIconBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style
                         x:Key="PictureListBox"
                         BasedOn="{StaticResource WrapPanelHorizontalListBox}"
                         TargetType="ListBox">
-                        <!--<Setter Property="HorizontalAlignment" Value="Center" />-->
-                        <!--<Setter Property="VerticalAlignment" Value="Center" />-->
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="SelectionMode" Value="Extended" />
                         <Setter Property="Margin" Value="0" />
@@ -39,88 +118,55 @@
                         </Setter>
                         <Setter Property="ItemTemplate">
                             <Setter.Value>
-                                <DataTemplate>
-                                    <hc:Card
-                                        Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                                        Margin="0,8"
-                                        BorderThickness="0"
-                                        Effect="{StaticResource EffectShadow2}">
-                                        <!--  卡片主体部分  -->
-                                        <Border CornerRadius="4,4,0,0">
-                                            <Image Source="{Binding Item.ImageSource}" Stretch="UniformToFill" />
-                                        </Border>
-                                        <!--  Card 脚部  -->
-                                        <hc:Card.Footer>
-                                            <Grid>
-                                                <StackPanel Margin="0,10,0,4" Visibility="{Binding Item.HasTitleOrLabel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
-                                                    <TextBlock
-                                                        HorizontalAlignment="Center"
-                                                        Style="{StaticResource TextBlockTitleBold}"
-                                                        Text="{Binding Item.Title}"
-                                                        TextTrimming="CharacterEllipsis"
-                                                        Visibility="{Binding Item.Title, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-                                                    <hc:TagContainer
-                                                        Margin="5,5,5,0"
-                                                        BorderThickness="0"
-                                                        ItemsSource="{Binding Item.Labels}"
-                                                        Visibility="{Binding Item.Labels, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
-                                                        <hc:TagContainer.ItemTemplate>
-                                                            <DataTemplate DataType="Label">
-                                                                <Grid>
-                                                                    <Button
-                                                                        Margin="0"
-                                                                        Padding="0"
-                                                                        Background="Transparent"
-                                                                        BorderThickness="0"
-                                                                        Command="{s:Action PictureLabelClick}"
-                                                                        CommandParameter="{Binding}"
-                                                                        Content="{Binding Name}" />
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </hc:TagContainer.ItemTemplate>
-                                                        <hc:TagContainer.ItemContainerStyle>
-                                                            <Style BasedOn="{StaticResource TagBaseStyle}" TargetType="hc:Tag">
-                                                                <Setter Property="Content" Value="{Binding}" />
-                                                                <Setter Property="Margin" Value="5" />
-                                                            </Style>
-                                                        </hc:TagContainer.ItemContainerStyle>
-                                                    </hc:TagContainer>
-                                                </StackPanel>
-                                            </Grid>
-                                        </hc:Card.Footer>
-                                        <hc:Card.Style>
-                                            <Style BasedOn="{StaticResource CardBaseStyle}" TargetType="hc:Card">
-                                                <Setter Property="Background" Value="{DynamicResource RegionBrush}" />
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource SecondaryRegionBrush}" />
-                                                    </Trigger>
-                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
-                                                        <Setter Property="Foreground" Value="{DynamicResource TextIconBrush}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </hc:Card.Style>
-                                        <hc:Card.ContextMenu>
-                                            <ContextMenu>
-                                                <MenuItem Command="{s:Action OpenPicture}" Header="贴片式打开" />
-                                                <MenuItem Command="{s:Action OpenPictureWithexternalProgram}" Header="使用外部程序打开" />
-                                                <Separator />
-                                                <MenuItem
-                                                    Command="{s:Action CopyPicture}"
-                                                    Header="拷贝图片"
-                                                    InputGestureText="Ctrl+C" />
-                                                <MenuItem Command="{s:Action CopyPicturePath}" Header="拷贝图片路径" />
-                                                <Separator />
-                                                <MenuItem Command="{s:Action AddPictureLabel}" Header="添加标签" />
-                                                <MenuItem
-                                                    Command="{s:Action DeletePicture}"
-                                                    Header="删除图片"
-                                                    InputGestureText="Delete" />
-                                            </ContextMenu>
-                                        </hc:Card.ContextMenu>
-                                    </hc:Card>
+                                <DataTemplate DataType="viewModels:PictureSelectableItemWrapper">
+                                    <hc:SimplePanel>
+                                        <hc:Card
+                                            Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            Content="{Binding}"
+                                            Footer="{Binding}"
+                                            Style="{StaticResource PictureCard}"
+                                            Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
+                                            <hc:Card.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Command="{s:Action OpenPicture}" Header="贴片式打开" />
+                                                    <MenuItem Command="{s:Action OpenPictureWithexternalProgram}" Header="使用外部程序打开" />
+                                                    <Separator />
+                                                    <MenuItem
+                                                        Command="{s:Action CopyPicture}"
+                                                        Header="拷贝图片"
+                                                        InputGestureText="Ctrl+C" />
+                                                    <MenuItem Command="{s:Action CopyPicturePath}" Header="拷贝图片路径" />
+                                                    <Separator />
+                                                    <MenuItem Command="{s:Action AddPictureLabel}" Header="添加标签" />
+                                                    <MenuItem
+                                                        Command="{s:Action DeletePicture}"
+                                                        Header="删除图片"
+                                                        InputGestureText="Delete" />
+                                                </ContextMenu>
+                                            </hc:Card.ContextMenu>
+                                        </hc:Card>
+                                        <hc:Card
+                                            Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                            Content="{Binding}"
+                                            Footer="{Binding}"
+                                            Style="{StaticResource PictureCard}"
+                                            Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay}">
+                                            <hc:Card.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Command="{s:Action AddPictureLabel}" Header="添加标签" />
+                                                    <Separator />
+                                                    <MenuItem
+                                                        Command="{s:Action AcceptToAdd}"
+                                                        CommandParameter="True"
+                                                        Header="接受添加" />
+                                                    <MenuItem
+                                                        Command="{s:Action AcceptToAdd}"
+                                                        CommandParameter="False"
+                                                        Header="拒绝添加" />
+                                                </ContextMenu>
+                                            </hc:Card.ContextMenu>
+                                        </hc:Card>
+                                    </hc:SimplePanel>
                                 </DataTemplate>
                             </Setter.Value>
                         </Setter>
@@ -132,9 +178,6 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                    <RoutedUICommand x:Key="SelectAll" Text="选择全部" />
-                    <RoutedUICommand x:Key="SelectNone" Text="取消选择" />
-                    <RoutedUICommand x:Key="SelectInvert" Text="反向选择" />
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -163,7 +206,6 @@
             x:Name="MainCanva"
             Grid.Row="1"
             Margin="0,0,3,0"
-            Background="Transparent"
             MouseLeftButtonDown="MainCanva_MouseButtonDown"
             SizeChanged="{s:Action SizeChanged}">
             <ListBox
@@ -178,11 +220,9 @@
                 Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
                 Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
                 Margin="0"
-                HorizontalScrollBarVisibility="Auto">
-                <ItemsControl
-                    hc:Tag.Closing="{s:Action DeletePictureLabel}"
-                    ItemsSource="{Binding PictureGroups}"
-                    Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                HorizontalScrollBarVisibility="Auto"
+                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                <ItemsControl hc:Tag.Closing="{s:Action DeletePictureLabel}" ItemsSource="{Binding PictureGroups}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Vertical" />
@@ -194,8 +234,8 @@
                                 Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
                                 Background="{DynamicResource DefaultBrush}"
                                 BorderThickness="1"
-                                Style="{DynamicResource ExpanderBaseStyle}"
-                                IsExpanded="True">
+                                IsExpanded="True"
+                                Style="{DynamicResource ExpanderBaseStyle}">
                                 <Expander.Header>
                                     <TextBlock
                                         Margin="4,0,0,0"
@@ -236,6 +276,19 @@
                                 VerticalAlignment="Center"
                                 Text="●"
                                 Visibility="{Binding IsOrderByTitle, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem
+                        Command="{s:Action UpdateOrderBy}"
+                        CommandParameter="AddState"
+                        Header="按添加状态排序"
+                        Visibility="{Binding IsAddPictureMode, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                        <MenuItem.Icon>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="●"
+                                Visibility="{Binding IsOrderByAddingState, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />

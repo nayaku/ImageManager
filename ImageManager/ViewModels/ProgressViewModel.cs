@@ -3,16 +3,18 @@ using ImageManager.Data.Model;
 using ImageManager.Tools;
 using Stylet;
 using StyletIoC;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace ImageManager.ViewModels
 {
-    public class ProgressViewModel : Screen
+    public class ProgressViewModel : Screen, IInjectionAware
     {
         [Inject]
         public UserSettingData UserSettingData { get; set; }
+        [Inject]
+        public IWindowManager WindowManager { get; set; }
+        [Inject]
+        public IContainer Container { get; set; }
         [Inject]
         public ImageContext Context { get; set; }
 
@@ -26,14 +28,12 @@ namespace ImageManager.ViewModels
         private CancellationTokenSource _cancellationTokenSource = new();
         private List<string> _dirFiles;
         private bool _canClose = true;
+        private EventHandler<int> _successEvent;
 
-        public ProgressViewModel(List<string> dirFiles)
+        public ProgressViewModel(List<string> dirFiles,EventHandler<int> successEvent)
         {
-            if (!Directory.Exists(UserSettingData.ImageFolderPath))
-                Directory.CreateDirectory(UserSettingData.ImageFolderPath);
-            if (!Directory.Exists(UserSettingData.TempFolderPath))
-                Directory.CreateDirectory(UserSettingData.TempFolderPath);
             _dirFiles = dirFiles;
+            _successEvent = successEvent;
         }
 
         public override Task<bool> CanCloseAsync()
@@ -60,27 +60,20 @@ namespace ImageManager.ViewModels
             var preProgress = Progress;
             foreach (var picture in Pictures)
             {
-                if (picture.Path != null)
-                {
-                    var path = Path.Join(UserSettingData.TempFolderPath, picture.Path);
-                    Message = $"删除文件{path}";
-                    File.Delete(path);
-                }
-                if (picture.ThumbnailPath != null)
-                {
-                    var path = Path.Join(UserSettingData.TempFolderPath, picture.ThumbnailPath);
-                    Message = $"删除文件{path}";
-                    File.Delete(path);
-                }
+                Message = $"删除文件{picture.Path}";
+                picture.DeleteFile();
                 Progress -= 1.0 / Pictures.Count * preProgress * 100;
             }
         }
         public async void DoTask()
         {
+            // 先遍历一遍，把文件都找出来
+            // 然后遍历文件，找出受支持格式的图片
+            _canClose = false;
             var result = await Task.Run(() =>
             {
-                _canClose = false;
                 Message = "正在准备处理...";
+                // 找出文件
                 foreach (var dirFile in _dirFiles)
                 {
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
@@ -88,11 +81,13 @@ namespace ImageManager.ViewModels
                     Walk(dirFile);
                 }
                 Progress = 20;
+
+                // 遍历文件
                 foreach (var file in Files)
                 {
                     if (_cancellationTokenSource.Token.IsCancellationRequested)
                         return false;
-                    Message = "正在处理{file}...";
+                    Message = $"正在处理{file}...";
                     ProcessFile(file);
                     Progress += 1.0 / Files.Count * 80;
                 }
@@ -107,31 +102,42 @@ namespace ImageManager.ViewModels
             }
             // 准备返回
             _canClose = true;
-            RequestClose(result);
+            RequestClose();
+            if(result)
+            {
+                // 准备完成，等待用户选择需要添加的图片
+                var addImageViewModel = new AddImageViewModel(Files,Pictures,_successEvent);
+                Container.BuildUp(addImageViewModel);
+                addImageViewModel.ParametersInjected();
+                WindowManager.ShowWindow(addImageViewModel);
+            }
         }
 
         private void Walk(string path)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
                 return;
+            // 文件
             if (File.Exists(path))
                 Files.Add(path);
-            Progress = Math.Min(Progress + 0.5, 20);
-            Message = $"正在遍历文件夹{path}...";
-            var directories = Directory.GetDirectories(path);
-            foreach (var directory in directories)
+            else
             {
-                Walk(directory);
+                Progress = Math.Min(Progress + 0.5, 20);
+                Message = $"正在遍历文件夹{path}...";
+                var directories = Directory.GetDirectories(path);
+                foreach (var directory in directories)
+                {
+                    Walk(directory);
+                }
+                var files = Directory.GetFiles(path);
+                Files.AddRange(files);
             }
-            var files = Directory.GetFiles(path);
-            Files.AddRange(files);
         }
 
         private void ProcessFile(string file)
         {
-
             var FileStream = File.OpenRead(file);
-            var reader = new BufferedStream(FileStream, 4 * 1024 * 1024);
+            var reader = new BufferedStream(FileStream, 16 * 1024 * 1024); //16MB
 
             // 判断是否为可读格式
             var fif = FreeImageAPI.FreeImage.GetFileTypeFromStream(reader);
@@ -157,6 +163,7 @@ namespace ImageManager.ViewModels
             FreeImageAPI.FreeImage.Unload(fibitmap);
 
             // 相同图片判断
+            reader.Seek(0, SeekOrigin.Begin);
             var md5 = ImageComparer.GetMD5Hash(reader);
             var samePictures = new List<Picture>();
             var samePicture = Context.Pictures.Where(p => p.Hash == md5).SingleOrDefault();
@@ -197,20 +204,46 @@ namespace ImageManager.ViewModels
                 thumb.Save(Path.Join(UserSettingData.TempFolderPath, thumbFileName));
             }
 
+            // 判断是否接受
+            var accept = false;
+            if (samePictures.Count != 0)
+                accept = false;
+            else if (similarPictures.Count != 0)
+                accept = similarPictures.All(p => width * height > p.Width * p.Height);
+            else
+                accept = true;
+
+
             // 生成Picture数据
-            var picture = new Picture
+            var dirPath = UserSettingData.Default.TempFolderPath;
+            if (!Path.IsPathRooted(dirPath))
+                dirPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, dirPath);
+            var picture = new Picture(false)
             {
                 Title = Path.GetFileNameWithoutExtension(file),
-                Path = saveFileName,
+                Path = saveFileName + Path.GetExtension(file),
                 ThumbnailPath = thumbFileName,
                 Width = width,
                 Height = height,
-                Type = PictureType.LocalPicture,
                 Hash = md5,
                 WeakHash = phash,
                 SamePicture = samePictures,
                 SimilarPictures = similarPictures,
+                ImageFolderPath = dirPath,
+                AcceptToAdd = accept,
             };
+            Pictures.Add(picture);
+            // TODO 模拟耗时，需要删除
+            Task.Delay(500).Wait();
+        }
+
+        public void ParametersInjected()
+        {
+            // 创建目录
+            if (!Directory.Exists(UserSettingData.ImageFolderPath))
+                Directory.CreateDirectory(UserSettingData.ImageFolderPath);
+            if (!Directory.Exists(UserSettingData.TempFolderPath))
+                Directory.CreateDirectory(UserSettingData.TempFolderPath);
         }
     }
 }

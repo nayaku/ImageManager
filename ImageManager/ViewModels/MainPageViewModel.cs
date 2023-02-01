@@ -15,29 +15,36 @@ using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static ImageManager.Data.UserSettingData;
+using System.Runtime.CompilerServices;
 
 namespace ImageManager.ViewModels
 {
     public class MainPageViewModel : PropertyChangedBase, IInjectionAware
     {
+        private readonly object _fatherViewModel;
+        
+        [Inject]
+        public IWindowManager WindowManager;
+        [Inject]
+        public IContainer Container;
         [Inject]
         public UserSettingData UserSetting { get; set; }
         [Inject]
         public ImageContext Context { get; set; }
-        private RootViewModel _rootViewModel;
-        private IWindowManager _windowManager;
-        private IContainer _container;
 
+
+        public bool IsAddPictureMode => _fatherViewModel is AddImageViewModel;
         public string Message { get; set; }
-        public BindableCollection<SelectableItemWrapper<Picture>> Pictures { get; set; }
-        public IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
+        public BindableCollection<PictureSelectableItemWrapper> Pictures { get; set; }
+
         public bool IsDesc { get => UserSetting.IsDesc; set => UserSetting.IsDesc = value; }
         public OrderByEnum OrderBy { get => UserSetting.OrderBy; set => UserSetting.OrderBy = value; }
         public bool IsOrderByAddTime => OrderBy == OrderByEnum.AddTime;
         public bool IsOrderByTitle => OrderBy == OrderByEnum.Title;
-        public string SearchText => _rootViewModel.SearchText;
+        public bool IsOrderByAddingState => OrderBy == OrderByEnum.AddState;
+
         public bool IsGroup { get => UserSetting.IsGroup; set => UserSetting.IsGroup = value; }
-        public List<IGrouping<string, SelectableItemWrapper<Picture>>>? PictureGroups
+        public List<IGrouping<string, PictureSelectableItemWrapper>>? PictureGroups
         {
             get
             {
@@ -47,6 +54,13 @@ namespace ImageManager.ViewModels
                     {
                         OrderByEnum.AddTime => Pictures.GroupBy(p => p.Item.AddTime.ToString("yyyy-MM")).ToList(),
                         OrderByEnum.Title => Pictures.GroupBy(p => (p.Item.Title ?? "")[0].ToString()).ToList(),
+                        OrderByEnum.AddState => Pictures.GroupBy(p => p.Item.AddState switch
+                        {
+                            PictureAddStateEnum.WaitToAdd => "待添加",
+                            PictureAddStateEnum.SameConflict => "相同冲突",
+                            PictureAddStateEnum.SimilarConflict => "相似冲突",
+                            _ => "未知状态"
+                        }).ToList(),
                         _ => null,
                     };
                 }
@@ -56,25 +70,20 @@ namespace ImageManager.ViewModels
                 }
             }
         }
+
         public double CardWidth
         {
-            get => UserSetting?.CardWidth ?? 240;
-            set
-            {
-                UserSetting.CardWidth = value;
-            }
+            get => UserSetting.CardWidth;
+            set { UserSetting.CardWidth = value; }
         }
         public double MaxCardWidth { get; set; }
-        //public int WaterfallGroupNum => Math.Max(Math.Min(Pictures.Count, (int)(MaxCardWidth / CardWidth)), 1);
-        public BindableCollection<Label> FilterLabels { get; set; } = new();
 
+        public BindableCollection<Label> FilterLabels { get; set; } = new();
         public bool ShowFilterLabelPanel { get; set; }
 
-        public MainPageViewModel(RootViewModel rootViewModel, IWindowManager windowManager, IContainer container)
+        public MainPageViewModel(object fatherViewModel)
         {
-            _rootViewModel = rootViewModel;
-            _windowManager = windowManager;
-            _container = container;
+            _fatherViewModel = fatherViewModel;
 
             // 筛选标签更变
             FilterLabels.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) =>
@@ -86,17 +95,23 @@ namespace ImageManager.ViewModels
 
         public void UpdatePicture()
         {
-            var query = Context.Pictures.AsQueryable();
-            if (SearchText != null)
-                query = query.Where(p => EF.Functions.Like(p.Title, "%" + SearchText + "%"));
+
+            IQueryable<Picture> query;
+            if (_fatherViewModel is AddImageViewModel addImageViewModel)
+                query = addImageViewModel.Pictures.AsQueryable();
+            else
+                query = Context.Pictures.AsQueryable();
+
+            if (_fatherViewModel is RootViewModel rootViewModel && rootViewModel.SearchText != null)
+                query = query.Where(p => EF.Functions.Like(p.Title, "%" + rootViewModel.SearchText + "%"));
             if (FilterLabels.Count != 0)
                 query = query.Where(p => p.Labels.Count(l => FilterLabels.Contains(l)) == FilterLabels.Count);
             var orderBy = Enum.GetName(OrderBy);
             if (IsDesc)
                 orderBy += " desc";
             query = query.OrderBy(orderBy);
-            var resPictures = query.Select(p => new SelectableItemWrapper<Picture>(p));
-            Pictures = new BindableCollection<SelectableItemWrapper<Picture>>(resPictures);
+            var resPictures = query.Select(p => new PictureSelectableItemWrapper(p));
+            Pictures = new BindableCollection<PictureSelectableItemWrapper>(resPictures);
             Message = string.Format("{0:N0}张图片", Pictures.Count);
         }
 
@@ -109,19 +124,19 @@ namespace ImageManager.ViewModels
         {
             var label = (Label)((FrameworkElement)e.OriginalSource).DataContext;
             var parent = (FrameworkElement)VisualTreeHelper.GetParent((DependencyObject)e.OriginalSource);
-            var picture = (SelectableItemWrapper<Picture>)(parent).DataContext;
+            var picture = (PictureSelectableItemWrapper)(parent).DataContext;
 
             picture.Item.Labels.Remove(label);
-            Context.SaveChanges();
+            if (!IsAddPictureMode)
+                Context.SaveChanges();
         }
 
         public void PictureSelectionChange()
         {
             var selectNum = Pictures.Count(p => p.IsSelected);
+            Message = string.Format("{0:N0}张图片", Pictures.Count);
             if (selectNum > 0)
-                Message = string.Format("{0:N0}张图片\t选中{1:N0}个项目", Pictures.Count, selectNum);
-            else
-                Message = string.Format("{0:N0}张图片", Pictures.Count);
+                Message += string.Format("\t选中{0:N0}个项目", selectNum);
         }
 
         public void SizeChanged(object sender, SizeChangedEventArgs e)
@@ -139,11 +154,12 @@ namespace ImageManager.ViewModels
             // TODO 使用贴片打开
             throw new NotImplementedException();
         }
+        private IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
         public void OpenPictureWithexternalProgram()
         {
             SelectedPictures.ForEach(picture =>
             {
-                var path = Path.Join(Picture.ImageFolderPath, picture.Path);
+                var path = Path.Join(picture.ImageFolderPath, picture.Path);
                 var p = new Process
                 {
                     StartInfo = new ProcessStartInfo(path)
@@ -157,25 +173,21 @@ namespace ImageManager.ViewModels
         }
         public void CopyPicture()
         {
-            //var pictures = Pictures.Where(p => p.IsSelected).Select(p => p.Item).ToList();
             var body = string.Join("<br>", SelectedPictures.Select(picture =>
-               $"<img src='{Path.Join(Picture.ImageFolderPath, picture.Path)}'>"
+               $"<img src='{Path.Join(picture.ImageFolderPath, picture.Path)}'>"
             ));
 
             var html = ClipboardHelper.GetHtml(body);
-            Debug.WriteLine(html);
             var dataObject = new DataObject();
             dataObject.SetData(DataFormats.Html, html);
             Clipboard.SetDataObject(dataObject);
-            //}
-
         }
         public void CopyPicturePath()
         {
             var paths = new List<string>();
             SelectedPictures.ForEach(picture =>
             {
-                var path = Path.Join(Picture.ImageFolderPath, picture.Path);
+                var path = Path.Join(picture.ImageFolderPath, picture.Path);
                 paths.Add(path);
             });
             Clipboard.SetDataObject(string.Join('\n', paths));
@@ -183,13 +195,11 @@ namespace ImageManager.ViewModels
         public void AddPictureLabel()
         {
             var pictureAddLabelViewModel = new PictureAddLabelViewModel();
-            _container.BuildUp(pictureAddLabelViewModel);
-            bool? res = _windowManager.ShowDialog(pictureAddLabelViewModel);
+            Container.BuildUp(pictureAddLabelViewModel);
+            bool? res = WindowManager.ShowDialog(pictureAddLabelViewModel);
             if (res ?? false)
             {
-                var labelName = pictureAddLabelViewModel.SearchText;
-                var label = Context.Labels.SingleOrDefault(l => l.Name == labelName)
-                    ?? new Label { Name = labelName };
+                var label = pictureAddLabelViewModel.ResultLabel;
 
                 SelectedPictures.ForEach(p =>
                 {
@@ -197,7 +207,8 @@ namespace ImageManager.ViewModels
                         p.Labels.Add(label);
                 });
                 Pictures.Refresh();
-                Context.SaveChanges();
+                if (!IsAddPictureMode)
+                    Context.SaveChanges();
             }
         }
         public void DeletePicture()
@@ -211,7 +222,7 @@ namespace ImageManager.ViewModels
                 ShowCancel = true,
                 ConfirmButtonStyle = "ButtonDanger"
             };
-            var res = _windowManager.ShowDialog(dialogViewModel);
+            var res = WindowManager.ShowDialog(dialogViewModel);
             if (res ?? false)
             {
                 var deletePictures = Pictures.Where(p => p.IsSelected).ToList();
@@ -246,6 +257,16 @@ namespace ImageManager.ViewModels
             var isGroup = Boolean.Parse(isGroupString);
             IsGroup = isGroup;
             UpdatePicture();
+        }
+
+        public void AcceptToAdd(string accptString)
+        {
+            var accpt = bool.Parse(accptString);
+            Pictures.Where(x => x.IsSelected).ForEach(p =>
+            {
+                if (p.IsEnabled)
+                    p.AcceptToAdd = accpt;
+            });
         }
         #endregion
 

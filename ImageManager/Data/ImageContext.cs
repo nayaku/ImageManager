@@ -1,12 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ImageManager.Data.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HandyControl.Tools.Extension;
-using System.Diagnostics;
 
 namespace ImageManager.Data
 {
@@ -17,7 +11,6 @@ namespace ImageManager.Data
         }
         public DbSet<Picture> Pictures { get; set; }
         public DbSet<Label> Labels { get; set; }
-        public DbSet<Workspace> Workspaces { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -17,7 +17,7 @@
     ShowInTaskbar="False"
     WindowStyle="ToolWindow"
     mc:Ignorable="d">
-    <Grid >
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />

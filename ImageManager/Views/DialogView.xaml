@@ -19,17 +19,6 @@
     SizeToContent="Height"
     WindowStyle="ToolWindow"
     mc:Ignorable="d">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <hc:ThemeResources />
-                <hc:Theme />
-                <ResourceDictionary>
-                    <local:StyleConverter x:Key="StyleConverter" />
-                </ResourceDictionary>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -39,7 +28,10 @@
             Grid.Row="0"
             HorizontalAlignment="Stretch"
             Background="{StaticResource DefaultBrush}">
-            <TextBlock Margin="0,14" HorizontalAlignment="Center" Text="{Binding Message}" />
+            <TextBlock
+                Margin="0,14"
+                HorizontalAlignment="Center"
+                Text="{Binding Message}" />
         </Border>
 
         <StackPanel

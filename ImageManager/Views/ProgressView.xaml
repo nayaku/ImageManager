@@ -10,9 +10,9 @@
     xmlns:viewModels="clr-namespace:ImageManager.ViewModels"
     Title="{Binding Title}"
     Width="600"
-    Height="Auto"
+    Height="90"
     d:DataContext="{d:DesignInstance Type=viewModels:ProgressViewModel}"
-    Loaded="{Binding DoTask}"
+    Loaded="{s:Action DoTask}"
     ResizeMode="NoResize"
     ShowNonClientArea="False"
     WindowStyle="None"
@@ -23,12 +23,17 @@
             Margin="1"
             HorizontalAlignment="Stretch"
             Value="{Binding Progress}" />
-        <TextBlock Margin="4,2" Text="{Binding Message}" />
+        <TextBlock
+            Margin="4,8,4,2"
+            HorizontalAlignment="Left"
+            FontSize="10"
+            SizeChanged="TextBlock_SizeChanged"
+            Text="{Binding Message, Mode=OneWay}" />
         <Button
             Width="100"
             Margin="4,8,4,4"
             hc:BorderElement.CornerRadius="1"
-            Command="{Binding CancelCommand}"
+            Command="{s:Action CancelTask}"
             Content="取     消"
             Style="{StaticResource ButtonDanger.Small}" />
     </StackPanel>
