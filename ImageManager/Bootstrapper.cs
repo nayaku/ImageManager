@@ -20,12 +20,15 @@ namespace ImageManager
             // 清理文件
             Task.Run(() =>
             {
-                foreach (var file in userSettingData.WaitToDeleteFiles)
+                if (userSettingData.WaitToDeleteFiles != null)
                 {
-                    if (File.Exists(file))
-                        File.Delete(file);
+                    foreach (var file in userSettingData.WaitToDeleteFiles)
+                    {
+                        if (File.Exists(file))
+                            File.Delete(file);
+                    }
+                    userSettingData.WaitToDeleteFiles = null;
                 }
-                userSettingData.WaitToDeleteFiles = null;
                 foreach (var file in Directory.GetFiles(userSettingData.TempFolderPath))
                 {
                     if (File.Exists(file))
