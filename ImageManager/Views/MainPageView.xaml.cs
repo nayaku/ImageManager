@@ -198,5 +198,6 @@ namespace ImageManager.Views
                 parent.RaiseEvent(eventArg);
             }
         }
+
     }
 }

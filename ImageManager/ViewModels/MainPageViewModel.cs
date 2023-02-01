@@ -16,6 +16,9 @@ using Path = System.IO.Path;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static ImageManager.Data.UserSettingData;
 using System.Runtime.CompilerServices;
+using ImageManager.Windows;
+using System.Windows.Input;
+using System.Windows.Controls;
 
 namespace ImageManager.ViewModels
 {
@@ -149,10 +152,20 @@ namespace ImageManager.ViewModels
         }
 
         #region 右键菜单栏
-        public void OpenPicture()
+        public void OpenPicture(object sender, MouseButtonEventArgs e)
         {
-            // TODO 使用贴片打开
-            throw new NotImplementedException();
+            var picture = ((PictureSelectableItemWrapper)((Image)sender).DataContext).Item;
+            var sticker = new StickerWindow(Path.Join(picture.ImageFolderPath, picture.Path));
+            sticker.Show();
+        }
+        public void OpenPictureCommand()
+        {
+            SelectedPictures.ForEach(picture =>
+            {
+                var path = Path.Join(picture.ImageFolderPath, picture.Path);
+                var sticker = new StickerWindow(path);
+                sticker.Show();
+            });
         }
         private IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
         public void OpenPictureWithexternalProgram()
@@ -237,7 +250,6 @@ namespace ImageManager.ViewModels
                         deleteFiles.Add(Path.Join(p.Item.ImageFolderPath, p.Item.ThumbnailPath));
                 });
                 UserSetting.WaitToDeleteFiles = deleteFiles;
-                UserSetting.Save();
             }
         }
 

@@ -3,6 +3,8 @@ using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
 using ImageManager.Data.Model;
+using ImageManager.Tools;
+using ImageManager.Windows;
 using Microsoft.EntityFrameworkCore;
 using SQLitePCL;
 using Stylet;
@@ -18,19 +20,18 @@ using Label = ImageManager.Data.Model.Label;
 
 namespace ImageManager.ViewModels
 {
-    public class RootViewModel : PropertyChangedBase, IInjectionAware
+    public class RootViewModel : Screen, IInjectionAware
     {
         [Inject]
         public UserSettingData UserSettingData { get; set; }
         [Inject]
         public ImageContext Context { get; set; }
-        [Inject]
-        public IViewManager ViewManager { get; set; }
         public bool ThemeConfigShow { get; set; } = false;
         public string SearchText { get; set; }
         public List<Label> SearchedLabels { get; set; }
         public MainPageViewModel MainPageViewModel { get; set; }
         public bool ShowLabelPopup { get; set; }
+        public WindowState WindowState { get; set; }
 
         private IWindowManager _windowManager;
         private IContainer _container;
@@ -40,6 +41,20 @@ namespace ImageManager.ViewModels
             _container = container;
             MainPageViewModel = new(this);
             container.BuildUp(MainPageViewModel);
+        }
+
+        public void Loaded()
+        {
+            var res = !HotKey.Regist((System.Windows.Window)View, HotKey.KeyModifiers.Ctrl | HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Alt, Key.X, () =>
+            {
+                ScreenShot();
+            });
+            // 注册失败
+            if (!res)
+            {
+                Growl.Error("注册截图热键失败");
+            }
+
         }
 
         public void UpdateSearchedLabels()
@@ -93,9 +108,9 @@ namespace ImageManager.ViewModels
         }
         public void WindowMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // 消除焦点
-            Keyboard.ClearFocus();
-            FocusManager.SetFocusedElement((DependencyObject)sender, (IInputElement)sender);
+            //// 消除焦点
+            //Keyboard.ClearFocus();
+            //FocusManager.SetFocusedElement((DependencyObject)sender, (IInputElement)sender);
         }
 
         #region 菜单栏
@@ -136,6 +151,19 @@ namespace ImageManager.ViewModels
             };
             Growl.Ask(growlInfo);
         }
+        public void ScreenShot()
+        {
+            var preWindowState = WindowState;
+            WindowState = WindowState.Minimized;
+            Execute.PostToUIThreadAsync(async () =>
+            {
+                await Task.Delay(100);
+                var screenShotWindow = new ScreenShotWindow();
+                screenShotWindow.Show();
+                await Task.Delay(100);
+                WindowState = preWindowState;
+            });
+        }
 
         public void SelectAll()
         {
@@ -156,10 +184,6 @@ namespace ImageManager.ViewModels
         public void DeletePicture()
         {
             MainPageViewModel.DeletePicture();
-        }
-        public void ScreenShot()
-        {
-            throw new NotImplementedException();
         }
         #endregion
 

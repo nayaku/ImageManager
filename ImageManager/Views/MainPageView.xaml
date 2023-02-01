@@ -37,7 +37,10 @@
                                         Text="  ">
                                         <hc:SimplePanel>
                                             <Border CornerRadius="4,4,0,0">
-                                                <Image Source="{Binding Item.ImageSource, Mode=OneTime}" Stretch="UniformToFill" />
+                                                <Image
+                                                    MouseLeftButtonDown="{s:Action OpenPicture}"
+                                                    Source="{Binding Item.ImageSource, Mode=OneTime}"
+                                                    Stretch="UniformToFill" />
                                             </Border>
                                             <CheckBox
                                                 HorizontalAlignment="Left"
@@ -128,7 +131,7 @@
                                             Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
                                             <hc:Card.ContextMenu>
                                                 <ContextMenu>
-                                                    <MenuItem Command="{s:Action OpenPicture}" Header="贴片式打开" />
+                                                    <MenuItem Command="{s:Action OpenPictureCommand}" Header="贴片式打开" />
                                                     <MenuItem Command="{s:Action OpenPictureWithexternalProgram}" Header="使用外部程序打开" />
                                                     <Separator />
                                                     <MenuItem

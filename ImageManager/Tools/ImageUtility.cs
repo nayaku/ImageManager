@@ -18,16 +18,17 @@ namespace ImageManager.Tools
         /// </summary>
         /// <param name="bitmap"></param>
         /// <returns></returns>
-        public static BitmapImage BitmapToImageSource(Bitmap bitmap)
+        public static BitmapImage BitmapToBitmapImage(Bitmap bitmap)
         {
             using var memory = new MemoryStream();
-            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Png);
+            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Tiff);
             memory.Position = 0;
             var bitmapImage = new BitmapImage();
             bitmapImage.BeginInit();
             bitmapImage.StreamSource = memory;
             bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
             bitmapImage.EndInit();
+            bitmapImage.Freeze();
 
             return bitmapImage;
         }

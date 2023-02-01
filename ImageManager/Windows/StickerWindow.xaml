@@ -1,0 +1,127 @@
+﻿<hc:Window
+    x:Class="ImageManager.Windows.StickerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="StickerWindow"
+    Width="400"
+    Height="400"
+    AllowsTransparency="True"
+    BorderThickness="0"
+    Closed="Window_Closed"
+    Loaded="Window_Loaded"
+    MouseDoubleClick="Window_MouseDoubleClick"
+    MouseDown="Window_MouseDown"
+    MouseWheel="Window_MouseWheel"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    ShowNonClientArea="False"
+    ShowTitle="False"
+    SizeToContent="WidthAndHeight"
+    Topmost="True"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <hc:Window.Resources>
+        <RoutedUICommand x:Key="Close" Text="关闭" />
+        <RoutedUICommand x:Key="Copy" Text="复制图像" />
+        <RoutedUICommand x:Key="ZoomOut" Text="缩小" />
+        <RoutedUICommand x:Key="ZoomIn" Text="放大" />
+        <RoutedUICommand x:Key="TransparencyReduce" Text="减少透明度" />
+        <RoutedUICommand x:Key="TransparencyIncrease" Text="增加透明度" />
+    </hc:Window.Resources>
+    <hc:Window.InputBindings>
+        <KeyBinding
+            Key="W"
+            Command="{StaticResource Close}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="C"
+            Command="{StaticResource Copy}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="OemOpenBrackets"
+            Command="{StaticResource ZoomOut}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="OemCloseBrackets"
+            Command="{StaticResource ZoomIn}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="Subtract"
+            Command="{StaticResource TransparencyReduce}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="Add"
+            Command="{StaticResource TransparencyIncrease}"
+            Modifiers="Ctrl" />
+    </hc:Window.InputBindings>
+    <hc:Window.CommandBindings>
+        <CommandBinding Command="{StaticResource Close}" Executed="Close_Click" />
+        <CommandBinding Command="{StaticResource Copy}" Executed="CopyImage_Click" />
+        <CommandBinding Command="{StaticResource ZoomOut}" Executed="ZoomOut_Click" />
+        <CommandBinding Command="{StaticResource ZoomIn}" Executed="ZoomIn_Click" />
+        <CommandBinding Command="{StaticResource TransparencyReduce}" Executed="TransparencyReduce_Click" />
+        <CommandBinding Command="{StaticResource TransparencyIncrease}" Executed="TransparencyIncrease_Click" />
+    </hc:Window.CommandBindings>
+    <StackPanel>
+        <StackPanel.ContextMenu>
+            <ContextMenu>
+                <MenuItem
+                    Click="Close_Click"
+                    Command=""
+                    Header="关闭"
+                    InputGestureText="Ctrl+W" />
+                <MenuItem Name="StickerList" Header="参考图列表" />
+                <Separator />
+                <MenuItem
+                    Click="CopyImage_Click"
+                    Header="复制图像"
+                    InputGestureText="Ctrl+C" />
+                <Separator />
+                <MenuItem
+                    Click="ZoomOut_Click"
+                    Header="缩小"
+                    InputGestureText="Ctrl+[" />
+                <MenuItem
+                    Click="ZoomIn_Click"
+                    Header="放大"
+                    InputGestureText="Ctrl+]" />
+                <MenuItem Header="缩放">
+                    <MenuItem
+                        Click="Zoom10_Click"
+                        Command=""
+                        Header="缩放为10%" />
+                    <MenuItem Click="Zoom50_Click" Header="缩放为50%" />
+                    <MenuItem Click="Zoom100_Click" Header="缩放为100%" />
+                    <MenuItem Click="Zoom200_Click" Header="缩放为200%" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="旋转">
+                    <MenuItem Click="Rotate90_Click" Header="顺时针旋转90度" />
+                    <MenuItem Click="Rotate90t_Click" Header="逆时针选择90度" />
+                </MenuItem>
+                <MenuItem Click="HorizontalFilp_Click" Header="水平翻转" />
+                <MenuItem Click="VerticalFilp_Click" Header="垂直翻转" />
+                <Separator />
+                <MenuItem Header="透明度">
+                    <MenuItem Click="Transparency10_Click" Header="透明度为10%" />
+                    <MenuItem Click="Transparency50_Click" Header="透明度为50%" />
+                    <MenuItem Click="Transparency100_Click" Header="透明度为100%" />
+                    <Separator />
+                    <MenuItem
+                        Click="TransparencyReduce_Click"
+                        Header="减少透明度"
+                        InputGestureText="Ctrl+Subtract" />
+                    <MenuItem
+                        Click="TransparencyIncrease_Click"
+                        Header="增加透明度"
+                        InputGestureText="Ctrl+Add" />
+                </MenuItem>
+            </ContextMenu>
+        </StackPanel.ContextMenu>
+        <Image x:Name="StickerImage" />
+    </StackPanel>
+</hc:Window>

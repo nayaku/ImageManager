@@ -1,0 +1,21 @@
+﻿<Window
+    x:Class="ImageManager.Windows.ScreenShotWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ImageManager.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ScreenShootWindow"
+    Width="800"
+    Height="450"
+    MouseDown="Window_MouseDown"
+    MouseMove="Window_MouseMove"
+    MouseUp="Window_MouseUp"
+    Opacity="0.6"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    SnapsToDevicePixels="True"
+    Topmost="True"
+    WindowStyle="None">
+    <Canvas x:Name="CaptureCanvas" />
+</Window>
