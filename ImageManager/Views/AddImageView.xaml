@@ -12,12 +12,108 @@
     Width="900"
     Height="600"
     d:DataContext="{d:DesignInstance Type=viewmodels:AddImageViewModel}"
+    Closing="{s:Action CancelAsync}"
+    Loaded="{s:Action ShowMessageSync}"
     ShowMinButton="False"
     mc:Ignorable="d">
+    <hc:Window.Resources>
+        <RoutedUICommand x:Key="SelectAll" Text="选择全部" />
+        <RoutedUICommand x:Key="SelectNone" Text="取消选择" />
+        <RoutedUICommand x:Key="SelectInvert" Text="反向选择" />
+    </hc:Window.Resources>
+    <hc:Window.InputBindings>
+        <KeyBinding
+            Key="A"
+            Command="{StaticResource SelectAll}"
+            Modifiers="Ctrl" />
+        <KeyBinding
+            Key="D"
+            Command="{StaticResource SelectNone}"
+            Modifiers="Ctrl" />
+    </hc:Window.InputBindings>
+    <hc:Window.CommandBindings>
+        <CommandBinding Command="{StaticResource SelectAll}" Executed="{s:Action SelectAll}" />
+        <CommandBinding Command="{StaticResource SelectNone}" Executed="{s:Action SelectNone}" />
+        <CommandBinding Command="{StaticResource SelectInvert}" Executed="{s:Action SelectInvert}" />
+    </hc:Window.CommandBindings>
     <hc:Window.NonClientAreaContent>
         <Grid>
-            <Menu HorizontalAlignment="Right" />
+            <Menu HorizontalAlignment="Left">
+                <MenuItem Header="选择">
+                    <MenuItem Command="{StaticResource SelectAll}" InputGestureText="Ctrl+A" />
+                    <MenuItem Command="{StaticResource SelectInvert}" InputGestureText="Ctrl+D" />
+                    <MenuItem Command="{StaticResource SelectNone}" InputGestureText="Ctrl+I" />
+                </MenuItem>
+                <MenuItem Header="操作">
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action AddPictureLabel}"
+                        Header="添加标签" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action AcceptToAdd}"
+                        CommandParameter="True"
+                        Header="接受添加" />
+                    <MenuItem
+                        s:View.ActionTarget="{Binding MainPageViewModel}"
+                        Command="{s:Action AcceptToAdd}"
+                        CommandParameter="False"
+                        Header="拒绝添加" />
+                </MenuItem>
+            </Menu>
         </Grid>
     </hc:Window.NonClientAreaContent>
-    <Grid />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ContentControl
+            x:Name="MainPage"
+            Grid.Row="0"
+            s:View.Model="{Binding MainPageViewModel}" />
+        <ScrollViewer
+            Grid.Row="0"
+            HorizontalAlignment="Right"
+            VerticalScrollBarVisibility="Hidden">
+            <StackPanel
+                Margin="0,10,0,10"
+                VerticalAlignment="Top"
+                hc:Growl.Token="AddImageViewMessage" />
+        </ScrollViewer>
+        <Border
+            Grid.Row="1"
+            Background="{DynamicResource RegionBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="0,1,0,0">
+            <Grid Margin="0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel
+                    Grid.Column="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+                    <Button
+                        Width="100"
+                        Command="{s:Action AcceptAsync}"
+                        Content="确    定"
+                        Style="{StaticResource ButtonPrimary}" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="2"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom">
+                    <Button
+                        Width="100"
+                        Command="{s:Action CancelAsync}"
+                        Content="取    消"
+                        Style="{StaticResource ButtonDefault}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
 </hc:Window>

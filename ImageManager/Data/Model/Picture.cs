@@ -20,24 +20,18 @@ namespace ImageManager.Data.Model
             Height = height;
         }
     }
-    public enum PictureType
+    public enum PictureAddStateEnum
     {
-        // 本地图片
-        LocalPicture,
-        // 截图
-        ScreenShot,
-        // 剪贴板
-        Clipboard,
-        // 网络图片
-        WebPicture,
+        WaitToAdd,
+        SameConflict,
+        SimilarConflict
     }
-
     [Index(nameof(Hash), IsUnique = true)]
     public class Picture
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public string? Title { get; set; }
+        public string Title { get; set; }
         public bool HasTitleOrLabel => Title != null || Labels?.Count != 0;
         [Required]
         public string Path { get; set; }
@@ -46,25 +40,45 @@ namespace ImageManager.Data.Model
         public int Width { get; set; }
         public int Height { get; set; }
         public DateTime AddTime { get; set; }
-        public PictureType Type { get; set; }
-        public string? Hash { get; set; }
+        public string Hash { get; set; }
         public ulong? WeakHash { get; set; }
         public virtual List<Label> Labels { get; set; }
 
         [NotMapped]
-        public bool IsSelected { get; set; }
+        public bool AcceptToAdd { get; set; }
         [NotMapped]
         public List<Picture> SamePicture { get; set; }
         [NotMapped]
         public List<Picture> SimilarPictures { get; set; }
         [NotMapped]
-        public static string ImageFolderPath { get; }
-        static Picture()
+        public PictureAddStateEnum AddState
+        {
+            get
+            {
+                if (SamePicture != null && SamePicture.Count > 0)
+                    return PictureAddStateEnum.SameConflict;
+                if (SimilarPictures != null && SimilarPictures.Count > 0)
+                    return PictureAddStateEnum.SimilarConflict;
+                return PictureAddStateEnum.WaitToAdd;
+            }
+        }
+        [NotMapped]
+        public string ImageFolderPath { get; set; }
+        public void SetDefaultImageFolderPath()
         {
             var path = UserSettingData.Default.ImageFolderPath;
             if (!System.IO.Path.IsPathRooted(path))
                 path = System.IO.Path.Join(AppDomain.CurrentDomain.BaseDirectory, path);
             ImageFolderPath = path;
+        }
+        public Picture()
+        {
+            SetDefaultImageFolderPath();
+        }
+        public Picture(bool setDefaultPath = true)
+        {
+            if (setDefaultPath)
+                SetDefaultImageFolderPath();
         }
         public Bitmap Bitmap
         {
@@ -95,6 +109,19 @@ namespace ImageManager.Data.Model
                 if (File.Exists(filePath))
                     File.Delete(filePath);
             }
+        }
+        public void CopyTo(string folderPath)
+        {
+            var filePath = System.IO.Path.Join(ImageFolderPath, Path);
+            var newFilePath = System.IO.Path.Join(folderPath, Path);
+            File.Copy(filePath, newFilePath);
+            if (ThumbnailPath != null)
+            {
+                filePath = System.IO.Path.Join(ImageFolderPath, ThumbnailPath);
+                newFilePath = System.IO.Path.Join(folderPath, ThumbnailPath);
+                File.Copy(filePath, newFilePath);
+            }
+            ImageFolderPath = folderPath;
         }
     }
 }

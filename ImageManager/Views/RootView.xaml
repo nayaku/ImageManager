@@ -204,7 +204,13 @@
             </Popup>
         </Grid>
     </hc:Window.NonClientAreaContent>
-
-    <ContentControl x:Name="MainPage" s:View.Model="{Binding MainPageViewModel}" />
-    
+    <hc:SimplePanel>
+        <ContentControl x:Name="MainPage" s:View.Model="{Binding MainPageViewModel}" />
+        <ScrollViewer HorizontalAlignment="Right" VerticalScrollBarVisibility="Hidden">
+            <StackPanel
+                Margin="0,10,0,10"
+                VerticalAlignment="Top"
+                hc:Growl.Token="RootViewMessage" />
+        </ScrollViewer>
+    </hc:SimplePanel>
 </hc:Window>

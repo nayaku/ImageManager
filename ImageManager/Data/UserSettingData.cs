@@ -27,14 +27,14 @@ namespace ImageManager.Data
         /// </summary>
         public string StorePath { get; set; } = "SD";
         public string ImageFolderPath => Path.Join(StorePath, "IMG");
-        public string TempFolderPath => Path.Join(TempFolderPath, "TMP");
+        public string TempFolderPath => Path.Join(StorePath, "TMP");
         /// <summary>
         /// 卡片宽度
         /// </summary>
         public double CardWidth { get; set; } = 240;
         public ApplicationTheme Theme { get; set; } = ApplicationTheme.Light;
         public bool ClearUnUsedLabel { get; set; } = true;
-        public enum OrderByEnum { AddTime, Title }
+        public enum OrderByEnum { AddTime, Title, AddState }
         public OrderByEnum OrderBy { get; set; } = OrderByEnum.AddTime;
         public bool IsDesc { get; set; } = false;
         public bool IsGroup { get; set; } = false;

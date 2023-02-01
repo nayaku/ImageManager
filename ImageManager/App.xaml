@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:hc="https://handyorg.github.io/handycontrol"
     xmlns:local="clr-namespace:ImageManager"
+    xmlns:local2="clr-namespace:ImageManager.Views"
     xmlns:s="https://github.com/canton7/Stylet">
     <Application.Resources>
         <s:ApplicationLoader>
@@ -20,9 +21,9 @@
                         BasedOn="{StaticResource {x:Type hc:MessageBox}}"
                         TargetType="hc:MessageBox">
                         <Setter Property="OtherButtonBackground" Value="{DynamicResource DangerBrush}" />
-                        <Setter Property="MinHeight" Value="100"/>
+                        <Setter Property="MinHeight" Value="100" />
                     </Style>
-
+                    <local2:StyleConverter x:Key="StyleConverter" />
                 </ResourceDictionary>
             </s:ApplicationLoader.MergedDictionaries>
         </s:ApplicationLoader>
