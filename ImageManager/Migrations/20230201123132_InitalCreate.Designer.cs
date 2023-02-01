@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImageManager.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    [Migration("20230107151051_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230201123132_InitalCreate")]
+    partial class InitalCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,6 +57,7 @@ namespace ImageManager.Migrations
                         .HasDefaultValueSql("datetime('now','localtime')");
 
                     b.Property<string>("Hash")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
@@ -70,10 +71,8 @@ namespace ImageManager.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
 
                     b.Property<ulong?>("WeakHash")
                         .HasColumnType("INTEGER");
@@ -87,58 +86,6 @@ namespace ImageManager.Migrations
                         .IsUnique();
 
                     b.ToTable("Pictures");
-                });
-
-            modelBuilder.Entity("ImageManager.Data.Model.Workspace", b =>
-                {
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Index")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Name");
-
-                    b.ToTable("Workspaces");
-                });
-
-            modelBuilder.Entity("ImageManager.Data.Model.WorkspacePicture", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsFolded")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Left")
-                        .HasColumnType("REAL");
-
-                    b.Property<double>("Opacity")
-                        .HasColumnType("REAL");
-
-                    b.Property<int>("PictureId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RotateFlip")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<double>("Top")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("WorkspaceName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("ZoomRate")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PictureId");
-
-                    b.HasIndex("WorkspaceName");
-
-                    b.ToTable("WorkspacePicture");
                 });
 
             modelBuilder.Entity("LabelPicture", b =>
@@ -156,21 +103,6 @@ namespace ImageManager.Migrations
                     b.ToTable("LabelPicture");
                 });
 
-            modelBuilder.Entity("ImageManager.Data.Model.WorkspacePicture", b =>
-                {
-                    b.HasOne("ImageManager.Data.Model.Picture", "Picture")
-                        .WithMany()
-                        .HasForeignKey("PictureId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ImageManager.Data.Model.Workspace", null)
-                        .WithMany("WorkspacePictures")
-                        .HasForeignKey("WorkspaceName");
-
-                    b.Navigation("Picture");
-                });
-
             modelBuilder.Entity("LabelPicture", b =>
                 {
                     b.HasOne("ImageManager.Data.Model.Label", null)
@@ -184,11 +116,6 @@ namespace ImageManager.Migrations
                         .HasForeignKey("PictureId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ImageManager.Data.Model.Workspace", b =>
-                {
-                    b.Navigation("WorkspacePictures");
                 });
 #pragma warning restore 612, 618
         }

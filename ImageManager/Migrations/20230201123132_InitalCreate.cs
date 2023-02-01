@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ImageManager.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitalCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,31 +31,18 @@ namespace ImageManager.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Title = table.Column<string>(type: "TEXT", nullable: true),
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
                     Path = table.Column<string>(type: "TEXT", nullable: false),
                     ThumbnailPath = table.Column<string>(type: "TEXT", nullable: true),
                     Width = table.Column<int>(type: "INTEGER", nullable: false),
                     Height = table.Column<int>(type: "INTEGER", nullable: false),
                     AddTime = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "datetime('now','localtime')"),
-                    Type = table.Column<int>(type: "INTEGER", nullable: false),
-                    Hash = table.Column<string>(type: "TEXT", nullable: true),
+                    Hash = table.Column<string>(type: "TEXT", nullable: false),
                     WeakHash = table.Column<ulong>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Pictures", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Workspaces",
-                columns: table => new
-                {
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Index = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Workspaces", x => x.Name);
                 });
 
             migrationBuilder.CreateTable(
@@ -82,37 +69,6 @@ namespace ImageManager.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "WorkspacePicture",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    PictureId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Left = table.Column<double>(type: "REAL", nullable: false),
-                    Top = table.Column<double>(type: "REAL", nullable: false),
-                    ZoomRate = table.Column<double>(type: "REAL", nullable: false),
-                    IsFolded = table.Column<bool>(type: "INTEGER", nullable: false),
-                    RotateFlip = table.Column<int>(type: "INTEGER", nullable: false),
-                    Opacity = table.Column<double>(type: "REAL", nullable: false),
-                    WorkspaceName = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkspacePicture", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WorkspacePicture_Pictures_PictureId",
-                        column: x => x.PictureId,
-                        principalTable: "Pictures",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_WorkspacePicture_Workspaces_WorkspaceName",
-                        column: x => x.WorkspaceName,
-                        principalTable: "Workspaces",
-                        principalColumn: "Name");
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_LabelPicture_PictureId",
                 table: "LabelPicture",
@@ -129,16 +85,6 @@ namespace ImageManager.Migrations
                 table: "Pictures",
                 column: "Hash",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkspacePicture_PictureId",
-                table: "WorkspacePicture",
-                column: "PictureId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkspacePicture_WorkspaceName",
-                table: "WorkspacePicture",
-                column: "WorkspaceName");
         }
 
         /// <inheritdoc />
@@ -148,16 +94,10 @@ namespace ImageManager.Migrations
                 name: "LabelPicture");
 
             migrationBuilder.DropTable(
-                name: "WorkspacePicture");
-
-            migrationBuilder.DropTable(
                 name: "Labels");
 
             migrationBuilder.DropTable(
                 name: "Pictures");
-
-            migrationBuilder.DropTable(
-                name: "Workspaces");
         }
     }
 }
