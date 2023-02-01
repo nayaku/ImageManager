@@ -30,7 +30,7 @@ namespace ImageManager.ViewModels
         private bool _canClose = true;
         private EventHandler<int> _successEvent;
 
-        public ProgressViewModel(List<string> dirFiles,EventHandler<int> successEvent)
+        public ProgressViewModel(List<string> dirFiles, EventHandler<int> successEvent)
         {
             _dirFiles = dirFiles;
             _successEvent = successEvent;
@@ -61,7 +61,9 @@ namespace ImageManager.ViewModels
             foreach (var picture in Pictures)
             {
                 Message = $"删除文件{picture.Path}";
-                picture.DeleteFile();
+                File.Delete(Path.Join(picture.ImageFolderPath, picture.Path));
+                if (picture.ThumbnailPath != null)
+                    File.Delete(Path.Join(picture.ImageFolderPath, picture.ThumbnailPath));
                 Progress -= 1.0 / Pictures.Count * preProgress * 100;
             }
         }
@@ -103,10 +105,10 @@ namespace ImageManager.ViewModels
             // 准备返回
             _canClose = true;
             RequestClose();
-            if(result)
+            if (result)
             {
                 // 准备完成，等待用户选择需要添加的图片
-                var addImageViewModel = new AddImageViewModel(Files,Pictures,_successEvent);
+                var addImageViewModel = new AddImageViewModel(Files, Pictures, _successEvent);
                 Container.BuildUp(addImageViewModel);
                 addImageViewModel.ParametersInjected();
                 WindowManager.ShowWindow(addImageViewModel);
@@ -186,22 +188,28 @@ namespace ImageManager.ViewModels
 
             string? thumbFileName = null;
             // 生成缩略图
-            if (width > 2560 || height > 2560)
+            // 如果过宽或者格式不支持，生成缩略图
+            if (width > UserSettingData.ThumbnailWidth || !(
+                fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_BMP
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_JPEG
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_PNG
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_TIFF
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_GIF
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_ICO
+                || fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_TIFF))
             {
                 thumbFileName = saveFileName + "_s.png";
-                int targetWidth, targetHeight;
-                if (width > 2560)
+                if (width > UserSettingData.ThumbnailWidth)
                 {
-                    targetWidth = 2560;
-                    targetHeight = height * targetWidth / width;
+                    int targetWidth, targetHeight;
+                    targetWidth = UserSettingData.ThumbnailWidth;
+                    using var thumb = ImageUtility.Resize(bitmap, targetWidth);
+                    thumb.Save(Path.Join(UserSettingData.TempFolderPath, thumbFileName));
                 }
                 else
                 {
-                    targetHeight = 2560;
-                    targetWidth = width * targetHeight / height;
+                    bitmap.Save(Path.Join(UserSettingData.TempFolderPath, thumbFileName));
                 }
-                using var thumb = ImageUtility.Resize(bitmap, targetWidth, targetHeight);
-                thumb.Save(Path.Join(UserSettingData.TempFolderPath, thumbFileName));
             }
 
             // 判断是否接受
@@ -233,17 +241,11 @@ namespace ImageManager.ViewModels
                 AcceptToAdd = accept,
             };
             Pictures.Add(picture);
-            // TODO 模拟耗时，需要删除
-            Task.Delay(500).Wait();
         }
 
         public void ParametersInjected()
         {
-            // 创建目录
-            if (!Directory.Exists(UserSettingData.ImageFolderPath))
-                Directory.CreateDirectory(UserSettingData.ImageFolderPath);
-            if (!Directory.Exists(UserSettingData.TempFolderPath))
-                Directory.CreateDirectory(UserSettingData.TempFolderPath);
+
         }
     }
 }

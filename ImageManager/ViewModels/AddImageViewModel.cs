@@ -77,34 +77,23 @@ namespace ImageManager.ViewModels
                 var count = 0;
                 Pictures.ForEach(p =>
                 {
+                    // 由于文件被占用删不掉
                     if (p.AcceptToAdd)
                     {
                         var tempDir = p.ImageFolderPath;
                         p.SetDefaultImageFolderPath();
                         var file = Path.Combine(tempDir, p.Path);
                         var newFile = Path.Combine(p.ImageFolderPath, p.Path);
-                        File.Move(file, newFile);
+                        File.Copy(file, newFile);
                         if (p.ThumbnailPath != null)
                         {
                             var thumbnailFile = Path.Combine(tempDir, p.ThumbnailPath);
                             var newThumbnailFile = Path.Combine(p.ImageFolderPath, p.ThumbnailPath);
-                            File.Move(thumbnailFile, newThumbnailFile);
+                            File.Copy(thumbnailFile, newThumbnailFile);
                         }
                         Context.Add(p);
                         count++;
                     }
-                    else
-                    {
-                        var file = Path.Combine(p.ImageFolderPath, p.Path);
-                        File.Delete(file);
-                        if (p.ThumbnailPath != null)
-                        {
-                            var thumbnailFile = Path.Combine(p.ImageFolderPath, p.ThumbnailPath);
-                            File.Delete(thumbnailFile);
-                        }
-                    }
-                    //TODO 删除
-                    Task.Delay(500).Wait();
                 });
                 Context.SaveChanges();
                 return count;
