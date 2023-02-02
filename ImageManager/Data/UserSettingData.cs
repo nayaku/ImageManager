@@ -1,13 +1,7 @@
 ﻿using HandyControl.Themes;
 using Stylet;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace ImageManager.Data
@@ -58,7 +52,7 @@ namespace ImageManager.Data
             if (!Directory.Exists(TempFolderPath))
                 Directory.CreateDirectory(TempFolderPath);
         }
-
+                
         /// <summary>
         /// 加载
         /// </summary>

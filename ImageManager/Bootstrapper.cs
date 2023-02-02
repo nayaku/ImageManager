@@ -3,8 +3,6 @@ using ImageManager.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Stylet;
 using StyletIoC;
-using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace ImageManager
