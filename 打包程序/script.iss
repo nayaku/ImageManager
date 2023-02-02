@@ -27,7 +27,8 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\ImageManager
 DisableProgramGroupPage=yes
 DefaultGroupName={#MyAppName}
-OutputBaseFilename={#MyAppName}安装程序
+OutputBaseFilename={#MyAppName}_{#AppVerText}
+PrivilegesRequired=admin
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
 Compression=lzma2/max
@@ -39,7 +40,7 @@ SetupIconFile={#SetupIconFilePath}
 Name: "chinesesimp"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkablealone
 ;Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
