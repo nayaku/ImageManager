@@ -201,9 +201,9 @@ namespace ImageManager.ViewModels
                 thumbFileName = saveFileName + "_s.png";
                 if (width > UserSettingData.ThumbnailWidth)
                 {
-                    int targetWidth, targetHeight;
-                    targetWidth = UserSettingData.ThumbnailWidth;
-                    using var thumb = ImageUtility.Resize(bitmap, targetWidth);
+                    int targetWidth = UserSettingData.ThumbnailWidth;
+                    int targetHeight = bitmap.Height * targetWidth / bitmap.Width;
+                    using var thumb = bitmap.GetThumbnailImage(targetWidth, targetHeight, () => false, IntPtr.Zero); //ImageUtility.Resize(bitmap, targetWidth);
                     thumb.Save(Path.Join(UserSettingData.TempFolderPath, thumbFileName));
                 }
                 else

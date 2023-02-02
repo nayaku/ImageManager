@@ -110,22 +110,6 @@ namespace ImageManager.ViewModels
             {
                 return;
             }
-            _isWorking = true;
-            var dialog = Dialog.Show(new WaitingDialog());
-            await Task.Run(() =>
-            {
-                Pictures.ForEach(p =>
-                {
-                    var file = Path.Combine(p.ImageFolderPath, p.Path);
-                    File.Delete(file);
-                    if (p.ThumbnailPath != null)
-                    {
-                        var thumbnailFile = Path.Combine(p.ImageFolderPath, p.ThumbnailPath);
-                        File.Delete(thumbnailFile);
-                    }
-                });
-            });
-            dialog.Close();
             _canClose = true;
             Result = false;
             RequestClose();

@@ -154,6 +154,8 @@ namespace ImageManager.ViewModels
         #region 右键菜单栏
         public void OpenPicture(object sender, MouseButtonEventArgs e)
         {
+            if (IsAddPictureMode)
+                return;
             var picture = ((PictureSelectableItemWrapper)((Image)sender).DataContext).Item;
             var sticker = new StickerWindow(Path.Join(picture.ImageFolderPath, picture.Path));
             sticker.Show();
@@ -216,10 +218,12 @@ namespace ImageManager.ViewModels
 
                 SelectedPictures.ForEach(p =>
                 {
+                    p.Labels ??= new List<Label>();
                     if (!p.Labels.Contains(label))
                         p.Labels.Add(label);
                 });
                 Pictures.Refresh();
+                NotifyOfPropertyChange(nameof(PictureGroups));
                 if (!IsAddPictureMode)
                     Context.SaveChanges();
             }

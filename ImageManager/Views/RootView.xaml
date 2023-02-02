@@ -7,16 +7,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewModels="clr-namespace:ImageManager.ViewModels"
-    Title="素材管理器"
+    Title="素材管理姬"
     Width="1280"
     Height="768"
     d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
     Icon="pack://application:,,,/icon.ico"
+    Loaded="{s:Action Loaded}"
     ShowIcon="True"
     ShowTitle="False"
     WindowStartupLocation="CenterScreen"
     WindowState="{Binding WindowState}"
-    Loaded="{s:Action Loaded}"
     mc:Ignorable="d">
     <hc:Window.InputBindings>
         <KeyBinding Command="{s:Action ScreenShot}" Gesture="Ctrl+Alt+Shift+X" />
@@ -113,7 +113,7 @@
                         Header="删除图片"
                         InputGestureText="Delete" />
                 </MenuItem>
-                <!--<MenuItem Header="关于" />-->
+                <MenuItem Command="{s:Action About}" Header="关于" />
             </Menu>
             <hc:SearchBar
                 Name="SearchLabelBar"

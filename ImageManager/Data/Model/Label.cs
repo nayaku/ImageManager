@@ -21,5 +21,13 @@ namespace ImageManager.Data.Model
         public string NumToString => "(" + Num + ")";
         [NotMapped]
         public bool IsEdit { get; set; }
+        public override bool Equals(object? obj)
+        {
+            if (obj is Label label)
+            {
+                return label.Name == Name;
+            }
+            return false;
+        }
     }
 }

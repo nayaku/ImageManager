@@ -39,10 +39,6 @@ namespace ImageManager.Data
                     var label = ChangeTracker.Entries<Label>().Single(le => (int)le.CurrentValues["Id"] == labelId).Entity;
                     label.Num += e.State == EntityState.Added ? 1 : -1;
                 });
-            if (UserSettingData.Default.ClearUnUsedLabel)
-                ChangeTracker.Entries<Label>()
-                    .Where(e => e.State == EntityState.Modified && (int)e.CurrentValues["Num"] == 0)
-                    .ForEach(e => e.State = EntityState.Deleted);
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
     }

@@ -1,8 +1,6 @@
 ﻿; 脚本用 Inno Setup 脚本向导 生成。
 ; 查阅文档获取创建 INNO SETUP 脚本文件的详细资料！
-
 #define MyAppName "素材管理姬"
-#define MyAppVersion "3.0.1"
 #define MyAppPublisher "NGMKS"
 #define MyAppURL "https://github.com/nayaku/ImageManager"
 #define MyAppExeName "ImageManager.exe"
@@ -10,13 +8,17 @@
 #define SetupIconFilePath  "icon.ico"
 #define LicenseFilePath "..\license.txt"
 
+#define AppVerText() \
+   ParseVersion(ProjectPath+'\'+MyAppExeName, Local[0], Local[1], Local[2], Local[3]), \
+   Str(Local[0]) + "." + Str(Local[1]) + "." + Str(Local[2])
+
 [Setup]
 ; 注意: AppId 的值是唯一识别这个程序的标志。
 ; 不要在其他程序中使用相同的 AppId 值。
 ; (在编译器中点击菜单“工具 -> 产生 GUID”可以产生一个新的 GUID)
 AppId={{C0B2618D-A2BC-4A8B-8600-5ED31A9A5583}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
+AppVersion={#AppVerText}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
