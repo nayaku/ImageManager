@@ -15,6 +15,9 @@
 		<ApplicationIcon>icon.ico</ApplicationIcon>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
+	<PropertyGroup>
+		<PublishReadyToRun>true</PublishReadyToRun>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>TRACE;Core</DefineConstants>
 	</PropertyGroup>
