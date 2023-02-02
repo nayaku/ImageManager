@@ -1,5 +1,6 @@
 ﻿using ImageManager.Data;
 using ImageManager.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Stylet;
 using StyletIoC;
 using System;
@@ -15,11 +16,14 @@ namespace ImageManager
             var userSettingData = UserSettingData.Default;
             builder.Bind<UserSettingData>().ToInstance(userSettingData);
             // create Database context
-            builder.Bind<ImageContext>().ToSelf().InSingletonScope();
+            var context = new ImageContext();
+            context.Database.Migrate();
+            builder.Bind<ImageContext>().ToInstance(context);
 
-            // 清理文件
+            // 清理
             Task.Run(() =>
             {
+                // 清理待删除文件
                 if (userSettingData.WaitToDeleteFiles != null)
                 {
                     foreach (var file in userSettingData.WaitToDeleteFiles)
@@ -29,11 +33,16 @@ namespace ImageManager
                     }
                     userSettingData.WaitToDeleteFiles = null;
                 }
+                // 清理临时文件夹
                 foreach (var file in Directory.GetFiles(userSettingData.TempFolderPath))
                 {
                     if (File.Exists(file))
                         File.Delete(file);
                 }
+                // 清理0引用的标签
+                var labels = context.Labels.Where(x => x.Num == 0).ToList();
+                context.Labels.RemoveRange(labels);
+                context.SaveChanges();
             });
         }
     }

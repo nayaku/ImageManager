@@ -5,11 +5,11 @@
 		<UseWPF>true</UseWPF>
 		<AssemblyName>ImageManager</AssemblyName>
 		<RootNamespace>ImageManager</RootNamespace>
-		<Version>1.0.0.0</Version>
+		<Version>3.1.0.0</Version>
 		<Configurations>Debug;Release</Configurations>
-		<Copyright>Copyright © ZMK 2022</Copyright>
-		<FileVersion>1.0.0.0</FileVersion>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<Copyright>Copyright © Nayaku 2022</Copyright>
+		<FileVersion>3.1.0.0</FileVersion>
+		<AssemblyVersion>3.1.0.0</AssemblyVersion>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
@@ -17,12 +17,15 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PublishReadyToRun>true</PublishReadyToRun>
+		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>TRACE;Core</DefineConstants>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DefineConstants>TRACE;Core</DefineConstants>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Resource Include="icon.ico">

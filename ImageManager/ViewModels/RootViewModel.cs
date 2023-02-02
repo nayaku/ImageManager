@@ -2,18 +2,11 @@
 using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
-using ImageManager.Data.Model;
 using ImageManager.Tools;
 using ImageManager.Windows;
-using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
 using Stylet;
 using StyletIoC;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Timers;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Label = ImageManager.Data.Model.Label;
@@ -164,33 +157,16 @@ namespace ImageManager.ViewModels
                 WindowState = preWindowState;
             });
         }
-
-        public void SelectAll()
+        public void About()
         {
-            MainPageViewModel.SelectAll();
-        }
-        public void SelectNone()
-        {
-            MainPageViewModel.SelectNone();
-        }
-        public void SelectInvert()
-        {
-            MainPageViewModel.SelectInvert();
-        }
-        public void CopyPicture()
-        {
-            MainPageViewModel.CopyPicture();
-        }
-        public void DeletePicture()
-        {
-            MainPageViewModel.DeletePicture();
+            var aboutViewModel = new AboutViewModel();
+            _windowManager.ShowWindow(aboutViewModel);
         }
         #endregion
 
 
         public void ParametersInjected()
         {
-            Context.Database.Migrate();
             // 得手动调用
             MainPageViewModel.ParametersInjected();
             ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;

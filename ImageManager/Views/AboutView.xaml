@@ -1,0 +1,82 @@
+﻿<hc:Window
+    x:Class="ImageManager.Views.AboutView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:ImageManager.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:s="https://github.com/canton7/Stylet"
+    xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
+    Title="关于"
+    Width="600"
+    Height="350"
+    d:DataContext="{d:DesignInstance Type=viewmodels:AboutViewModel}"
+    mc:Ignorable="d">
+    <hc:Window.Resources>
+        <Style x:Key="LinkButton" TargetType="Button">
+
+            <Setter Property="Width" Value="Auto" />
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter
+                            VerticalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="TextDecorations" Value="Underline" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="#FF55AAFF" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter Property="Foreground" Value="#FFD64C4C" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </hc:Window.Resources>
+    <StackPanel>
+        <TextBlock
+            Margin="0,40"
+            HorizontalAlignment="Center"
+            FontSize="40"
+            FontWeight="SemiBold"
+            Foreground="Orange">
+            素 材 管 理 姬
+        </TextBlock>
+        <StackPanel
+            Margin="0,5"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock FontSize="15">
+                版本号：
+            </TextBlock>
+            <TextBlock FontSize="15" Text="{Binding Version}" />
+        </StackPanel>
+
+        <Border Height="80" />
+        <StackPanel
+            Margin="0,5"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock>
+                项目地址：
+            </TextBlock>
+            <Button
+                Command="{s:Action OpenProjectHome}"
+                Content="https://github.com/nayaku/ImageManager"
+                Style="{DynamicResource LinkButton}" />
+        </StackPanel>
+        <TextBlock Margin="0,5" HorizontalAlignment="Center">
+            作者： Nayaku
+        </TextBlock>
+    </StackPanel>
+</hc:Window>
