@@ -27,14 +27,18 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\ImageManager
 DisableProgramGroupPage=yes
 DefaultGroupName={#MyAppName}
-OutputBaseFilename={#MyAppName}_{#AppVerText}
+OutputBaseFilename=ImageManager_{#AppVerText}
 PrivilegesRequired=admin
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
-Compression=lzma2/max
+Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 SetupIconFile={#SetupIconFilePath}
+VersionInfoVersion={#AppVerText}
+
+[Dirs]
+Name: {app}; Permissions: users-full
 
 [Languages]
 Name: "chinesesimp"; MessagesFile: "compiler:Default.isl"
@@ -54,6 +58,7 @@ Source: "{#ProjectPath}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdir
 ;Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 ;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]

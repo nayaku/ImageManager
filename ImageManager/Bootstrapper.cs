@@ -1,9 +1,7 @@
 ﻿using ImageManager.Data;
 using ImageManager.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Stylet;
 using StyletIoC;
-using System.IO;
 
 namespace ImageManager
 {
@@ -16,11 +14,15 @@ namespace ImageManager
             // create Database context
             var context = new ImageContext();
             context.Database.Migrate();
-            builder.Bind<ImageContext>().ToInstance(context);
+            // 为每个窗体都配置一个DB上下文
+            builder.Bind<ImageContext>()
+                .ToFactory(container => new ImageContext());
 
             // 清理
             Task.Run(() =>
             {
+                // 解决SQLite并发处理的问题
+                var context = new ImageContext();
                 // 清理待删除文件
                 if (userSettingData.WaitToDeleteFiles != null)
                 {
@@ -40,7 +42,7 @@ namespace ImageManager
                 // 清理0引用的标签
                 var labels = context.Labels.Where(x => x.Num == 0).ToList();
                 context.Labels.RemoveRange(labels);
-                context.SaveChanges();
+                context.SaveChangesAsync();
             });
         }
     }

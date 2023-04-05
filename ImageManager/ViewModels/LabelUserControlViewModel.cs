@@ -1,8 +1,6 @@
-﻿using ImageManager.Data;
-using ImageManager.Data.Model;
+﻿using ImageManager.Data.Model;
 using Stylet;
-using StyletIoC;
-using System.Windows;
+using System;
 
 namespace ImageManager.ViewModels
 {

@@ -1,6 +1,4 @@
-﻿using HandyControl.Data;
-using Stylet;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace ImageManager.ViewModels
 {

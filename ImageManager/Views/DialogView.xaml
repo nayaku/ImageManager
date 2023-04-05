@@ -13,7 +13,6 @@
     Height="90"
     d:DataContext="{d:DesignInstance Type=viewmodels:DialogViewModel}"
     KeyDown="{s:Action WindowKeyDown}"
-    MouseDown="{s:Action WindowMouseDown}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     SizeToContent="Height"

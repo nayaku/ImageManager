@@ -7,18 +7,18 @@ using Stylet;
 using StyletIoC;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Timers;
 using System.Windows;
 using System.Linq.Dynamic.Core;
 using System.Windows.Media;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static ImageManager.Data.UserSettingData;
-using System.Runtime.CompilerServices;
 using ImageManager.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace ImageManager.ViewModels
 {
@@ -96,7 +96,7 @@ namespace ImageManager.ViewModels
             };
         }
 
-        public void UpdatePicture()
+        public async void UpdatePicture()
         {
 
             IQueryable<Picture> query;

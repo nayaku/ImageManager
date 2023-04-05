@@ -17,6 +17,7 @@
     ShowTitle="False"
     WindowStartupLocation="CenterScreen"
     WindowState="{Binding WindowState}"
+    Closed="{s:Action Closed}"
     mc:Ignorable="d">
     <hc:Window.InputBindings>
         <KeyBinding Command="{s:Action ScreenShot}" Gesture="Ctrl+Alt+Shift+X" />
@@ -113,7 +114,10 @@
                         Header="删除图片"
                         InputGestureText="Delete" />
                 </MenuItem>
-                <MenuItem Command="{s:Action About}" Header="关于" />
+                <MenuItem Header="帮助">
+                    <MenuItem Command="{s:Action CheckUpdate}" Header="检测更新" />
+                    <MenuItem Command="{s:Action About}" Header="关于" />
+                </MenuItem>
             </Menu>
             <hc:SearchBar
                 Name="SearchLabelBar"

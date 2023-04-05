@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.IO;
 using System.Security.Cryptography;
 
 namespace ImageManager.Tools
@@ -63,7 +62,7 @@ namespace ImageManager.Tools
         public static string GetMD5Hash(Stream stream)
         {
             var hash = MD5.HashData(stream);
-            return Convert.ToHexString(hash); ;
+            return Convert.ToHexString(hash);
         }
     }
 }

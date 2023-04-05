@@ -3,7 +3,10 @@ using ImageManager.Data;
 using ImageManager.Data.Model;
 using Stylet;
 using StyletIoC;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 

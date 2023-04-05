@@ -1,11 +1,11 @@
 ﻿namespace ImageManager.Views
 {
     /// <summary>
-    /// DialogView.xaml 的交互逻辑
+    /// UpdateView.xaml 的交互逻辑
     /// </summary>
-    public partial class DialogView
+    public partial class UpdateView 
     {
-        public DialogView()
+        public UpdateView()
         {
             InitializeComponent();
         }

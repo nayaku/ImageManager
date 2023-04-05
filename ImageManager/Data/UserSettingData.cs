@@ -1,7 +1,5 @@
 ﻿using HandyControl.Themes;
-using Stylet;
 using System.ComponentModel;
-using System.IO;
 using System.Xml.Serialization;
 
 namespace ImageManager.Data
