@@ -1,13 +1,11 @@
 ﻿using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Tools;
-using Stylet;
 using StyletIoC;
-using System.IO;
 
 namespace ImageManager.ViewModels
 {
-    public class ProgressViewModel : Screen, IInjectionAware
+    public class AddImageProgressViewModel : Screen, IInjectionAware
     {
         [Inject]
         public UserSettingData UserSettingData { get; set; }
@@ -30,7 +28,7 @@ namespace ImageManager.ViewModels
         private bool _canClose = true;
         private EventHandler<int> _successEvent;
 
-        public ProgressViewModel(List<string> dirFiles, EventHandler<int> successEvent)
+        public AddImageProgressViewModel(List<string> dirFiles, EventHandler<int> successEvent)
         {
             _dirFiles = dirFiles;
             _successEvent = successEvent;

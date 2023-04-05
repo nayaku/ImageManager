@@ -1,11 +1,10 @@
-﻿using Stylet;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace ImageManager.ViewModels
 {
     public class AboutViewModel : PropertyChangedBase
     {
-        public string Version { get => Assembly.GetEntryAssembly().GetName().Version.ToString(); }
+        public string Version { get => Assembly.GetEntryAssembly().GetName().Version.ToString(3); }
 
         public void OpenProjectHome()
         {

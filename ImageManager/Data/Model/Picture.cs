@@ -1,10 +1,6 @@
-﻿using ImageManager.Tools;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Drawing;
-using System.IO;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace ImageManager.Data.Model

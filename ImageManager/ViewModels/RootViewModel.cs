@@ -4,7 +4,6 @@ using HandyControl.Themes;
 using ImageManager.Data;
 using ImageManager.Tools;
 using ImageManager.Windows;
-using Stylet;
 using StyletIoC;
 using System.Windows;
 using System.Windows.Input;
@@ -48,6 +47,8 @@ namespace ImageManager.ViewModels
                 Growl.Error("注册截图热键失败");
             }
 
+            // 检查更新
+            CheckUpdateAsync();
         }
 
         public void UpdateSearchedLabels()
@@ -120,7 +121,7 @@ namespace ImageManager.ViewModels
             if (fileDialogResult ?? false)
             {
                 // 扫描和准备文件
-                var progressViewModel = new ProgressViewModel(new List<string>(dialog.FileNames), AddPictureSuccessEvent);
+                var progressViewModel = new AddImageProgressViewModel(new List<string>(dialog.FileNames), AddPictureSuccessEvent);
                 _container.BuildUp(progressViewModel);
                 progressViewModel.ParametersInjected();
                 _windowManager.ShowWindow(progressViewModel);
@@ -135,8 +136,11 @@ namespace ImageManager.ViewModels
                 Message = $"成功添加{pictureNum}张图片，是否确定立刻更新主界面？",
                 ActionBeforeClose = isConfirmed =>
                 {
-                    MainPageViewModel.UpdatePicture();
-                    Growl.Info("已更新主界面", "RootViewMessage");
+                    if (isConfirmed)
+                    {
+                        MainPageViewModel.UpdatePicture();
+                        Growl.Info("已更新主界面", "RootViewMessage");
+                    }
                     return true;
 
                 },
@@ -150,12 +154,17 @@ namespace ImageManager.ViewModels
             WindowState = WindowState.Minimized;
             Execute.PostToUIThreadAsync(async () =>
             {
-                await Task.Delay(100);
+                await Task.Delay(300);
                 var screenShotWindow = new ScreenShotWindow();
                 screenShotWindow.Show();
-                await Task.Delay(100);
+                await Task.Delay(1500);
                 WindowState = preWindowState;
             });
+        }
+        public void CheckUpdate()
+        {
+            var updateViewModel = new UpdateViewModel();
+            _windowManager.ShowWindow(updateViewModel);
         }
         public void About()
         {
@@ -164,12 +173,39 @@ namespace ImageManager.ViewModels
         }
         #endregion
 
+        private async void CheckUpdateAsync()
+        {
+            //await Task.Delay(1000);
+            var updateViewModel = new UpdateViewModel();
+            if (await updateViewModel.NeedUpdateAsync())
+            {
+                var growlInfo = new GrowlInfo()
+                {
+                    ConfirmStr = "更新",
+                    CancelStr = "取消",
+                    Message = $"发现新版本{updateViewModel.LatestVersion}，是否更新？",
+                    ActionBeforeClose = isConfirmed =>
+                    {
+                        if (isConfirmed)
+                            _windowManager.ShowWindow(updateViewModel);
+                        return true;
+
+                    },
+                    Token = "RootViewMessage"
+                };
+                Growl.Ask(growlInfo);
+            }
+        }
 
         public void ParametersInjected()
         {
             // 得手动调用
             MainPageViewModel.ParametersInjected();
             ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;
+        }
+        public void Closed()
+        {
+            App.Current.Shutdown();
         }
     }
 }
