@@ -32,6 +32,11 @@ namespace ImageManager.Data
         public bool IsDesc { get; set; } = false;
         public bool IsGroup { get; set; } = false;
 
+        /// <summary>
+        /// 截图时关闭主窗口
+        /// </summary>
+        public bool IsHideWhenScreenShoot { get; set; } = true;
+
         public List<string> WaitToDeleteFiles { get; set; }
 
         private static UserSettingData? _default = null;

@@ -11,13 +11,13 @@
     Width="1280"
     Height="768"
     d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
+    Closed="{s:Action Closed}"
     Icon="pack://application:,,,/icon.ico"
     Loaded="{s:Action Loaded}"
     ShowIcon="True"
     ShowTitle="False"
     WindowStartupLocation="CenterScreen"
     WindowState="{Binding WindowState}"
-    Closed="{s:Action Closed}"
     mc:Ignorable="d">
     <hc:Window.InputBindings>
         <KeyBinding Command="{s:Action ScreenShot}" Gesture="Ctrl+Alt+Shift+X" />
@@ -67,6 +67,7 @@
                         Command="{s:Action ScreenShot}"
                         Header="截图"
                         InputGestureText="Ctrl+Alt+Shift+X" />
+                    <CheckBox IsChecked="{Binding IsHideWhenScreenShoot}" Content="截图时隐藏" />
                 </MenuItem>
                 <MenuItem Header="选择">
                     <MenuItem

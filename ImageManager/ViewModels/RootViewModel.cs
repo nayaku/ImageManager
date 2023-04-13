@@ -24,6 +24,11 @@ namespace ImageManager.ViewModels
         public MainPageViewModel MainPageViewModel { get; set; }
         public bool ShowLabelPopup { get; set; }
         public WindowState WindowState { get; set; }
+        public bool IsHideWhenScreenShoot
+        {
+            get => UserSettingData.IsHideWhenScreenShoot;
+            set => UserSettingData.IsHideWhenScreenShoot = value;
+        }
 
         private IWindowManager _windowManager;
         private IContainer _container;
@@ -150,16 +155,25 @@ namespace ImageManager.ViewModels
         }
         public void ScreenShot()
         {
-            var preWindowState = WindowState;
-            WindowState = WindowState.Minimized;
-            Execute.PostToUIThreadAsync(async () =>
+            if(IsHideWhenScreenShoot)
             {
-                await Task.Delay(300);
+                var preWindowState = WindowState;
+                WindowState = WindowState.Minimized;
+                Execute.PostToUIThreadAsync(async () =>
+                {
+                    await Task.Delay(300);
+                    var screenShotWindow = new ScreenShotWindow();
+                    screenShotWindow.Show();
+                    await Task.Delay(1500);
+                    WindowState = preWindowState;
+                });
+            }
+            else
+            {
                 var screenShotWindow = new ScreenShotWindow();
                 screenShotWindow.Show();
-                await Task.Delay(1500);
-                WindowState = preWindowState;
-            });
+            }
+            
         }
         public void CheckUpdate()
         {
