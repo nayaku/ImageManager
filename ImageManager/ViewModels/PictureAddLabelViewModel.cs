@@ -15,7 +15,6 @@ namespace ImageManager.ViewModels
         public string SearchText { get; set; }
         public bool ShowLabelPopup { get; set; }
         public List<Label> SearchedLabels { get; set; }
-        public Label ResultLabel { get; set; }
         public PictureAddLabelViewModel()
         {
         }
@@ -70,9 +69,6 @@ namespace ImageManager.ViewModels
         public void OK(string okString)
         {
             var ok = bool.Parse(okString);
-            if (ok)
-                ResultLabel = Context.Labels.SingleOrDefault(l => l.Name == SearchText)
-                    ?? new Label { Name = SearchText };
 
             RequestClose(ok);
         }

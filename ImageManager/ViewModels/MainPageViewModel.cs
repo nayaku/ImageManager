@@ -3,7 +3,6 @@ using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Tools;
 using Microsoft.EntityFrameworkCore;
-using Stylet;
 using StyletIoC;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -16,9 +15,6 @@ using static ImageManager.Data.UserSettingData;
 using ImageManager.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using System.Collections.Generic;
-using System.Linq;
-using System;
 
 namespace ImageManager.ViewModels
 {
@@ -96,9 +92,8 @@ namespace ImageManager.ViewModels
             };
         }
 
-        public async void UpdatePicture()
+        public void UpdatePicture()
         {
-
             IQueryable<Picture> query;
             if (_fatherViewModel is AddImageViewModel addImageViewModel)
                 query = addImageViewModel.Pictures.AsQueryable();
@@ -214,7 +209,8 @@ namespace ImageManager.ViewModels
             bool? res = WindowManager.ShowDialog(pictureAddLabelViewModel);
             if (res ?? false)
             {
-                var label = pictureAddLabelViewModel.ResultLabel;
+                var label = Context.Labels.SingleOrDefault(l => l.Name == pictureAddLabelViewModel.SearchText)
+                    ?? new Label { Name = pictureAddLabelViewModel.SearchText };
 
                 SelectedPictures.ForEach(p =>
                 {
