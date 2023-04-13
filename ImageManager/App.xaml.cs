@@ -1,6 +1,7 @@
 ﻿using HandyControl.Themes;
 using ImageManager.Tools;
 using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -28,8 +29,10 @@ namespace ImageManager
         // 每次启动应用程序，都会验证名称为OnlyRun的互斥是否存在 
         protected override void OnStartup(StartupEventArgs e)
         {
-            mutex = new Mutex(true, ResourceAssembly.GetName().Name);
-            if (mutex.WaitOne(0, false))
+            var location = Assembly.GetEntryAssembly()!.Location;
+            var bs = System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(location));
+            mutex = new Mutex(true, Convert.ToBase64String(bs), out var isNewInstance);
+            if (isNewInstance)
             {
                 try
                 {
@@ -56,25 +59,25 @@ namespace ImageManager
 
         void ThrowException(Exception e)
         {
-
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
             Log.Error(e.ToString());
             Log.ReportError(e.ToString());
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Exception.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
-            e.Handled = true;
             Log.Error(e.Exception.ToString());
-            Log.ReportError(e.ToString());
+            Log.ReportError(e.Exception.ToString());
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Exception.Message.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
+            e.Handled = true;
         }
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
-            Log.Error(e.ToString());
-            Log.ReportError(e.ToString());
+            var ex = (Exception)e.ExceptionObject;
+            Log.Error(ex.ToString());
+            Log.ReportError(ex.ToString());
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + ex.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
     }
