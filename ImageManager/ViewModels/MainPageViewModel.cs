@@ -141,7 +141,8 @@ namespace ImageManager.ViewModels
         {
             if (e.WidthChanged)
             {
-                MaxCardWidth = e.NewSize.Width - 5;
+                // 最小两栏
+                MaxCardWidth = (e.NewSize.Width) / 2 - 5;
                 CardWidth = Math.Min(CardWidth, MaxCardWidth);
             }
         }
