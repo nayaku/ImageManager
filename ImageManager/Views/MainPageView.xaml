@@ -356,10 +356,10 @@
                     HorizontalAlignment="Left"
                     Text="{Binding Message}" />
                 <Slider
-                    Width="100"
+                    Width="120"
                     HorizontalAlignment="Right"
                     Maximum="{Binding MaxCardWidth, Mode=OneWay}"
-                    Minimum="40"
+                    Minimum="120"
                     Orientation="Horizontal"
                     Value="{Binding CardWidth}" />
             </Grid>
