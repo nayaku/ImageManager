@@ -15,6 +15,8 @@ using static ImageManager.Data.UserSettingData;
 using ImageManager.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
+using HandyControl.Tools.Command;
+using System.Windows.Data;
 
 namespace ImageManager.ViewModels
 {
@@ -80,6 +82,9 @@ namespace ImageManager.ViewModels
         public BindableCollection<Label> FilterLabels { get; set; } = new();
         public bool ShowFilterLabelPanel { get; set; }
 
+        // 右键菜单栏
+        public List<MenuItemViewModel> ContextMenuItems { get; set; }
+
         public MainPageViewModel(object fatherViewModel)
         {
             _fatherViewModel = fatherViewModel;
@@ -90,6 +95,101 @@ namespace ImageManager.ViewModels
                 ShowFilterLabelPanel = FilterLabels.Count > 0;
                 UpdatePicture();
             };
+
+            // 切换右键菜单栏
+            if (!IsAddPictureMode)
+            {
+                ContextMenuItems = new()
+                {
+                    new MenuItemViewModel()
+                    {
+                        Header = "贴片式打开",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            OpenPictureCommand();
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header = "使用外部程序打开",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            OpenPictureWithExternalProgram();
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        IsSeparator = true,
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header = "拷贝图片",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            CopyPicture();
+                        }),
+                        InputGestureText = "Ctrl+C",
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header ="拷贝图片路径",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            CopyPicturePath();
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        IsSeparator = true,
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header = "添加标签",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            AddPictureLabel();
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header = "删除图片",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            DeletePicture();
+                        }),
+                    },
+                };
+            }
+            else
+            {
+                ContextMenuItems = new()
+                {
+                    new MenuItemViewModel()
+                    {
+                        Header = "添加标签",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            AddPictureLabel();
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header="接受添加",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            AcceptToAdd(true);
+                        }),
+                    },
+                    new MenuItemViewModel()
+                    {
+                        Header="拒绝添加",
+                        Command = new RelayCommand((obj) =>
+                        {
+                            AcceptToAdd(false);
+                        }),
+                    },
+                };
+            }
         }
 
         public void UpdatePicture()
@@ -166,7 +266,7 @@ namespace ImageManager.ViewModels
             });
         }
         private IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
-        public void OpenPictureWithexternalProgram()
+        public void OpenPictureWithExternalProgram()
         {
             SelectedPictures.ForEach(picture =>
             {
@@ -280,13 +380,12 @@ namespace ImageManager.ViewModels
             UpdatePicture();
         }
 
-        public void AcceptToAdd(string accptString)
+        public void AcceptToAdd(bool accept)
         {
-            var accpt = bool.Parse(accptString);
             Pictures.Where(x => x.IsSelected).ForEach(p =>
             {
                 if (p.IsEnabled)
-                    p.AcceptToAdd = accpt;
+                    p.AcceptToAdd = accept;
             });
         }
         #endregion

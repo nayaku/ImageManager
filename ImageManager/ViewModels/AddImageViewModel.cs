@@ -68,7 +68,7 @@ namespace ImageManager.ViewModels
         }
         public void AcceptToAdd(string acceptString)
         {
-            MainPageViewModel.AcceptToAdd(acceptString);
+            MainPageViewModel.AcceptToAdd(bool.Parse(acceptString));
         }
         #endregion
 
