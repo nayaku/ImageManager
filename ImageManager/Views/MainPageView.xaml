@@ -2,6 +2,7 @@
     x:Class="ImageManager.Views.MainPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Tools="clr-namespace:ImageManager.Tools"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataModels="clr-namespace:ImageManager.Data.Model"
     xmlns:hc="https://handyorg.github.io/handycontrol"
@@ -18,6 +19,7 @@
                 <hc:ThemeResources />
                 <hc:Theme />
                 <ResourceDictionary>
+                    <Tools:BindingProxy x:Key="Proxy" Data="{Binding}" />
                     <Style
                         x:Key="PictureCard"
                         BasedOn="{StaticResource CardBaseStyle}"
@@ -122,54 +124,34 @@
                         <Setter Property="ItemTemplate">
                             <Setter.Value>
                                 <DataTemplate DataType="viewModels:PictureSelectableItemWrapper">
-                                    <hc:SimplePanel>
-                                        <hc:Card
-                                            Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                                            Content="{Binding}"
-                                            Footer="{Binding}"
-                                            Style="{StaticResource PictureCard}"
-                                            Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
-                                            <hc:Card.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Command="{s:Action OpenPictureCommand}" Header="贴片式打开" />
-                                                    <MenuItem Command="{s:Action OpenPictureWithexternalProgram}" Header="使用外部程序打开" />
-                                                    <Separator />
-                                                    <MenuItem
-                                                        Command="{s:Action CopyPicture}"
-                                                        Header="拷贝图片"
-                                                        InputGestureText="Ctrl+C" />
-                                                    <MenuItem Command="{s:Action CopyPicturePath}" Header="拷贝图片路径" />
-                                                    <Separator />
-                                                    <MenuItem Command="{s:Action AddPictureLabel}" Header="添加标签" />
-                                                    <MenuItem
-                                                        Command="{s:Action DeletePicture}"
-                                                        Header="删除图片"
-                                                        InputGestureText="Delete" />
-                                                </ContextMenu>
-                                            </hc:Card.ContextMenu>
-                                        </hc:Card>
-                                        <hc:Card
-                                            Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                                            Content="{Binding}"
-                                            Footer="{Binding}"
-                                            Style="{StaticResource PictureCard}"
-                                            Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.Instance}, Mode=OneWay}">
-                                            <hc:Card.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Command="{s:Action AddPictureLabel}" Header="添加标签" />
-                                                    <Separator />
-                                                    <MenuItem
-                                                        Command="{s:Action AcceptToAdd}"
-                                                        CommandParameter="True"
-                                                        Header="接受添加" />
-                                                    <MenuItem
-                                                        Command="{s:Action AcceptToAdd}"
-                                                        CommandParameter="False"
-                                                        Header="拒绝添加" />
-                                                </ContextMenu>
-                                            </hc:Card.ContextMenu>
-                                        </hc:Card>
-                                    </hc:SimplePanel>
+                                    <hc:Card
+                                        Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                        Content="{Binding}"
+                                        Footer="{Binding}"
+                                        Style="{StaticResource PictureCard}">
+                                        <hc:Card.ContextMenu>
+                                            <ContextMenu ItemsSource="{Binding Source={StaticResource Proxy}, Path=Data.ContextMenuItems, Mode=OneTime}">
+                                                <ContextMenu.ItemContainerStyle>
+                                                    <Style TargetType="MenuItem">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="MenuItem">
+                                                                    <hc:SimplePanel>
+                                                                        <MenuItem
+                                                                            Command="{Binding Command}"
+                                                                            Header="{Binding Header}"
+                                                                            InputGestureText="{Binding InputGestureText}"
+                                                                            Visibility="{Binding IsSeparator, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+                                                                        <Separator Visibility="{Binding IsSeparator, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                                                                    </hc:SimplePanel>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ContextMenu.ItemContainerStyle>
+                                            </ContextMenu>
+                                        </hc:Card.ContextMenu>
+                                    </hc:Card>
                                 </DataTemplate>
                             </Setter.Value>
                         </Setter>
