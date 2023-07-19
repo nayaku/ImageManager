@@ -1,22 +1,21 @@
-﻿using HandyControl.Tools.Extension;
+﻿using HandyControl.Tools.Command;
+using HandyControl.Tools.Extension;
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Tools;
+using ImageManager.Windows;
 using Microsoft.EntityFrameworkCore;
 using StyletIoC;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Windows;
 using System.Linq.Dynamic.Core;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using static ImageManager.Data.UserSettingData;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
-using static ImageManager.Data.UserSettingData;
-using ImageManager.Windows;
-using System.Windows.Input;
-using System.Windows.Controls;
-using HandyControl.Tools.Command;
-using System.Windows.Data;
 
 namespace ImageManager.ViewModels
 {
