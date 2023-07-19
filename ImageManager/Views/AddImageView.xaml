@@ -12,7 +12,7 @@
     Width="900"
     Height="600"
     d:DataContext="{d:DesignInstance Type=viewmodels:AddImageViewModel}"
-    Closing="{s:Action Closing}"
+    Closing="{s:Action PreClosing}"
     Loaded="{s:Action ShowMessageSync}"
     ShowMinButton="False"
     mc:Ignorable="d">

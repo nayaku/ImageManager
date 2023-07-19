@@ -102,7 +102,7 @@ namespace ImageManager.ViewModels
             RequestClose();
             _successEvent?.Invoke(this, count);
         }
-        public void Closing()
+        public void PreClosing()
         {
             if (_isWorking)
             {
@@ -113,7 +113,7 @@ namespace ImageManager.ViewModels
         }
         public void Cancel()
         {
-            Closing();
+            PreClosing();
             RequestClose();
         }
 
