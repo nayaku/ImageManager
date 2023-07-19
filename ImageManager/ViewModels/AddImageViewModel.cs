@@ -3,13 +3,7 @@ using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Views;
 using Microsoft.EntityFrameworkCore;
-using Stylet;
 using StyletIoC;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ImageManager.ViewModels
 {
@@ -50,7 +44,7 @@ namespace ImageManager.ViewModels
             var similarPictureNum = Pictures.Count(p => p.SimilarPictures != null);
             var message = $"一共扫描到{Pictures.Count}张图片，其中有{samePictureNum}张重复图片，" +
                 $"有{similarPictureNum}张相似图片，此外还有{_files.Count - Pictures.Count}个文件不是图片。";
-            Growl.Success(message,"AddImageViewMessage");
+            Growl.Success(message, "AddImageViewMessage");
         }
 
         #region 快捷键
@@ -108,7 +102,7 @@ namespace ImageManager.ViewModels
             RequestClose();
             _successEvent?.Invoke(this, count);
         }
-        public async void CancelAsync()
+        public void Closing()
         {
             if (_isWorking)
             {
@@ -116,15 +110,16 @@ namespace ImageManager.ViewModels
             }
             _canClose = true;
             Result = false;
+        }
+        public void Cancel()
+        {
+            Closing();
             RequestClose();
         }
 
         public override Task<bool> CanCloseAsync()
         {
-            return Task.Run(() =>
-            {
-                return _canClose;
-            });
+            return Task.FromResult(_canClose);
         }
 
         public void ParametersInjected()

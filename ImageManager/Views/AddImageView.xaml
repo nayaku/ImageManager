@@ -12,7 +12,7 @@
     Width="900"
     Height="600"
     d:DataContext="{d:DesignInstance Type=viewmodels:AddImageViewModel}"
-    Closing="{s:Action CancelAsync}"
+    Closing="{s:Action Closing}"
     Loaded="{s:Action ShowMessageSync}"
     ShowMinButton="False"
     mc:Ignorable="d">
@@ -108,7 +108,7 @@
                     VerticalAlignment="Bottom">
                     <Button
                         Width="100"
-                        Command="{s:Action CancelAsync}"
+                        Command="{s:Action Cancel}"
                         Content="取    消"
                         Style="{StaticResource ButtonDefault}" />
                 </StackPanel>
