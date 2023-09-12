@@ -7,6 +7,6 @@ namespace ImageManager.ViewModels
         public bool IsSeparator { get; set; } = false;
         public object? Header { get; set; } = null;
         public ICommand? Command { get; set; } = null;
-        public string InputGestureText { get; set; }=string.Empty;
+        public string InputGestureText { get; set; } = string.Empty;
     }
 }

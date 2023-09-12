@@ -1,5 +1,5 @@
-﻿using System.Windows.Data;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Data;
 
 namespace ImageManager.Views
 {
@@ -7,7 +7,7 @@ namespace ImageManager.Views
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            
+
             if (value == null)
                 return null;
 

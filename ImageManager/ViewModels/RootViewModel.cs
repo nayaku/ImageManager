@@ -155,7 +155,7 @@ namespace ImageManager.ViewModels
         }
         public void ScreenShot()
         {
-            if(IsHideWhenScreenShoot)
+            if (IsHideWhenScreenShoot)
             {
                 var preWindowState = WindowState;
                 WindowState = WindowState.Minimized;
@@ -173,7 +173,7 @@ namespace ImageManager.ViewModels
                 var screenShotWindow = new ScreenShotWindow();
                 screenShotWindow.Show();
             }
-            
+
         }
         public void CheckUpdate()
         {

@@ -24,7 +24,7 @@ namespace ImageManager.Tools
 
             int htmlLength = Encoding.Default.GetByteCount(html);
             string sData = sDescription + sContextStart + html + sContextEnd;
-            
+
             sData = sData.Replace("aaaaaaaaaa", sDescriptionLength.ToString("D9"));
             sData = sData.Replace("bbbbbbbbbb", (sDescriptionLength + sContextStartLength + htmlLength + sContextEndLength).ToString("D9"));
             sData = sData.Replace("cccccccccc", (sDescriptionLength + sContextStartLength).ToString("D9"));

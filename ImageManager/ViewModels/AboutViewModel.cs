@@ -10,6 +10,6 @@ namespace ImageManager.ViewModels
         {
             System.Diagnostics.Process.Start("explorer.exe", "https://github.com/nayaku/ImageManager");
         }
-        
+
     }
 }

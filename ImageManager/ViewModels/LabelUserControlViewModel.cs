@@ -1,6 +1,4 @@
 ﻿using ImageManager.Data.Model;
-using Stylet;
-using System;
 
 namespace ImageManager.ViewModels
 {
@@ -9,7 +7,7 @@ namespace ImageManager.ViewModels
         public Label Label { get; set; }
         public bool CanDelete { get; set; }
         public EventHandler<LabelUserControlViewModel> LabelDeleteEvent { get; set; }
-        
+
         public LabelUserControlViewModel(Label label, bool canDelete)
         {
             Label = label;
