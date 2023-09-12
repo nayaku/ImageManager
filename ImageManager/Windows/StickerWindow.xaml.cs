@@ -49,7 +49,7 @@ namespace ImageManager.Windows
             InitializeComponent();
             _sourceImage = bitmap;
             SetImage(bitmap);
-            
+
             // 图片尺寸过大，则缩小
             if (SystemParameters.PrimaryScreenWidth * 0.6f < _sourceImage.Width || SystemParameters.PrimaryScreenHeight * 0.6f < _sourceImage.Height)
             {
@@ -183,7 +183,7 @@ namespace ImageManager.Windows
         private void Window_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             // 按住Ctrl键改变透明度
-            if (Keyboard.GetKeyStates(Key.LeftCtrl) == KeyStates.Down|| Keyboard.GetKeyStates(Key.RightCtrl) == KeyStates.Down)
+            if (Keyboard.GetKeyStates(Key.LeftCtrl) == KeyStates.Down || Keyboard.GetKeyStates(Key.RightCtrl) == KeyStates.Down)
             {
                 Opacity += e.Delta / 2000.0;
                 Opacity = Math.Max(0.05, Math.Min(1, Opacity));
@@ -194,7 +194,7 @@ namespace ImageManager.Windows
                 var rate = _zoomRate + e.Delta / 5000.0;
                 Zoom(rate);
             }
-            
+
         }
         #endregion
 

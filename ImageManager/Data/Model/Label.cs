@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ImageManager.Data.Model
 {
-    [Index(nameof(Name),IsUnique =true)]
+    [Index(nameof(Name), IsUnique = true)]
     public class Label
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

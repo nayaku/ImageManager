@@ -1,14 +1,7 @@
 ﻿using HandyControl.Controls;
 using ImageManager.Data;
 using ImageManager.Data.Model;
-using Stylet;
 using StyletIoC;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
 
 namespace ImageManager.ViewModels
 {
@@ -28,7 +21,7 @@ namespace ImageManager.ViewModels
         public void LabelSelected(object sender, EventArgs e)
         {
             var tag = (Tag)sender;
-            if(tag.IsSelected)
+            if (tag.IsSelected)
                 SelectedLabels.Add(SelectedLabels.Single(l => l.Name == tag.Content.ToString()));
             else
                 SelectedLabels.Remove(SelectedLabels.Single(l => l.Name == tag.Content.ToString()));

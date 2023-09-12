@@ -55,7 +55,7 @@ namespace ImageManager.Data
             if (!Directory.Exists(TempFolderPath))
                 Directory.CreateDirectory(TempFolderPath);
         }
-                
+
         /// <summary>
         /// 加载
         /// </summary>

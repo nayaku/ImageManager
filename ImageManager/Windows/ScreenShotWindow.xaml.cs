@@ -1,9 +1,9 @@
-﻿using System.Drawing;
+﻿using ImageManager.Tools;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Rectangle = System.Windows.Shapes.Rectangle;
-using ImageManager.Tools;
 
 namespace ImageManager.Windows
 {

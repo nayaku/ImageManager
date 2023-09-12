@@ -3,7 +3,7 @@
     /// <summary>
     /// UpdateView.xaml 的交互逻辑
     /// </summary>
-    public partial class UpdateView 
+    public partial class UpdateView
     {
         public UpdateView()
         {

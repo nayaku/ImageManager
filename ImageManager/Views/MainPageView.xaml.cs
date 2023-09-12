@@ -1,12 +1,11 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Tools;
+using ImageManager.Tools;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using static HandyControl.Tools.Interop.InteropValues;
-using ImageManager.Tools;
 
 namespace ImageManager.Views
 {
@@ -41,7 +40,7 @@ namespace ImageManager.Views
                 _updateMouseStateTimer.Stop();
                 _isCtrlDown = false;
                 _preSelectedItems.Clear();
-                
+
             }
         }
 
