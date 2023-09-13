@@ -1,9 +1,10 @@
 ﻿using HandyControl.Themes;
-using ImageManager.Tools;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
+using LoggerFactory = ImageManager.Logging.LoggerFactory;
+using LogLevel = ImageManager.Logging.LogLevel;
 
 namespace ImageManager
 {
@@ -59,15 +60,13 @@ namespace ImageManager
 
         void ThrowException(Exception e)
         {
-            Log.Error(e.ToString());
-            Log.ReportError(e.ToString());
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            Log.Error(e.Exception.ToString());
-            Log.ReportError(e.Exception.ToString());
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e.Exception);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Exception.Message.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
             e.Handled = true;
         }
@@ -75,8 +74,7 @@ namespace ImageManager
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = (Exception)e.ExceptionObject;
-            Log.Error(ex.ToString());
-            Log.ReportError(ex.ToString());
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: ex);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + ex.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

@@ -31,6 +31,10 @@ namespace ImageManager.Data
         public OrderByEnum OrderBy { get; set; } = OrderByEnum.AddTime;
         public bool IsDesc { get; set; } = false;
         public bool IsGroup { get; set; } = false;
+        /// <summary>
+        /// 图片相似度阈值
+        /// </summary>
+        public double SimilarityThreshold { get; set; } = 0.9;
 
         /// <summary>
         /// 截图时关闭主窗口

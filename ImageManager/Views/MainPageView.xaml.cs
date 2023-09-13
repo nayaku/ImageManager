@@ -1,6 +1,6 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Tools;
-using ImageManager.Tools;
+using ImageManager.Tools.Helper;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;

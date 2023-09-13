@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ImageManager.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Windows.Media.Imaging;
@@ -36,9 +37,10 @@ namespace ImageManager.Data.Model
         public int Width { get; set; }
         public int Height { get; set; }
         public DateTime AddTime { get; set; }
-        public string Hash { get; set; }
-        public ulong? WeakHash { get; set; }
-        public virtual List<Label> Labels { get; set; }
+        public byte[] Hash { get; set; }
+        [Required]
+        public byte[]? WeakHash { get; set; }
+        public virtual List<Label> Labels { get; set; } = new();
 
         [NotMapped]
         public bool AcceptToAdd { get; set; }
@@ -51,9 +53,9 @@ namespace ImageManager.Data.Model
         {
             get
             {
-                if (SamePicture != null && SamePicture.Count > 0)
+                if (SamePicture?.Any() ?? false)
                     return PictureAddStateEnum.SameConflict;
-                if (SimilarPictures != null && SimilarPictures.Count > 0)
+                if (SimilarPictures?.Any() ?? false)
                     return PictureAddStateEnum.SimilarConflict;
                 return PictureAddStateEnum.WaitToAdd;
             }
@@ -108,6 +110,30 @@ namespace ImageManager.Data.Model
                 File.Copy(filePath, newFilePath);
             }
             ImageFolderPath = folderPath;
+        }
+
+        public void SafeDeleteFile()
+        {
+            var logger = LoggerFactory.GetLogger(nameof(Picture));
+            try
+            {
+                File.Delete(System.IO.Path.Join(ImageFolderPath, Path));
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
+            if (ThumbnailPath != null)
+            {
+                try
+                {
+                    File.Delete(System.IO.Path.Join(ImageFolderPath, ThumbnailPath));
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+            }
         }
     }
 }

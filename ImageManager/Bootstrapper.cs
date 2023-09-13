@@ -1,22 +1,33 @@
 ﻿using ImageManager.Data;
+using ImageManager.Logging;
+using ImageManager.Migrations;
 using ImageManager.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using StyletIoC;
 
 namespace ImageManager
 {
     public class Bootstrapper : Bootstrapper<RootViewModel>
     {
+        private Logging.Logger _logger = LoggerFactory.GetLogger(nameof(Bootstrapper));
         protected override void ConfigureIoC(IStyletIoCBuilder builder)
         {
             var userSettingData = UserSettingData.Default;
             builder.Bind<UserSettingData>().ToInstance(userSettingData);
-            // create Database context
+
+            // 准备数据库
             var context = new ImageContext();
-            context.Database.Migrate();
+            var migrator = context.GetService<IMigrator>();
+            foreach (var migration in context.Database.GetPendingMigrations())
+            {
+                migrator.MigrateEx(migration, context);
+            }
             // 为每个窗体都配置一个DB上下文
             builder.Bind<ImageContext>()
                 .ToFactory(container => new ImageContext());
+
 
             // 清理
             Task.Run(() =>
