@@ -2,7 +2,6 @@
     x:Class="ImageManager.Views.MainPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Tools="clr-namespace:ImageManager.Tools"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataModels="clr-namespace:ImageManager.Data.Model"
     xmlns:hc="https://handyorg.github.io/handycontrol"
@@ -19,7 +18,7 @@
                 <hc:ThemeResources />
                 <hc:Theme />
                 <ResourceDictionary>
-                    <Tools:BindingProxy x:Key="Proxy" Data="{Binding}" />
+                    <hc:BindingProxy x:Key="Proxy" Value="{Binding}" />
                     <Style
                         x:Key="PictureCard"
                         BasedOn="{StaticResource CardBaseStyle}"
@@ -41,7 +40,7 @@
                                             <Border CornerRadius="4,4,0,0">
                                                 <Image MouseLeftButtonDown="{s:Action OpenPicture}" Stretch="UniformToFill">
                                                     <Image.Source>
-                                                        <BitmapImage DecodePixelWidth="{Binding Data.CardWidth, Source={StaticResource Proxy}}" UriSource="{Binding Item.ImageUri}" />
+                                                        <BitmapImage DecodePixelWidth="{Binding Value.CardWidth, Source={StaticResource Proxy}}" UriSource="{Binding Item.ImageUri}" />
                                                     </Image.Source>
                                                 </Image>
                                             </Border>
@@ -65,7 +64,8 @@
                                             HorizontalAlignment="Center"
                                             Style="{StaticResource TextBlockTitleBold}"
                                             Text="{Binding Item.Title}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
                                         <hc:TagContainer
                                             Margin="5,5,5,0"
                                             BorderThickness="0"
@@ -131,7 +131,7 @@
                                         Footer="{Binding}"
                                         Style="{StaticResource PictureCard}">
                                         <hc:Card.ContextMenu>
-                                            <ContextMenu ItemsSource="{Binding Source={StaticResource Proxy}, Path=Data.ContextMenuItems, Mode=OneTime}">
+                                            <ContextMenu ItemsSource="{Binding Source={StaticResource Proxy}, Path=Value.ContextMenuItems, Mode=OneTime}">
                                                 <ContextMenu.ItemContainerStyle>
                                                     <Style TargetType="MenuItem">
                                                         <Setter Property="Template">

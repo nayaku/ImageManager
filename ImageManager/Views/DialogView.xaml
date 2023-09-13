@@ -4,13 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
-    xmlns:local="clr-namespace:ImageManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
     Title="{Binding Title}"
-    Width="200"
-    Height="90"
+    Width="320"
+    Height="150"
     d:DataContext="{d:DesignInstance Type=viewmodels:DialogViewModel}"
     KeyDown="{s:Action WindowKeyDown}"
     ResizeMode="NoResize"
@@ -28,33 +27,33 @@
             HorizontalAlignment="Stretch"
             Background="{StaticResource DefaultBrush}">
             <TextBlock
-                Margin="0,14"
+                Margin="8,25"
                 HorizontalAlignment="Center"
-                Text="{Binding Message}" />
+                Text="{Binding Message}"
+                TextWrapping="WrapWithOverflow" />
         </Border>
 
         <StackPanel
             Grid.Row="1"
-            Margin="0,6"
+            Margin="0,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Orientation="Horizontal">
             <Button
-                Width="60"
-                Margin="0"
+                Width="80"
+                Margin="20,0"
                 Command="{s:Action OK}"
                 CommandParameter="True"
                 Content="{Binding ConfirmText}"
                 Style="{Binding ConfirmButtonStyle, Converter={StaticResource StyleConverter}}" />
-            <Border Width="30" Visibility="{Binding ShowCancel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
             <Button
-                Width="60"
-                Margin="0"
+                Width="80"
+                Margin="20,0"
                 Command="{s:Action OK}"
                 CommandParameter="False"
                 Content="{Binding CancelText}"
                 Style="{Binding CancelButtonStyle, Converter={StaticResource StyleConverter}}"
-                Visibility="{Binding ShowCancel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                Visibility="{Binding CancelText, Converter={StaticResource IsNullOrEmptyToVisibilityConverter}}" />
         </StackPanel>
 
     </Grid>

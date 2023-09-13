@@ -6,14 +6,15 @@ using System.Windows.Media;
 namespace ImageManager.Views
 {
     /// <summary>
-    /// AddImageProgressView.xaml 的交互逻辑
+    /// ProgressView.xaml 的交互逻辑
     /// </summary>
-    public partial class AddImageProgressView : HandyControl.Controls.Window
+    public partial class ProgressView
     {
-        public AddImageProgressView()
+        public ProgressView()
         {
             InitializeComponent();
         }
+
         private void TextBlock_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             TextBlock textBlock = sender as TextBlock;

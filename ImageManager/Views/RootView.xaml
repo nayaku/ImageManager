@@ -26,6 +26,10 @@
             Command="{s:Action AddPictures}"
             Modifiers="Ctrl" />
         <KeyBinding
+            Key="O"
+            Command="{s:Action AddFolders}"
+            Modifiers="Ctrl+Shift" />
+        <KeyBinding
             Key="A"
             s:View.ActionTarget="{Binding MainPageViewModel}"
             Command="{s:Action SelectAll}"
@@ -64,10 +68,18 @@
                         Header="添加图片"
                         InputGestureText="Ctrl+O" />
                     <MenuItem
+                        Command="{s:Action AddFolders}"
+                        Header="添加文件夹"
+                        InputGestureText="Ctrl+Shift+O" />
+                    <Separator />
+                    <MenuItem Command="{s:Action ImportData}" Header="导入数据库" />
+                    <MenuItem Command="{s:Action ExportData}" Header="导出数据库" />
+                    <Separator />
+                    <MenuItem
                         Command="{s:Action ScreenShot}"
                         Header="截图"
                         InputGestureText="Ctrl+Alt+Shift+X" />
-                    <CheckBox IsChecked="{Binding IsHideWhenScreenShoot}" Content="截图时隐藏" />
+                    <CheckBox Content="截图时隐藏" IsChecked="{Binding IsHideWhenScreenShoot}" />
                 </MenuItem>
                 <MenuItem Header="选择">
                     <MenuItem

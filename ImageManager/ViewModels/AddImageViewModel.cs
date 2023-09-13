@@ -2,7 +2,6 @@
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Views;
-using Microsoft.EntityFrameworkCore;
 using StyletIoC;
 
 namespace ImageManager.ViewModels
@@ -11,8 +10,7 @@ namespace ImageManager.ViewModels
     {
         [Inject]
         public IContainer Container { get; set; }
-        [Inject]
-        public ImageContext Context { get; set; }
+
         public MainPageViewModel MainPageViewModel { get; set; }
         public List<Picture> Pictures { get; set; }
         public bool WaitingAdding { get; set; }
@@ -20,31 +18,30 @@ namespace ImageManager.ViewModels
 
         private bool _canClose = false;
         private bool _isWorking = false;
-        private List<string> _files;
+        private string _message;
         private EventHandler<int> _successEvent;
+        private ImageContext _context;
 
-        public AddImageViewModel(List<string> files, List<Picture> pictures, EventHandler<int> successEvent)
+
+        public AddImageViewModel(List<Picture> pictures, string message, EventHandler<int> successEvent, ImageContext context)
         {
-            _files = files;
             Pictures = pictures;
+            _message = message;
             _successEvent = successEvent;
 
-            MainPageViewModel = new(this)
+            MainPageViewModel = new(this, context)
             {
                 UserSetting = new() { AutoSave = false },
                 OrderBy = UserSettingData.OrderByEnum.AddState,
                 IsGroup = true,
             };
+            _context = context;
         }
 
         public async void ShowMessageSync()
         {
             await Task.Delay(500);
-            var samePictureNum = Pictures.Count(p => p.SamePicture != null);
-            var similarPictureNum = Pictures.Count(p => p.SimilarPictures != null);
-            var message = $"一共扫描到{Pictures.Count}张图片，其中有{samePictureNum}张重复图片，" +
-                $"有{similarPictureNum}张相似图片，此外还有{_files.Count - Pictures.Count}个文件不是图片。";
-            Growl.Success(message, "AddImageViewMessage");
+            Growl.Success(_message, "AddImageViewMessage");
         }
 
         #region 快捷键
@@ -89,11 +86,11 @@ namespace ImageManager.ViewModels
                             var newThumbnailFile = Path.Combine(p.ImageFolderPath, p.ThumbnailPath);
                             File.Copy(thumbnailFile, newThumbnailFile);
                         }
-                        Context.Add(p);
+                        _context.Add(p);
                         count++;
                     }
                 });
-                Context.SaveChanges();
+                _context.SaveChanges();
                 return count;
             });
             dialog.Close();
@@ -124,9 +121,7 @@ namespace ImageManager.ViewModels
 
         public void ParametersInjected()
         {
-            Context.Database.Migrate();
             Container.BuildUp(MainPageViewModel);
-            // 得手动调用
             MainPageViewModel.ParametersInjected();
         }
     }

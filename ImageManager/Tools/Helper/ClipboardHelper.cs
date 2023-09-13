@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Windows;
 
-namespace ImageManager.Tools
+namespace ImageManager.Tools.Helper
 {
     /// <summary>
     /// Helper to encode and set HTML fragment to clipboard.<br/>
@@ -105,7 +105,7 @@ SourceURL:";
         /// <param name="plainText">the plain text</param>
         public static DataObject CreateDataObject(string html, string plainText)
         {
-            html = html ?? String.Empty;
+            html = html ?? string.Empty;
             var htmlFragment = GetHtmlDataString(html);
 
             // re-encode the string so it will work correctly (fixed in CLR 4.0)
@@ -187,8 +187,8 @@ SourceURL:";
                     sb.Append(StartFragment);
                     fragmentStart = GetByteCount(sb);
 
-                    var innerHtmlStart = bodyOpenEndIdx > -1 ? bodyOpenEndIdx : (htmlOpenEndIdx > -1 ? htmlOpenEndIdx : 0);
-                    var innerHtmlEnd = bodyCloseIdx > -1 ? bodyCloseIdx : (htmlCloseIdx > -1 ? htmlCloseIdx : html.Length);
+                    var innerHtmlStart = bodyOpenEndIdx > -1 ? bodyOpenEndIdx : htmlOpenEndIdx > -1 ? htmlOpenEndIdx : 0;
+                    var innerHtmlEnd = bodyCloseIdx > -1 ? bodyCloseIdx : htmlCloseIdx > -1 ? htmlCloseIdx : html.Length;
                     sb.Append(html, innerHtmlStart, innerHtmlEnd - innerHtmlStart);
 
                     fragmentEnd = GetByteCount(sb);

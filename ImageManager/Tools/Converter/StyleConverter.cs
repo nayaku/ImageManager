@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Data;
 
-namespace ImageManager.Views
+namespace ImageManager.Tools.Converter
 {
     public class StyleConverter : IValueConverter
     {

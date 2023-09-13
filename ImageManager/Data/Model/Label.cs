@@ -24,5 +24,10 @@ namespace ImageManager.Data.Model
             }
             return false;
         }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
     }
 }

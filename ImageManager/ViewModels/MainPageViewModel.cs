@@ -2,7 +2,7 @@
 using HandyControl.Tools.Extension;
 using ImageManager.Data;
 using ImageManager.Data.Model;
-using ImageManager.Tools;
+using ImageManager.Tools.Helper;
 using ImageManager.Windows;
 using Microsoft.EntityFrameworkCore;
 using StyletIoC;
@@ -22,6 +22,7 @@ namespace ImageManager.ViewModels
     public class MainPageViewModel : PropertyChangedBase, IInjectionAware
     {
         private readonly object _fatherViewModel;
+        private ImageContext _context;
 
         [Inject]
         public IWindowManager WindowManager;
@@ -29,8 +30,6 @@ namespace ImageManager.ViewModels
         public IContainer Container;
         [Inject]
         public UserSettingData UserSetting { get; set; }
-        [Inject]
-        public ImageContext Context { get; set; }
 
 
         public bool IsAddPictureMode => _fatherViewModel is AddImageViewModel;
@@ -84,7 +83,7 @@ namespace ImageManager.ViewModels
         // 右键菜单栏
         public List<MenuItemViewModel> ContextMenuItems { get; set; }
 
-        public MainPageViewModel(object fatherViewModel)
+        public MainPageViewModel(object fatherViewModel, ImageContext context)
         {
             _fatherViewModel = fatherViewModel;
 
@@ -189,6 +188,7 @@ namespace ImageManager.ViewModels
                     },
                 };
             }
+            _context = context;
         }
 
         public void UpdatePicture()
@@ -197,7 +197,7 @@ namespace ImageManager.ViewModels
             if (_fatherViewModel is AddImageViewModel addImageViewModel)
                 query = addImageViewModel.Pictures.AsQueryable();
             else
-                query = Context.Pictures.AsQueryable();
+                query = _context.Pictures.AsQueryable();
 
             if (_fatherViewModel is RootViewModel rootViewModel && rootViewModel.SearchText != null)
                 query = query.Where(p => EF.Functions.Like(p.Title, "%" + rootViewModel.SearchText + "%"));
@@ -225,7 +225,7 @@ namespace ImageManager.ViewModels
 
             picture.Item.Labels.Remove(label);
             if (!IsAddPictureMode)
-                Context.SaveChanges();
+                _context.SaveChanges();
         }
 
         public void PictureSelectionChange()
@@ -309,38 +309,29 @@ namespace ImageManager.ViewModels
             bool? res = WindowManager.ShowDialog(pictureAddLabelViewModel);
             if (res ?? false)
             {
-                var label = Context.Labels.SingleOrDefault(l => l.Name == pictureAddLabelViewModel.SearchText)
+                var label = _context.Labels.SingleOrDefault(l => l.Name == pictureAddLabelViewModel.SearchText)
                     ?? new Label { Name = pictureAddLabelViewModel.SearchText };
 
                 SelectedPictures.ForEach(p =>
                 {
-                    p.Labels ??= new List<Label>();
                     if (!p.Labels.Contains(label))
                         p.Labels.Add(label);
                 });
                 Pictures.Refresh();
                 NotifyOfPropertyChange(nameof(PictureGroups));
                 if (!IsAddPictureMode)
-                    Context.SaveChanges();
+                    _context.SaveChanges();
             }
         }
         public void DeletePicture()
         {
-            var dialogViewModel = new DialogViewModel
-            {
-                Title = "删除图片",
-                Message = "确定删除选中的图片吗？",
-                ConfirmText = "删  除",
-                CancelText = "取  消",
-                ShowCancel = true,
-                ConfirmButtonStyle = "ButtonDanger"
-            };
-            var res = WindowManager.ShowDialog(dialogViewModel);
+            var res = DialogViewModel.Show(Container, "删除图片",
+                "确定删除选中的图片吗？", "删  除", "取  消", confirmButtonStyle: "ButtonDanger");
             if (res ?? false)
             {
                 var deletePictures = Pictures.Where(p => p.IsSelected).ToList();
-                Context.Pictures.RemoveRange(deletePictures.Select(p => p.Item));
-                Context.SaveChanges();
+                _context.Pictures.RemoveRange(deletePictures.Select(p => p.Item));
+                _context.SaveChanges();
                 Pictures.RemoveRange(deletePictures);
                 var deleteFiles = new List<string>();
                 deletePictures.ForEach(p =>

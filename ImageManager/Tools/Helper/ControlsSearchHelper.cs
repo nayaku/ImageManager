@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 
-namespace ImageManager.Tools
+namespace ImageManager.Tools.Helper
 {
     public class ControlsSearchHelper
     {
@@ -18,7 +18,7 @@ namespace ImageManager.Tools
 
             while (parent != null)
             {
-                if (parent is T t && (t.Name == name | string.IsNullOrEmpty(name)))
+                if (parent is T t && t.Name == name | string.IsNullOrEmpty(name))
                 {
                     return t;
                 }
@@ -43,7 +43,7 @@ namespace ImageManager.Tools
             for (int i = 0; i <= VisualTreeHelper.GetChildrenCount(obj) - 1; i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T t && (t.Name == name | string.IsNullOrEmpty(name)))
+                if (child is T t && t.Name == name | string.IsNullOrEmpty(name))
                 {
                     return t;
                 }

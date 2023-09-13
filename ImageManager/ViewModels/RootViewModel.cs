@@ -3,21 +3,22 @@ using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
 using ImageManager.Tools;
+using ImageManager.Tools.Extension;
 using ImageManager.Windows;
 using StyletIoC;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
+using IContainer = StyletIoC.IContainer;
 using Label = ImageManager.Data.Model.Label;
 
 namespace ImageManager.ViewModels
 {
     public class RootViewModel : Screen, IInjectionAware
     {
+        private ImageContext _context;
+
         [Inject]
         public UserSettingData UserSettingData { get; set; }
-        [Inject]
-        public ImageContext Context { get; set; }
         public bool ThemeConfigShow { get; set; } = false;
         public string SearchText { get; set; }
         public List<Label> SearchedLabels { get; set; }
@@ -32,12 +33,12 @@ namespace ImageManager.ViewModels
 
         private IWindowManager _windowManager;
         private IContainer _container;
-        public RootViewModel(IWindowManager windowManager, IContainer container)
+        public RootViewModel(IWindowManager windowManager, IContainer container, ImageContext context)
         {
             _windowManager = windowManager;
             _container = container;
-            MainPageViewModel = new(this);
-            container.BuildUp(MainPageViewModel);
+            MainPageViewModel = new(this, context);
+            _context = context;
         }
 
         public void Loaded()
@@ -59,9 +60,9 @@ namespace ImageManager.ViewModels
         public void UpdateSearchedLabels()
         {
             if (SearchText == null || SearchText == "")
-                SearchedLabels = Context.Labels.OrderByDescending(l => l.Num).ToList();
+                SearchedLabels = _context.Labels.OrderByDescending(l => l.Num).ToList();
             else
-                SearchedLabels = Context.Labels.Where(l => l.Name.Contains(SearchText)).OrderByDescending(l => l.Num).ToList();
+                SearchedLabels = _context.Labels.Where(l => l.Name.Contains(SearchText)).OrderByDescending(l => l.Num).ToList();
         }
         public void LabelClick(Label label)
         {
@@ -113,26 +114,65 @@ namespace ImageManager.ViewModels
         }
 
         #region 菜单栏
-        private Dispatcher _dispatcher;
+        /// <summary>
+        /// 添加图片
+        /// </summary>
         public void AddPictures()
         {
-            _dispatcher = Application.Current.Dispatcher;
-            var dialog = new Microsoft.Win32.OpenFileDialog
+            var dialog = new System.Windows.Forms.OpenFileDialog
             {
-                //dialog.Filter = "图片文件|*.BMP;*ICO;*.JPG;*.JIF;*.JPEG;*.JPE;*.JNG;*.KOA;*.IFF;*.LBM;*.IFF;*.LBM;*.MNG;*.PBM;*.PCD;*PCX;*.PGM;*.PNG;*.PPM;*.PPM;*.RAS;*.TGA;*.TARGA;*.TIF;*.TIFF;*.WBMP;*.PSD;*.CUT;*.XBM;*.XPM;*.DDS;*.GIF;*.HDR;*.G3;*.SGI;*.EXR;*.J2K;*.J2C;*.JP2;*.PFM;*.PICT;*.RAW;*.webp;*.jxr";
                 Multiselect = true
             };
-            bool? fileDialogResult = dialog.ShowDialog();
-            if (fileDialogResult ?? false)
+            var res = dialog.ShowDialog();
+            if (res == System.Windows.Forms.DialogResult.OK)
             {
                 // 扫描和准备文件
-                var progressViewModel = new AddImageProgressViewModel(new List<string>(dialog.FileNames), AddPictureSuccessEvent);
-                _container.BuildUp(progressViewModel);
-                progressViewModel.ParametersInjected();
-                _windowManager.ShowWindow(progressViewModel);
+                var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
+                    new List<string>(dialog.FileNames), AddPictureSuccess);
+                _container.BuildUpEx(addImageProgressViewModelWrap);
+                _windowManager.ShowWindow(addImageProgressViewModelWrap.ProgressViewModel);
             }
         }
-        public void AddPictureSuccessEvent(object? sender, int pictureNum)
+
+        /// <summary>
+        /// 添加文件夹
+        /// </summary>
+        public void AddFolders()
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                // 扫描和准备文件
+                var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
+                                       new List<string>() { dialog.SelectedPath }, AddPictureSuccess);
+                _container.BuildUpEx(addImageProgressViewModelWrap);
+                _windowManager.ShowWindow(addImageProgressViewModelWrap.ProgressViewModel);
+            }
+        }
+
+        /// <summary>
+        /// 导入数据库
+        /// </summary>
+        public void ImportData()
+        {
+            // 选择要导入的文件
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                Filter = "数据库文件|*" + PictureDataArchive.Extension,
+                Multiselect = true,
+            };
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                var addImageProgressViewModel = new AddImageProgressViewModelWrap(
+                                       new List<string>(dialog.FileNames), AddPictureSuccess);
+                _container.BuildUpEx(addImageProgressViewModel);
+                _windowManager.ShowWindow(addImageProgressViewModel.ProgressViewModel);
+            }
+        }
+
+        private void AddPictureSuccess(object? sender, int pictureNum)
         {
             var growlInfo = new GrowlInfo()
             {
@@ -153,6 +193,30 @@ namespace ImageManager.ViewModels
             };
             Growl.Ask(growlInfo);
         }
+
+        /// <summary>
+        /// 导出数据库
+        /// </summary>
+        public void ExportData()
+        {
+            // 选择要导出到的文件夹和文件名
+            var dialog = new System.Windows.Forms.SaveFileDialog
+            {
+                Filter = "数据库文件|*" + PictureDataArchive.Extension,
+            };
+            var result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                var exportImageProgressViewModelWrap = new ExportImageProgressViewModelWrap(
+                    _context.Pictures.ToList(), dialog.FileName);
+                _container.BuildUpEx(exportImageProgressViewModelWrap);
+                _windowManager.ShowWindow(exportImageProgressViewModelWrap.ProgressViewModel);
+            }
+        }
+
+        /// <summary>
+        /// 截图
+        /// </summary>
         public void ScreenShot()
         {
             if (IsHideWhenScreenShoot)
@@ -189,7 +253,6 @@ namespace ImageManager.ViewModels
 
         private async void CheckUpdateAsync()
         {
-            //await Task.Delay(1000);
             var updateViewModel = new UpdateViewModel();
             if (await updateViewModel.NeedUpdateAsync())
             {
@@ -214,12 +277,14 @@ namespace ImageManager.ViewModels
         public void ParametersInjected()
         {
             // 得手动调用
+            _container.BuildUp(MainPageViewModel);
             MainPageViewModel.ParametersInjected();
             ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;
         }
+
         public void Closed()
         {
-            App.Current.Shutdown();
+            Application.Current.Shutdown();
         }
     }
 }

@@ -10,7 +10,7 @@ namespace ImageManager.ViewModels
     {
         [Inject]
         public ImageContext Context { get; set; }
-        public string SearchText { get; set; }
+        public string SearchText { get; set; } = string.Empty;
         public bool ShowLabelPopup { get; set; }
         public List<Label> SearchedLabels { get; set; }
         public PictureAddLabelViewModel()
@@ -18,8 +18,8 @@ namespace ImageManager.ViewModels
         }
         public void UpdateSearchedLabels()
         {
-            SearchText = SearchText?.Trim();
-            if (SearchText == null || SearchText == "")
+            SearchText = SearchText.Trim();
+            if (SearchText == string.Empty)
                 SearchedLabels = Context.Labels.OrderByDescending(l => l.Num).ToList();
             else
                 SearchedLabels = Context.Labels.Where(l => l.Name.Contains(SearchText)).OrderByDescending(l => l.Num).ToList();
@@ -67,8 +67,11 @@ namespace ImageManager.ViewModels
         public void OK(string okString)
         {
             var ok = bool.Parse(okString);
-
-            RequestClose(ok);
+            SearchText = SearchText.Trim();
+            if (ok && SearchText != string.Empty)
+                RequestClose(ok);
+            else
+                RequestClose(false);
         }
     }
 }
