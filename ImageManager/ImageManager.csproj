@@ -39,10 +39,10 @@
 		<PackageReference Include="HandyControls" Version="3.4.5" />
 		<PackageReference Include="Joveler.Compression.XZ" Version="4.3.0" />
 		<PackageReference Include="MdXaml" Version="1.21.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.DynamicLinq" Version="7.3.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.11">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.DynamicLinq" Version="7.3.5" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.12" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.12" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
