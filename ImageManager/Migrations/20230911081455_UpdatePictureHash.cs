@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Shipwreck.Phash;
 using Shipwreck.Phash.Bitmaps;
-using System.Security.Cryptography;
 using System.Text;
 
 #nullable disable
@@ -43,7 +42,7 @@ namespace ImageManager.Migrations
                 var md5String = Encoding.ASCII.GetString(picture.Hash);
                 var md5 = Convert.FromHexString(md5String);
                 picture.Hash = md5;
-                
+
                 // phash
                 var filePath = Path.Join(picture.ImageFolderPath, picture.Path);
                 var fif = FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN;
