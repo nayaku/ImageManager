@@ -29,7 +29,7 @@ namespace ImageManager.Data
         public bool ClearUnUsedLabel { get; set; } = true;
         public enum OrderByEnum { AddTime, Title, AddState }
         public OrderByEnum OrderBy { get; set; } = OrderByEnum.AddTime;
-        public bool IsDesc { get; set; } = false;
+        public bool IsDesc { get; set; } = true;
         public bool IsGroup { get; set; } = false;
         /// <summary>
         /// 图片相似度阈值
