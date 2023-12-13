@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Downloader;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Windows;
@@ -56,7 +58,7 @@ namespace ImageManager.ViewModels
 
         public void Loaded()
         {
-            Update();
+            CheckUpdate();
         }
 
         private HttpClient GetHttpClient()
@@ -97,53 +99,55 @@ namespace ImageManager.ViewModels
             }
         }
 
-        private void Download()
+        private async void Download()
         {
-            Task.Run(async () =>
+
+            if (!Directory.Exists("Update"))
+                Directory.CreateDirectory("Update");
+            var fileName = Path.Combine("Update", Path.GetFileName(_downloadUrl));
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+
+            // 判断是否能连接google
+            bool canConnectGoogle;
+            try
             {
-                if (!Directory.Exists("Update"))
-                    Directory.CreateDirectory("Update");
-                var fileName = Path.Combine("Update", Path.GetFileName(_downloadUrl));
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-
-                var tmpFile = Path.Combine("Update", Path.GetFileName(_downloadUrl) + ".tmp");
-                if (File.Exists(tmpFile))
-                    File.Delete(tmpFile);
-
-                // 判断是否能Ping通谷歌
-                var ping = new System.Net.NetworkInformation.Ping();
-                var result = ping.Send("google.com");
-                // 否则使用国内CDN加速
-                HttpResponseMessage? response;
-                if (result.Status == System.Net.NetworkInformation.IPStatus.Success)
+                using var googleClient = new HttpClient
                 {
-                    var client = GetHttpClient();
-                    response = await client.GetAsync(_downloadUrl, HttpCompletionOption.ResponseHeadersRead);
-                }
-                else
+                    Timeout = TimeSpan.FromSeconds(1)
+                };
+                var googleResult = await googleClient.GetAsync("http://www.google.com");
+                canConnectGoogle = googleResult.StatusCode == HttpStatusCode.OK;
+            }
+            catch (Exception)
+            {
+                canConnectGoogle = false;
+            }
+
+            // 选择从Github上下载还是从国内服务器下载
+            string url = canConnectGoogle ?
+                _downloadUrl :
+                "http://im_installer.ngmks.com/" + Path.GetFileName(_downloadUrl);
+            var downloadOpt = new DownloadConfiguration()
+            {
+                RequestConfiguration = new RequestConfiguration()
                 {
-                    var client = new HttpClient();
-                    response = await client.GetAsync("http://im_installer.ngmks.com/" + Path.GetFileName(_downloadUrl), HttpCompletionOption.ResponseHeadersRead);
-                }
-
-                var fileSize = response.Content.Headers.ContentLength!.Value;
-                using (var tmpFileStream = File.Create(tmpFile))
-                using (var stream = await response.Content.ReadAsStreamAsync())
+                    Proxy = WebRequest.GetSystemWebProxy(),
+                },
+            };
+            var downloader = new DownloadService(downloadOpt);
+            downloader.DownloadProgressChanged += (sender, e) =>
+            {
+                DownloadProgress = e.ProgressPercentage;
+            };
+            downloader.DownloadFileCompleted += (sender, e) =>
+            {
+                if (e.Error != null)
                 {
-                    var buffer = new byte[1024];
-                    var readLength = 0;
-                    int length;
-
-                    while ((length = stream.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        readLength += length;
-                        DownloadProgress = 100.0 * readLength / fileSize;
-                        tmpFileStream.Write(buffer, 0, length);
-                    }
+                    State = StateEnum.Error;
+                    StateText = e.Error.Message;
+                    return;
                 }
-
-                File.Move(tmpFile, fileName);
                 var p = new Process()
                 {
                     StartInfo = new()
@@ -158,11 +162,11 @@ namespace ImageManager.ViewModels
                 {
                     Application.Current.Shutdown();
                 });
-
-            });
+            };
+            await downloader.DownloadFileTaskAsync(url, fileName);
         }
 
-        private async void Update()
+        private async void CheckUpdate()
         {
             if (!await NeedUpdateAsync())
             {
