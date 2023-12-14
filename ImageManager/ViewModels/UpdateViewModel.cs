@@ -25,6 +25,7 @@ namespace ImageManager.ViewModels
         public string DownloadProgressText { get; private set; }
 
         private string _downloadUrl;
+        private CancellationTokenSource _cancellationTokenSource = new();
 
         /// <summary>
         /// 判断是否需要更新
@@ -34,7 +35,7 @@ namespace ImageManager.ViewModels
         {
             try
             {
-                using var client = GetHttpClient();
+                using var client = GetGithubHttpClient();
                 var response = await client.GetAsync("releases/latest");
                 var version = Assembly.GetEntryAssembly().GetName().Version;
                 var json = await response.Content.ReadAsStringAsync();
@@ -58,10 +59,15 @@ namespace ImageManager.ViewModels
 
         public void Loaded()
         {
-            CheckUpdate();
+            Update();
         }
 
-        private HttpClient GetHttpClient()
+        public void Closed()
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+
+        private HttpClient GetGithubHttpClient()
         {
             var url = "https://api.github.com/repos/nayaku/ImageManager/";
             var client = new HttpClient
@@ -77,7 +83,7 @@ namespace ImageManager.ViewModels
         private async Task GetUpdateLogAsync()
         {
             var pageNum = 30;
-            using var client = GetHttpClient();
+            using var client = GetGithubHttpClient();
             for (var idx = 1; ; idx++)
             {
                 var url = $"releases?page={idx}&&per_page={pageNum}";
@@ -135,7 +141,7 @@ namespace ImageManager.ViewModels
                     Proxy = WebRequest.GetSystemWebProxy(),
                 },
             };
-            var downloader = new DownloadService(downloadOpt);
+            using var downloader = new DownloadService(downloadOpt);
             downloader.DownloadProgressChanged += (sender, e) =>
             {
                 DownloadProgress = e.ProgressPercentage;
@@ -163,10 +169,10 @@ namespace ImageManager.ViewModels
                     Application.Current.Shutdown();
                 });
             };
-            await downloader.DownloadFileTaskAsync(url, fileName);
+            await downloader.DownloadFileTaskAsync(url, fileName, _cancellationTokenSource.Token);
         }
 
-        private async void CheckUpdate()
+        private async void Update()
         {
             if (!await NeedUpdateAsync())
             {
