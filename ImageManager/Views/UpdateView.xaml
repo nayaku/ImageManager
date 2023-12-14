@@ -13,6 +13,7 @@
     Width="600"
     Height="350"
     d:DataContext="{d:DesignInstance Type=viewmodels:UpdateViewModel}"
+    Closed="{s:Action Closed}"
     Loaded="{s:Action Loaded}"
     SizeToContent="Height"
     mc:Ignorable="d">
