@@ -40,22 +40,25 @@ namespace ImageManager.Tools.Helper
         /// <returns>目标子控件</returns>
         public static T? GetChildObject<T>(DependencyObject obj, string name = "") where T : FrameworkElement
         {
-            for (int i = 0; i <= VisualTreeHelper.GetChildrenCount(obj) - 1; i++)
+            var queue = new Queue<DependencyObject>();
+            queue.Enqueue(obj);
+
+            while (queue.Count > 0)
             {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T t && t.Name == name | string.IsNullOrEmpty(name))
+                var parent = queue.Dequeue();
+                for (int i = 0; i <= VisualTreeHelper.GetChildrenCount(parent) - 1; i++)
                 {
-                    return t;
-                }
-                else
-                {
-                    // 在下一级中没有找到指定名字的子控件，就再往下一级找
-                    var childOfChild = GetChildObject<T>(child, name);
-                    if (childOfChild != null)
-                        return childOfChild;
+                    var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is T t && t.Name == name | string.IsNullOrEmpty(name))
+                    {
+                        return t;
+                    }
+                    else
+                    {
+                        queue.Enqueue(child);
+                    }
                 }
             }
-
             return null;
 
         }
@@ -70,7 +73,7 @@ namespace ImageManager.Tools.Helper
         /// <returns>子控件集合</returns>
         public static List<T> GetChildObjects<T>(DependencyObject obj, string name = "") where T : FrameworkElement
         {
-            List<T> childList = new();
+            List<T> childList = [];
 
             for (int i = 0; i <= VisualTreeHelper.GetChildrenCount(obj) - 1; i++)
             {
