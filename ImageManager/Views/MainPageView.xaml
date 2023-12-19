@@ -71,6 +71,7 @@
                                             Margin="5,5,5,0"
                                             BorderThickness="0"
                                             ItemsSource="{Binding Item.Labels}"
+                                            PreviewMouseWheel="InnerLB_PreviewMouseWheel"
                                             Visibility="{Binding Item.Labels, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
                                             <hc:TagContainer.ItemTemplate>
                                                 <DataTemplate DataType="dataModels:Label">

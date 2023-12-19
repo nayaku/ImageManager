@@ -188,9 +188,11 @@ namespace ImageManager.Views
                 e.Handled = true;
 
                 // 激发一个鼠标滚轮事件，冒泡给外层ListBox接收到
-                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
-                eventArg.Source = sender;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                {
+                    RoutedEvent = MouseWheelEvent,
+                    Source = sender
+                };
                 var parent = ((Control)sender).Parent as UIElement;
                 parent.RaiseEvent(eventArg);
             }
