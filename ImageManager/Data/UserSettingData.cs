@@ -8,6 +8,7 @@ namespace ImageManager.Data
     {
         private static readonly string _settingDataFile = "UserSettings.xml";
 
+        #region 自定义设置区域
         /// <summary>
         /// 自动保存设置
         /// </summary>
@@ -42,6 +43,13 @@ namespace ImageManager.Data
         public bool IsHideWhenScreenShoot { get; set; } = true;
 
         public List<string> WaitToDeleteFiles { get; set; }
+
+        /// <summary>
+        /// 每次加载图片数量
+        /// </summary>
+        public int TakePictureNumOneTime { get; set; } = 20;
+        #endregion
+
 
         private static UserSettingData? _default = null;
         public static UserSettingData Default => _default ??= Load();

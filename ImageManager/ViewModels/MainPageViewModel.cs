@@ -23,6 +23,10 @@ namespace ImageManager.ViewModels
     {
         private readonly object _fatherViewModel;
         private ImageContext _context;
+        private int _skipNum = 0;
+        private bool _canFetchMore = false;
+        private bool _needRefresh = false;
+        private DateTime _lastFetchTime = DateTime.Now;
 
         [Inject]
         public IWindowManager WindowManager;
@@ -91,7 +95,7 @@ namespace ImageManager.ViewModels
             FilterLabels.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) =>
             {
                 ShowFilterLabelPanel = FilterLabels.Count > 0;
-                UpdatePicture();
+                RefreshPicture();
             };
 
             // 切换右键菜单栏
@@ -207,9 +211,61 @@ namespace ImageManager.ViewModels
             if (IsDesc)
                 orderBy += " desc";
             query = query.OrderBy(orderBy);
+            // 获取总数
+            // 第一次加载
+            if (_skipNum == 0)
+            {
+                var count = query.Count();
+                Message = string.Format("{0:N0}张图片", count);
+            }
+            // 分页
+            query = query.Skip(_skipNum).Take(UserSetting.TakePictureNumOneTime);
             var resPictures = query.Select(p => new PictureSelectableItemWrapper(p));
-            Pictures = new BindableCollection<PictureSelectableItemWrapper>(resPictures);
-            Message = string.Format("{0:N0}张图片", Pictures.Count);
+            // 第一次加载
+            if (_skipNum == 0)
+            {
+                Pictures = new BindableCollection<PictureSelectableItemWrapper>(resPictures);
+            }
+            else if (resPictures.Count() != 0)
+            {
+                Pictures.AddRange(resPictures);
+            }
+
+            if (resPictures.Count() != 0)
+            {
+                _skipNum += UserSetting.TakePictureNumOneTime;
+                NotifyOfPropertyChange(nameof(Pictures));
+                NotifyOfPropertyChange(nameof(PictureGroups));
+            }
+        }
+
+        public void Loaded()
+        {
+            _canFetchMore = true;
+        }
+        public void RefreshPicture()
+        {
+            _skipNum = 0;
+            UpdatePicture();
+        }
+
+        public void FetchMorePicture()
+        {
+            if (_canFetchMore && _needRefresh && DateTime.Now - _lastFetchTime > TimeSpan.FromSeconds(1))
+            {
+                _needRefresh = false;
+                UpdatePicture();
+                _lastFetchTime = DateTime.Now;
+            }
+        }
+        public void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 10)
+            {
+                Debug.WriteLine("到底了");
+                _needRefresh = true;
+                FetchMorePicture();
+            }
         }
 
         public void PictureLabelClick(Label label)
@@ -350,7 +406,7 @@ namespace ImageManager.ViewModels
             if (orderBy != OrderBy)
             {
                 OrderBy = orderBy;
-                UpdatePicture();
+                RefreshPicture();
             }
         }
 
@@ -360,14 +416,14 @@ namespace ImageManager.ViewModels
             if (IsDesc != isDesc)
             {
                 IsDesc = isDesc;
-                UpdatePicture();
+                RefreshPicture();
             }
         }
         public void SetGroup(string isGroupString)
         {
             var isGroup = Boolean.Parse(isGroupString);
             IsGroup = isGroup;
-            UpdatePicture();
+            RefreshPicture();
         }
 
         public void AcceptToAdd(bool accept)
@@ -397,7 +453,7 @@ namespace ImageManager.ViewModels
 
         public void ParametersInjected()
         {
-            UpdatePicture();
+            RefreshPicture();
         }
     }
 }
