@@ -11,6 +11,7 @@
     d:DataContext="{d:DesignInstance Type=viewModels:MainPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    Loaded="{s:Action Loaded}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -194,19 +195,21 @@
             Margin="0,0,3,0"
             MouseLeftButtonDown="MainCanva_MouseButtonDown"
             SizeChanged="{s:Action SizeChanged}">
-            <ListBox
-                Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
-                Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
-                hc:Tag.Closing="{s:Action DeletePictureLabel}"
-                ItemsSource="{Binding Pictures}"
-                SelectionChanged="{s:Action PictureSelectionChange}"
-                Style="{DynamicResource PictureListBox}"
-                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+            <hc:ScrollViewer ScrollChanged="{s:Action ScrollViewer_ScrollChanged}" Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
+                <ListBox
+                    Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
+                    Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
+                    hc:Tag.Closing="{s:Action DeletePictureLabel}"
+                    ItemsSource="{Binding Pictures}"
+                    SelectionChanged="{s:Action PictureSelectionChange}"
+                    Style="{DynamicResource PictureListBox}" />
+            </hc:ScrollViewer>
             <ScrollViewer
                 Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
                 Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
                 Margin="0"
                 HorizontalScrollBarVisibility="Auto"
+                ScrollChanged="{s:Action ScrollViewer_ScrollChanged}"
                 Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
                 <ItemsControl hc:Tag.Closing="{s:Action DeletePictureLabel}" ItemsSource="{Binding PictureGroups}">
                     <ItemsControl.ItemsPanel>

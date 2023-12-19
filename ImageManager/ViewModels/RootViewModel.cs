@@ -94,7 +94,7 @@ namespace ImageManager.ViewModels
         }
         public void SearchStarted(string searchText)
         {
-            MainPageViewModel.UpdatePicture();
+            MainPageViewModel.RefreshPicture();
         }
         public void ShowThemeConfig() => ThemeConfigShow = true;
         public void ChangeTheme(ApplicationTheme theme)
@@ -183,7 +183,7 @@ namespace ImageManager.ViewModels
                 {
                     if (isConfirmed)
                     {
-                        MainPageViewModel.UpdatePicture();
+                        MainPageViewModel.RefreshPicture();
                         Growl.Info("已更新主界面", "RootViewMessage");
                     }
                     return true;
