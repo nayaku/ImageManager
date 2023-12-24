@@ -37,7 +37,18 @@ namespace ImageManager.ViewModels
 
 
         public bool IsAddPictureMode => _fatherViewModel is AddImageViewModel;
-        public string Message { get; set; }
+        public int PictureNum { get; set;}
+        public int SelectPictureNum { get; set;}
+        public string Message
+        {
+            get
+            {
+                var message= string.Format("{0:N0}张图片", PictureNum);
+                if (SelectPictureNum != 0)
+                    message += string.Format("，选中{0:N0}张", SelectPictureNum);
+                return message;
+            }
+        }
         public BindableCollection<PictureSelectableItemWrapper> Pictures { get; set; }
 
         public bool IsDesc { get => UserSetting.IsDesc; set => UserSetting.IsDesc = value; }
@@ -214,10 +225,7 @@ namespace ImageManager.ViewModels
             // 获取总数
             // 第一次加载
             if (_skipNum == 0)
-            {
-                var count = query.Count();
-                Message = string.Format("{0:N0}张图片", count);
-            }
+                PictureNum = query.Count();
             // 分页
             query = query.Skip(_skipNum).Take(UserSetting.TakePictureNumOneTime);
             var resPictures = query.Select(p => new PictureSelectableItemWrapper(p));
@@ -258,6 +266,11 @@ namespace ImageManager.ViewModels
                 _lastFetchTime = DateTime.Now;
             }
         }
+        public void ScrollViewer_ScrollBottom()
+        {
+            _needRefresh = true;
+            FetchMorePicture();
+        }
         public void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 10)
@@ -287,9 +300,7 @@ namespace ImageManager.ViewModels
         public void PictureSelectionChange()
         {
             var selectNum = Pictures.Count(p => p.IsSelected);
-            Message = string.Format("{0:N0}张图片", Pictures.Count);
-            if (selectNum > 0)
-                Message += string.Format("\t选中{0:N0}个项目", selectNum);
+            SelectPictureNum = selectNum;
         }
 
         public void SizeChanged(object sender, SizeChangedEventArgs e)
