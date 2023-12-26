@@ -2,6 +2,7 @@
     x:Class="ImageManager.Views.MainPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:ImageManager.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dataModels="clr-namespace:ImageManager.Data.Model"
     xmlns:hc="https://handyorg.github.io/handycontrol"
@@ -11,7 +12,6 @@
     d:DataContext="{d:DesignInstance Type=viewModels:MainPageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    Loaded="{s:Action Loaded}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -39,9 +39,9 @@
                                         Text="  ">
                                         <hc:SimplePanel>
                                             <Border CornerRadius="4,4,0,0">
-                                                <Image MouseLeftButtonDown="{s:Action OpenPicture}" Stretch="UniformToFill">
+                                                <Image MouseLeftButtonDown="{s:Action OpenPicture}" Stretch="Uniform">
                                                     <Image.Source>
-                                                        <BitmapImage DecodePixelWidth="{Binding Value.CardWidth, Source={StaticResource Proxy}}" UriSource="{Binding Item.ImageUri}" />
+                                                        <BitmapImage UriSource="{Binding Item.ImageUri}" />
                                                     </Image.Source>
                                                 </Image>
                                             </Border>
@@ -50,7 +50,7 @@
                                                 VerticalAlignment="Top"
                                                 IsChecked="{Binding AcceptToAdd}"
                                                 IsEnabled="{Binding IsEnabled}"
-                                                Visibility="{Binding DataContext.IsAddPictureMode, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                                                Visibility="{Binding Value.IsAddPictureMode, Source={StaticResource Proxy}, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
                                         </hc:SimplePanel>
                                     </hc:Badge>
                                 </DataTemplate>
@@ -108,7 +108,7 @@
                     </Style>
                     <Style
                         x:Key="PictureListBox"
-                        BasedOn="{StaticResource WrapPanelHorizontalListBox}"
+                        BasedOn="{StaticResource ListBoxCustom}"
                         TargetType="ListBox">
                         <Setter Property="BorderThickness" Value="0" />
                         <Setter Property="SelectionMode" Value="Extended" />
@@ -120,7 +120,7 @@
                                         Margin="0,8"
                                         hc:PanelElement.FluidMoveBehavior="{StaticResource BehaviorXY200}"
                                         AutoGroup="True"
-                                        DesiredLength="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" />
+                                        DesiredLength="{Binding Value.CardWidth, Source={StaticResource Proxy}}" />
                                 </ItemsPanelTemplate>
                             </Setter.Value>
                         </Setter>
@@ -128,7 +128,7 @@
                             <Setter.Value>
                                 <DataTemplate DataType="viewModels:PictureSelectableItemWrapper">
                                     <hc:Card
-                                        Width="{Binding DataContext.CardWidth, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                        Width="{Binding Value.CardWidth, Source={StaticResource Proxy}}"
                                         Content="{Binding}"
                                         Footer="{Binding}"
                                         Style="{StaticResource PictureCard}">
@@ -190,27 +190,24 @@
                 </hc:TagContainer.ItemContainerStyle>
             </hc:TagContainer>
         </Grid>
-        <Canvas
+        <controls:Canvas
             x:Name="MainCanva"
             Grid.Row="1"
             Margin="0,0,3,0"
+            Background="{DynamicResource DefaultBrush}"
             MouseLeftButtonDown="MainCanva_MouseButtonDown"
             SizeChanged="{s:Action SizeChanged}">
-            <hc:ScrollViewer ScrollChanged="{s:Action ScrollViewer_ScrollChanged}" Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
-                <ListBox
-                    Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
-                    Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
-                    hc:Tag.Closing="{s:Action DeletePictureLabel}"
-                    ItemsSource="{Binding Pictures}"
-                    SelectionChanged="{s:Action PictureSelectionChange}"
-                    Style="{DynamicResource PictureListBox}" />
-            </hc:ScrollViewer>
-            <ScrollViewer
-                Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
-                Height="{Binding ElementName=MainCanva, Path=ActualHeight}"
+            <ListBox
+                controls:ScrollViewerMonitor.AtEndCommand="{s:Action FetchMorePicture}"
+                hc:Tag.Closing="{s:Action DeletePictureLabel}"
+                ItemsSource="{Binding Pictures}"
+                SelectionChanged="{s:Action PictureSelectionChange}"
+                Style="{DynamicResource PictureListBox}"
+                Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+            <hc:ScrollViewer
                 Margin="0"
-                HorizontalScrollBarVisibility="Auto"
-                ScrollChanged="{s:Action ScrollViewer_ScrollChanged}"
+                controls:ScrollViewerMonitor.AtEndCommand="{s:Action FetchMorePicture}"
+                hc:Tag.Closing="{s:Action DeletePictureLabel}"
                 Visibility="{Binding IsGroup, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
                 <ItemsControl hc:Tag.Closing="{s:Action DeletePictureLabel}" ItemsSource="{Binding PictureGroups}">
                     <ItemsControl.ItemsPanel>
@@ -221,7 +218,6 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Expander
-                                Width="{Binding ElementName=MainCanva, Path=ActualWidth}"
                                 Background="{DynamicResource DefaultBrush}"
                                 BorderThickness="1"
                                 IsExpanded="True"
@@ -241,7 +237,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </ScrollViewer>
+            </hc:ScrollViewer>
             <Canvas.ContextMenu>
                 <ContextMenu>
                     <MenuItem
@@ -332,10 +328,10 @@
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Command="{s:Action UpdatePicture}" Header="刷新" />
+                    <MenuItem Command="{s:Action RefreshPicture}" Header="刷新" />
                 </ContextMenu>
             </Canvas.ContextMenu>
-        </Canvas>
+        </controls:Canvas>
         <StackPanel Grid.Row="2" Background="{DynamicResource DefaultBrush}">
             <Grid Margin="2">
                 <TextBlock
