@@ -38,7 +38,7 @@ namespace ImageManager.Tools.Helper
         /// <param name="obj">要找的是obj的子控件</param>
         /// <param name="name">想找的子控件的Name属性</param>
         /// <returns>目标子控件</returns>
-        public static T? GetChildObject<T>(DependencyObject obj, string name = "") where T : FrameworkElement
+        public static T? GetChildObject<T>(DependencyObject obj, string name = "", bool onlyVisible = false) where T : FrameworkElement
         {
             var queue = new Queue<DependencyObject>();
             queue.Enqueue(obj);
@@ -49,14 +49,12 @@ namespace ImageManager.Tools.Helper
                 for (int i = 0; i <= VisualTreeHelper.GetChildrenCount(parent) - 1; i++)
                 {
                     var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is FrameworkElement element && onlyVisible && element.Visibility != Visibility.Visible)
+                        continue;
+
+                    queue.Enqueue(child);
                     if (child is T t && t.Name == name | string.IsNullOrEmpty(name))
-                    {
                         return t;
-                    }
-                    else
-                    {
-                        queue.Enqueue(child);
-                    }
                 }
             }
             return null;

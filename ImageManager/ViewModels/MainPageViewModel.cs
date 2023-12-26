@@ -24,9 +24,6 @@ namespace ImageManager.ViewModels
         private readonly object _fatherViewModel;
         private ImageContext _context;
         private int _skipNum = 0;
-        private bool _canFetchMore = false;
-        private bool _needRefresh = false;
-        private DateTime _lastFetchTime = DateTime.Now;
 
         [Inject]
         public IWindowManager WindowManager;
@@ -37,13 +34,13 @@ namespace ImageManager.ViewModels
 
 
         public bool IsAddPictureMode => _fatherViewModel is AddImageViewModel;
-        public int PictureNum { get; set;}
-        public int SelectPictureNum { get; set;}
+        public int PictureNum { get; set; }
+        public int SelectPictureNum { get; set; }
         public string Message
         {
             get
             {
-                var message= string.Format("{0:N0}张图片", PictureNum);
+                var message = string.Format("{0:N0}张图片", PictureNum);
                 if (SelectPictureNum != 0)
                     message += string.Format("，选中{0:N0}张", SelectPictureNum);
                 return message;
@@ -234,12 +231,12 @@ namespace ImageManager.ViewModels
             {
                 Pictures = new BindableCollection<PictureSelectableItemWrapper>(resPictures);
             }
-            else if (resPictures.Count() != 0)
+            else if (resPictures.Any())
             {
                 Pictures.AddRange(resPictures);
             }
 
-            if (resPictures.Count() != 0)
+            if (resPictures.Any())
             {
                 _skipNum += UserSetting.TakePictureNumOneTime;
                 NotifyOfPropertyChange(nameof(Pictures));
@@ -247,10 +244,6 @@ namespace ImageManager.ViewModels
             }
         }
 
-        public void Loaded()
-        {
-            _canFetchMore = true;
-        }
         public void RefreshPicture()
         {
             _skipNum = 0;
@@ -259,26 +252,7 @@ namespace ImageManager.ViewModels
 
         public void FetchMorePicture()
         {
-            if (_canFetchMore && _needRefresh && DateTime.Now - _lastFetchTime > TimeSpan.FromSeconds(1))
-            {
-                _needRefresh = false;
-                UpdatePicture();
-                _lastFetchTime = DateTime.Now;
-            }
-        }
-        public void ScrollViewer_ScrollBottom()
-        {
-            _needRefresh = true;
-            FetchMorePicture();
-        }
-        public void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            if (e.VerticalOffset >= e.ExtentHeight - e.ViewportHeight - 10)
-            {
-                Debug.WriteLine("到底了");
-                _needRefresh = true;
-                FetchMorePicture();
-            }
+            UpdatePicture();
         }
 
         public void PictureLabelClick(Label label)
