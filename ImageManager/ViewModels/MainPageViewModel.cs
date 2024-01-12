@@ -205,6 +205,9 @@ namespace ImageManager.ViewModels
 
         public void UpdatePicture()
         {
+            var takeNum = UserSetting.TakePictureNumOneTime;
+            if(_skipNum == 0)
+                takeNum = UserSetting.FirstLoadPictureNum;
             IQueryable<Picture> query;
             if (_fatherViewModel is AddImageViewModel addImageViewModel)
                 query = addImageViewModel.Pictures.AsQueryable();
@@ -224,7 +227,7 @@ namespace ImageManager.ViewModels
             if (_skipNum == 0)
                 PictureNum = query.Count();
             // 分页
-            query = query.Skip(_skipNum).Take(UserSetting.TakePictureNumOneTime);
+            query = query.Skip(_skipNum).Take(takeNum);
             var resPictures = query.Select(p => new PictureSelectableItemWrapper(p));
             // 第一次加载
             if (_skipNum == 0)
@@ -238,7 +241,7 @@ namespace ImageManager.ViewModels
 
             if (resPictures.Any())
             {
-                _skipNum += UserSetting.TakePictureNumOneTime;
+                _skipNum += takeNum;
                 NotifyOfPropertyChange(nameof(Pictures));
                 NotifyOfPropertyChange(nameof(PictureGroups));
             }
