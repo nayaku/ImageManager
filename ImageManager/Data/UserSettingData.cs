@@ -48,6 +48,10 @@ namespace ImageManager.Data
         /// 每次加载图片数量
         /// </summary>
         public int TakePictureNumOneTime { get; set; } = 20;
+        /// <summary>
+        /// 第一次加载图片数量
+        /// </summary>
+        public int FirstLoadPictureNum { get; set; } = 50;
         #endregion
 
 
