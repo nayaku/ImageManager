@@ -29,17 +29,13 @@ namespace ImageManager.Windows
         /// 是否被折叠
         /// </summary>
         private bool _isFolded = false;
-        /// <summary>
-        /// 图片路径（如果从从文件中读取图片的话）
-        /// </summary>
-        private string _imagePath = null;
         private RotateFlipType _rotateFlipType;
 
         /// <summary>
         /// 所有贴片实例
         /// </summary>
-        private static List<StickerWindow> _instanceList { get; } = new();
-        private Dictionary<StickerWindow, MenuItem> _stickerDict = new();
+        private static List<StickerWindow> _instanceList { get; } = [];
+        private Dictionary<StickerWindow, MenuItem> _stickerDict = [];
 
         public StickerWindow(string imagePath) : this(FreeImageBitmap.FromFile(imagePath).ToBitmap())
         {
