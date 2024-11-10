@@ -37,7 +37,7 @@
 	<ItemGroup>
 		<PackageReference Include="Downloader" Version="3.2.1" />
 		<PackageReference Include="FreeImage.Standard" Version="4.3.9-beta4" />
-		<PackageReference Include="HandyControls" Version="3.5.3" />
+		<PackageReference Include="HandyControls" Version="3.4.5" />
 		<PackageReference Include="Joveler.Compression.XZ" Version="4.3.0" />
 		<PackageReference Include="MdXaml" Version="1.27.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.DynamicLinq" Version="8.4.8" />
