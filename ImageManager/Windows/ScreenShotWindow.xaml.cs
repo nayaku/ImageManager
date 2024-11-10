@@ -97,7 +97,11 @@ namespace ImageManager.Windows
             var width = (int)cropRectangle.Width;
             var height = (int)cropRectangle.Height;
             ScreenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
-            var stickerWindow = new StickerWindow(ScreenShootBitmap);
+            var stickerWindow = new StickerWindow(ScreenShootBitmap)
+            {
+                Left = left,
+                Top = top
+            };
             stickerWindow.Show();
         }
 
