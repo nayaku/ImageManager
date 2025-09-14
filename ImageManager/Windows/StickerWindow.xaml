@@ -121,8 +121,17 @@
                         Header="增加透明度"
                         InputGestureText="Ctrl+Add" />
                 </MenuItem>
+                <Separator />
+                <MenuItem
+                    Name="AddToDatabase"
+                    Click="AddToDatabase_Click"
+                    Header="添加图像到数据库" />
             </ContextMenu>
         </StackPanel.ContextMenu>
-        <Image x:Name="StickerImage" SnapsToDevicePixels="True" UseLayoutRounding="True" Loaded="StickerImage_Loaded" />
+        <Image
+            x:Name="StickerImage"
+            Loaded="StickerImage_Loaded"
+            SnapsToDevicePixels="True"
+            UseLayoutRounding="True" />
     </StackPanel>
 </hc:Window>
