@@ -1,3 +1,4 @@
+using HandyControl.Controls;
 using ImageManager.Tools;
 using System.Diagnostics;
 using System.Drawing;
@@ -13,33 +14,28 @@ namespace ImageManager.Windows
     /// <summary>
     /// ScreenShotWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class ScreenShotWindow : Window
+    public partial class ScreenShotWindow
     {
-        public Bitmap ScreenShootBitmap { get; set; }
-        private double x;
-        private double y;
-        private Rectangle cropRectangle;
+        private double mouseDownX, mouseDownY;
+        private Rectangle? cropRectangle;
         private Bitmap gfxScreenShoot;
-        private bool firstDown = true;
-        private bool isMouseDown = false;
         // 全屏显示
         private int minX, minY, totalWidth, totalHeight;
 
 
         public ScreenShotWindow()
         {
-            ScreenShoot();
             InitializeComponent();
+            ScreenShoot();
         }
 
         ~ScreenShotWindow()
         {
-            gfxScreenShoot?.Dispose();
+            gfxScreenShoot.Dispose();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
             AdjustWindowSize();
             AddScreenShootToCanvas();
         }
@@ -71,24 +67,21 @@ namespace ImageManager.Windows
             }
             // 创建一个Bitmap来存储截屏
             gfxScreenShoot = new Bitmap(totalWidth, totalHeight);
-            //gfxScreenShoot.SetResolution(96, 96); // 设置为标准DPI，避免后续处理时出现问题
-            using (var gfx = Graphics.FromImage(gfxScreenShoot))
-            {
-                // 设置高质量的绘图选项 
-                gfx.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            using var gfx = Graphics.FromImage(gfxScreenShoot);
+            // 设置高质量的绘图选项 
+            gfx.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 
-                // 遍历每个显示器，截取其工作区域
-                foreach (var screen in screens)
-                {
-                    var size = new System.Drawing.Size(screen.Width, screen.Height);
-                    gfx.CopyFromScreen(screen.Left, screen.Top, screen.Left - minX, screen.Top - minY, size);
-                }
+            // 遍历每个显示器，截取其工作区域
+            foreach (var screen in screens)
+            {
+                var size = new System.Drawing.Size(screen.Width, screen.Height);
+                gfx.CopyFromScreen(screen.Left, screen.Top, screen.Left - minX, screen.Top - minY, size);
             }
         }
 
-        // 导入Win32 API
+        #region SetWindowPos API
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SetWindowPos(
             IntPtr hWnd,
@@ -103,6 +96,7 @@ namespace ImageManager.Windows
         private const uint SWP_NOZORDER = 0x0004;
         private const uint SWP_NOACTIVATE = 0x0010;
         private const uint SWP_SHOWWINDOW = 0x0040;
+        #endregion
 
         /// <summary>
         /// 根据当前DPI调整窗口以覆盖所有显示器
@@ -128,36 +122,41 @@ namespace ImageManager.Windows
             });
         }
 
+        private void CleanCrop()
+        {
+            if (cropRectangle != null)
+            {
+                CaptureCanvas.Children.Remove(cropRectangle);
+                cropRectangle = null;
+            }
+        }
+
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed)
                 return;
-            isMouseDown = true;
-            x = e.GetPosition(this).X;
-            y = e.GetPosition(this).Y;
-            if (firstDown)
+            CleanCrop();
+            mouseDownX = e.GetPosition(this).X;
+            mouseDownY = e.GetPosition(this).Y;
+            cropRectangle = new Rectangle()
             {
-                cropRectangle = new Rectangle()
-                {
-                    Stroke = System.Windows.Media.Brushes.Red,
-                    StrokeThickness = 1,
-                    Fill = System.Windows.Media.Brushes.Transparent
-                };
-                CaptureCanvas.Children.Add(cropRectangle);
-                firstDown = false;
-            }
+                Stroke = System.Windows.Media.Brushes.Red,
+                StrokeThickness = 1,
+                Fill = System.Windows.Media.Brushes.Transparent
+            };
+            CaptureCanvas.Children.Add(cropRectangle);
         }
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isMouseDown)
+            if (cropRectangle != null)
             {
-                var width = Math.Abs(e.GetPosition(CaptureCanvas).X - x);
-                var height = Math.Abs(e.GetPosition(CaptureCanvas).Y - y);
+                var width = Math.Abs(e.GetPosition(CaptureCanvas).X - mouseDownX);
+                var height = Math.Abs(e.GetPosition(CaptureCanvas).Y - mouseDownY);
                 cropRectangle.Width = width;
                 cropRectangle.Height = height;
-                Canvas.SetLeft(cropRectangle, Math.Min(x, e.GetPosition(CaptureCanvas).X));
-                Canvas.SetTop(cropRectangle, Math.Min(y, e.GetPosition(CaptureCanvas).Y));
+                Canvas.SetLeft(cropRectangle, Math.Min(mouseDownX, e.GetPosition(CaptureCanvas).X));
+                Canvas.SetTop(cropRectangle, Math.Min(mouseDownY, e.GetPosition(CaptureCanvas).Y));
             }
         }
 
@@ -172,10 +171,15 @@ namespace ImageManager.Windows
             var top = (int)(Canvas.GetTop(cropRectangle) * scaleY);
             var width = (int)(cropRectangle.Width * scaleX);
             var height = (int)(cropRectangle.Height * scaleY);
+            if (width < 50 || height < 50)
+            {
+                Growl.ErrorGlobal("截图区域长宽不得小于50像素，请重新截图！");
+                return;
+            }
             Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
 
-            ScreenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
-            var stickerWindow = new StickerWindow(ScreenShootBitmap)
+            var screenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
+            var stickerWindow = new StickerWindow(screenShootBitmap)
             {
                 // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
                 Left = Canvas.GetLeft(cropRectangle) + Left + 10,
@@ -186,9 +190,8 @@ namespace ImageManager.Windows
 
         private void Window_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (isMouseDown)
+            if (cropRectangle != null)
             {
-                isMouseDown = false;
                 CropBitmap();
             }
             Close();
