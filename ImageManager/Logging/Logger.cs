@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Reflection;
 
 namespace ImageManager.Logging
@@ -20,7 +20,9 @@ namespace ImageManager.Logging
         public void Info(string message) => Log(LogLevel.Info, message);
         public void Warn(string message) => Log(LogLevel.Warn, message);
         public void Error(Exception exception) => Log(LogLevel.Error, exception: exception);
+        public void Error(string message) => Log(LogLevel.Error, message: message);
         public void Fatal(Exception exception) => Log(LogLevel.Fatal, exception: exception, report: true);
+        public void Fatal(string message) => Log(LogLevel.Fatal, message: message, report: true);
 
         /// <summary>
         /// 写入错误

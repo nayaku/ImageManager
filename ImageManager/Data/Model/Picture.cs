@@ -1,4 +1,4 @@
-﻿using ImageManager.Logging;
+using ImageManager.Logging;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -42,9 +42,9 @@ namespace ImageManager.Data.Model
         {
             get
             {
-                if (SamePicture?.Any() ?? false)
+                if (SamePicture?.Count > 0)
                     return PictureAddStateEnum.SameConflict;
-                if (SimilarPictures?.Any() ?? false)
+                if (SimilarPictures?.Count > 0)
                     return PictureAddStateEnum.SimilarConflict;
                 return PictureAddStateEnum.WaitToAdd;
             }
@@ -78,15 +78,8 @@ namespace ImageManager.Data.Model
             }
         }
 
-        public BitmapImage ImageSource
-        {
-            get
-            {
-                var fileName = ThumbnailPath ?? Path;
-                var filePath = System.IO.Path.Join(ImageFolderPath, fileName);
-                return new BitmapImage(ImageUri);
-            }
-        }
+        public BitmapImage ImageSource => new(ImageUri);
+
         public void CopyTo(string folderPath)
         {
             var filePath = System.IO.Path.Join(ImageFolderPath, Path);
