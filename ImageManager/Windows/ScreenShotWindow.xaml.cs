@@ -191,6 +191,20 @@ namespace ImageManager.Windows
             Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
 
             var screenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
+
+            // 复制截图到剪贴板
+            try
+            {
+                System.Windows.Forms.Clipboard.SetImage(screenShootBitmap);
+                Growl.SuccessGlobal("截图已复制到剪贴板，可以直接粘贴使用！");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"复制截图到剪贴板失败: {ex.Message}");
+                Growl.ErrorGlobal("复制截图到剪贴板失败，请重试！");
+            }
+
+            // 显示贴图窗口
             var stickerWindow = new StickerWindow(screenShootBitmap)
             {
                 // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
