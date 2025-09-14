@@ -22,11 +22,23 @@ namespace ImageManager.Windows
         // 全屏显示
         private int minX, minY, totalWidth, totalHeight;
 
+        public static bool IsShowing { get; private set; } = false;
 
-        public ScreenShotWindow()
+        public static bool ShowScreenShotWindow()
         {
-            InitializeComponent();
+            if (IsShowing)
+                return false;
+            var screenShotWindow = new ScreenShotWindow();
+            screenShotWindow.Show();
+            IsShowing = true;
+            screenShotWindow.Closed += (s, e) => { IsShowing = false; };
+            return true;
+        }
+
+        private ScreenShotWindow()
+        {
             ScreenShoot();
+            InitializeComponent();
         }
 
         ~ScreenShotWindow()

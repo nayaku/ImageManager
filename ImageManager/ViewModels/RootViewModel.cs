@@ -222,20 +222,25 @@ namespace ImageManager.ViewModels
             if (IsHideWhenScreenShoot)
             {
                 var preWindowState = WindowState;
-                WindowState = WindowState.Minimized;
-                Execute.PostToUIThreadAsync(async () =>
+                if (preWindowState != WindowState.Minimized)
                 {
-                    await Task.Delay(300);
-                    var screenShotWindow = new ScreenShotWindow();
-                    screenShotWindow.Show();
-                    await Task.Delay(1500);
-                    WindowState = preWindowState;
-                });
+                    WindowState = WindowState.Minimized;
+                    Execute.PostToUIThreadAsync(async () =>
+                    {
+                        await Task.Delay(500);
+                        ScreenShotWindow.ShowScreenShotWindow();
+                        await Task.Delay(300);
+                        WindowState = preWindowState;
+                    });
+                }
+                else
+                {
+                    ScreenShotWindow.ShowScreenShotWindow();
+                }
             }
             else
             {
-                var screenShotWindow = new ScreenShotWindow();
-                screenShotWindow.Show();
+                ScreenShotWindow.ShowScreenShotWindow();
             }
 
         }
