@@ -86,7 +86,6 @@ namespace ImageManager.Windows
                     gfx.CopyFromScreen(screen.Left, screen.Top, screen.Left - minX, screen.Top - minY, size);
                 }
             }
-            gfxScreenShoot.Save("screenshot.png");
         }
 
         // 导入Win32 API
@@ -174,8 +173,14 @@ namespace ImageManager.Windows
             var width = (int)(cropRectangle.Width * scaleX);
             var height = (int)(cropRectangle.Height * scaleY);
             Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
+
             ScreenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
-            var stickerWindow = new StickerWindow(ScreenShootBitmap);
+            var stickerWindow = new StickerWindow(ScreenShootBitmap)
+            {
+                // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
+                Left = Canvas.GetLeft(cropRectangle) + Left + 10,
+                Top = Canvas.GetTop(cropRectangle) + Top + 10
+            };
             stickerWindow.Show();
         }
 

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
+using System.Windows.Media;
 
 namespace ImageManager.Windows
 {
@@ -44,14 +44,18 @@ namespace ImageManager.Windows
         {
             InitializeComponent();
             _sourceImage = bitmap;
-            SetImage(bitmap);
+        }
 
-            // 图片尺寸过大，则缩小
-            if (SystemParameters.PrimaryScreenWidth * 0.6f < _sourceImage.Width || SystemParameters.PrimaryScreenHeight * 0.6f < _sourceImage.Height)
-            {
-                _zoomRate = Math.Min(SystemParameters.PrimaryScreenWidth * 0.6f / _sourceImage.Width, SystemParameters.PrimaryScreenHeight * 0.6f / _sourceImage.Height);
-                RefreshSticker();
-            }
+        private void StickerImage_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetImage(_sourceImage);
+
+            //// 图片尺寸过大，则缩小
+            //if (SystemParameters.PrimaryScreenWidth * 0.6f < _sourceImage.Width || SystemParameters.PrimaryScreenHeight * 0.6f < _sourceImage.Height)
+            //{
+            //    _zoomRate = Math.Min(SystemParameters.PrimaryScreenWidth * 0.6f / _sourceImage.Width, SystemParameters.PrimaryScreenHeight * 0.6f / _sourceImage.Height);
+            //    RefreshSticker();
+            //}
         }
 
         /// <summary>
@@ -60,9 +64,10 @@ namespace ImageManager.Windows
         /// <param name="bitmap"></param>
         private void SetImage(Bitmap bitmap)
         {
+            var dpi = VisualTreeHelper.GetDpi(this);
             StickerImage.Source = ImageUtility.BitmapToBitmapImage(bitmap);
-            StickerImage.Width = bitmap.Width;
-            StickerImage.Height = bitmap.Height;
+            StickerImage.Width = bitmap.Width / dpi.DpiScaleX;
+            StickerImage.Height = bitmap.Height / dpi.DpiScaleY;
         }
 
         /// <summary>
@@ -322,6 +327,5 @@ namespace ImageManager.Windows
             Opacity = Math.Min(1, Opacity + 0.1);
         }
         #endregion
-
     }
 }

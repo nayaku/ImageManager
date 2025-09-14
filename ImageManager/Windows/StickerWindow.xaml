@@ -123,6 +123,6 @@
                 </MenuItem>
             </ContextMenu>
         </StackPanel.ContextMenu>
-        <Image x:Name="StickerImage" />
+        <Image x:Name="StickerImage" SnapsToDevicePixels="True" UseLayoutRounding="True" Loaded="StickerImage_Loaded" />
     </StackPanel>
 </hc:Window>
