@@ -1,7 +1,7 @@
-﻿namespace ImageManager.Logging
+namespace ImageManager.Logging
 {
     public static class LoggerFactory
     {
-        public static Logger GetLogger(string name) => new Logger(name);
+        public static Logger GetLogger(string name) => new(name);
     }
 }

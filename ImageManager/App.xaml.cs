@@ -1,4 +1,4 @@
-﻿using HandyControl.Themes;
+using HandyControl.Themes;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
@@ -30,6 +30,10 @@ namespace ImageManager
         // 每次启动应用程序，都会验证名称为OnlyRun的互斥是否存在 
         protected override void OnStartup(StartupEventArgs e)
         {
+            OperatingSystem os = Environment.OSVersion;
+            Version ver = os.Version;
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Info, $"System Version: {ver}");
+
             var location = Assembly.GetEntryAssembly()!.Location;
             var bs = System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(location));
             mutex = new Mutex(true, Convert.ToBase64String(bs), out var isNewInstance);

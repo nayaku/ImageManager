@@ -1,8 +1,11 @@
-﻿using ImageManager.Tools;
+using ImageManager.Tools;
+using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace ImageManager.Windows
@@ -19,41 +22,110 @@ namespace ImageManager.Windows
         private Bitmap gfxScreenShoot;
         private bool firstDown = true;
         private bool isMouseDown = false;
+        // 全屏显示
+        private int minX, minY, totalWidth, totalHeight;
 
 
         public ScreenShotWindow()
         {
-            InitializeComponent();
             ScreenShoot();
+            InitializeComponent();
+        }
+
+        ~ScreenShotWindow()
+        {
+            gfxScreenShoot?.Dispose();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
+            AdjustWindowSize();
+            AddScreenShootToCanvas();
         }
 
         /// <summary>
         /// 截屏
         /// </summary>
-        public void ScreenShoot()
+        private void ScreenShoot()
         {
-            var width = (int)SystemParameters.VirtualScreenWidth;
-            var height = (int)SystemParameters.VirtualScreenHeight;
-            var left = (int)SystemParameters.VirtualScreenLeft;
-            var top = (int)SystemParameters.VirtualScreenTop;
+            // 获取所有显示器的工作区域
+            var screens = DisplayAPI.EnumerateDisplays() ?? throw new Exception("获取显示器信息失败！");
+            minX = int.MaxValue;
+            minY = int.MaxValue;
+            totalWidth = 0;
+            totalHeight = 0;
+            // 获取最小值
+            foreach (var screen in screens)
+            {
+                minX = Math.Min(minX, screen.Left);
+                minY = Math.Min(minY, screen.Top);
+            }
+            // 计算总宽度和高度
+            foreach (var screen in screens)
+            {
+                var width = screen.Width + screen.Left - minX;
+                var height = screen.Height + screen.Top - minY;
+                totalWidth = Math.Max(totalWidth, width);
+                totalHeight = Math.Max(totalHeight, height);
+            }
+            // 创建一个Bitmap来存储截屏
+            gfxScreenShoot = new Bitmap(totalWidth, totalHeight);
+            //gfxScreenShoot.SetResolution(96, 96); // 设置为标准DPI，避免后续处理时出现问题
+            using (var gfx = Graphics.FromImage(gfxScreenShoot))
+            {
+                // 设置高质量的绘图选项 
+                gfx.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 
-            Width = SystemParameters.VirtualScreenWidth;
-            Height = SystemParameters.VirtualScreenHeight;
-            Left = SystemParameters.VirtualScreenLeft;
-            Top = SystemParameters.VirtualScreenTop;
+                // 遍历每个显示器，截取其工作区域
+                foreach (var screen in screens)
+                {
+                    var size = new System.Drawing.Size(screen.Width, screen.Height);
+                    gfx.CopyFromScreen(screen.Left, screen.Top, screen.Left - minX, screen.Top - minY, size);
+                }
+            }
+            gfxScreenShoot.Save("screenshot.png");
+        }
 
-            // 获取截图
-            gfxScreenShoot = new Bitmap(width, height);
-            using Graphics gfx = Graphics.FromImage(gfxScreenShoot);
-            gfx.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-            gfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
-            gfx.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-            gfx.CopyFromScreen(left, top, 0, 0, new System.Drawing.Size(width, height), CopyPixelOperation.SourceCopy);
+        // 导入Win32 API
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr hWndInsertAfter,
+            int X,
+            int Y,
+            int cx,
+            int cy,
+            uint uFlags);
 
+        // SetWindowPos的标志位
+        private const uint SWP_NOZORDER = 0x0004;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_SHOWWINDOW = 0x0040;
+
+        /// <summary>
+        /// 根据当前DPI调整窗口以覆盖所有显示器
+        /// </summary>
+        private void AdjustWindowSize()
+        {
+            // 调整窗口大小和位置
+            IntPtr hWnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            SetWindowPos(hWnd, IntPtr.Zero, minX, minY, totalWidth, totalHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        }
+
+        private void AddScreenShootToCanvas()
+        {
+            // 获取当前DPI并调整Bitmap的DPI以正确显示
+            var dpi = VisualTreeHelper.GetDpi(this);
+            gfxScreenShoot.SetResolution((float)(96 * dpi.DpiScaleX), (float)(96 * dpi.DpiScaleY));
             var bitmapImage = ImageUtility.BitmapToBitmapImage(gfxScreenShoot);
             CaptureCanvas.Children.Add(new System.Windows.Controls.Image()
             {
-                Source = bitmapImage
+                Source = bitmapImage,
+                Stretch = Stretch.None
             });
         }
 
@@ -92,10 +164,16 @@ namespace ImageManager.Windows
 
         private void CropBitmap()
         {
-            var left = (int)Canvas.GetLeft(cropRectangle);
-            var top = (int)Canvas.GetTop(cropRectangle);
-            var width = (int)cropRectangle.Width;
-            var height = (int)cropRectangle.Height;
+            // 获取当前窗口缩放因子
+            DpiScale dpiScale = VisualTreeHelper.GetDpi(this);
+            var scaleX = dpiScale.DpiScaleX;
+            var scaleY = dpiScale.DpiScaleY;
+
+            var left = (int)(Canvas.GetLeft(cropRectangle) * scaleX);
+            var top = (int)(Canvas.GetTop(cropRectangle) * scaleY);
+            var width = (int)(cropRectangle.Width * scaleX);
+            var height = (int)(cropRectangle.Height * scaleY);
+            Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
             ScreenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
             var stickerWindow = new StickerWindow(ScreenShootBitmap);
             stickerWindow.Show();

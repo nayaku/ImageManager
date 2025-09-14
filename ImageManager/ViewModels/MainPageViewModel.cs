@@ -206,7 +206,7 @@ namespace ImageManager.ViewModels
         public void UpdatePicture()
         {
             var takeNum = UserSetting.TakePictureNumOneTime;
-            if(_skipNum == 0)
+            if (_skipNum == 0)
                 takeNum = UserSetting.FirstLoadPictureNum;
             IQueryable<Picture> query;
             if (_fatherViewModel is AddImageViewModel addImageViewModel)
