@@ -127,11 +127,16 @@ namespace ImageManager.ViewModels
             if (res == System.Windows.Forms.DialogResult.OK)
             {
                 // 扫描和准备文件
-                var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
-                    new List<string>(dialog.FileNames), AddPictureSuccess);
-                _container.BuildUpEx(addImageProgressViewModelWrap);
-                _windowManager.ShowWindow(addImageProgressViewModelWrap.ProgressViewModel);
+                AddPicturesInner([.. dialog.FileNames]);
             }
+        }
+
+        public void AddPicturesInner(List<string> dirFiles)
+        {
+            var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
+                    dirFiles, AddPictureSuccess);
+            _container.BuildUpEx(addImageProgressViewModelWrap);
+            _windowManager.ShowWindow(addImageProgressViewModelWrap.ProgressViewModel);
         }
 
         /// <summary>

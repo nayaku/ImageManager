@@ -39,12 +39,16 @@ namespace ImageManager.Windows
 
         public StickerWindow(string imagePath) : this(FreeImageBitmap.FromFile(imagePath).ToBitmap())
         {
+            AddToDatabase.IsEnabled = false;
         }
+
         public StickerWindow(Bitmap bitmap)
         {
             InitializeComponent();
             _sourceImage = bitmap;
+            AddToDatabase.IsEnabled = true;
         }
+
 
         private void StickerImage_Loaded(object sender, RoutedEventArgs e)
         {
@@ -325,6 +329,16 @@ namespace ImageManager.Windows
         private void TransparencyIncrease_Click(object sender, RoutedEventArgs e)
         {
             Opacity = Math.Min(1, Opacity + 0.1);
+        }
+
+        private void AddToDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            // 保存为临时文件
+            var tempPath = Path.GetTempFileName() + ".png";
+            _sourceImage.Save(tempPath, System.Drawing.Imaging.ImageFormat.Png);
+            // 获取RootViewModel实例
+            var rootViewModel = (App.Current.MainWindow as HandyControl.Controls.Window)?.DataContext as ViewModels.RootViewModel;
+            rootViewModel?.AddPicturesInner([tempPath]);
         }
         #endregion
     }
