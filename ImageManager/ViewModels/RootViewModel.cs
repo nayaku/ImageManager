@@ -8,6 +8,7 @@ using ImageManager.Windows;
 using StyletIoC;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using IContainer = StyletIoC.IContainer;
 using Label = ImageManager.Data.Model.Label;
 
@@ -16,6 +17,8 @@ namespace ImageManager.ViewModels
     public class RootViewModel : Screen, IInjectionAware
     {
         private ImageContext _context;
+        private IWindowManager _windowManager;
+        private IContainer _container;
 
         [Inject]
         public UserSettingData UserSettingData { get; set; }
@@ -30,9 +33,8 @@ namespace ImageManager.ViewModels
             get => UserSettingData.IsHideWhenScreenShoot;
             set => UserSettingData.IsHideWhenScreenShoot = value;
         }
+        public bool IsClipboardContainsImage => Clipboard.ContainsImage();
 
-        private IWindowManager _windowManager;
-        private IContainer _container;
         public RootViewModel(IWindowManager windowManager, IContainer container, ImageContext context)
         {
             _windowManager = windowManager;
@@ -114,6 +116,11 @@ namespace ImageManager.ViewModels
         }
 
         #region 菜单栏
+        public void PictureMenuSubmenuOpened()
+        {
+            NotifyOfPropertyChange(() => IsClipboardContainsImage);
+        }
+
         /// <summary>
         /// 添加图片
         /// </summary>
@@ -153,6 +160,40 @@ namespace ImageManager.ViewModels
                                        new List<string>() { dialog.SelectedPath }, AddPictureSuccess);
                 _container.BuildUpEx(addImageProgressViewModelWrap);
                 _windowManager.ShowWindow(addImageProgressViewModelWrap.ProgressViewModel);
+            }
+        }
+
+        public void AddClipboardImage()
+        {
+            if (Clipboard.ContainsImage())
+            {
+                var image = Clipboard.GetImage();
+                if (image != null)
+                {
+                    // 保存到临时文件
+                    var tempFile = Path.GetTempFileName();
+                    using (var fileStream = new FileStream(tempFile, FileMode.Create))
+                    {
+                        var encoder = new PngBitmapEncoder();
+                        encoder.Frames.Add(BitmapFrame.Create(image));
+                        encoder.Save(fileStream);
+                    }
+                    AddPicturesInner([tempFile]);
+                }
+            }
+        }
+
+        public void StickClipboardImage()
+        {
+            if (Clipboard.ContainsImage())
+            {
+                var image = Clipboard.GetImage();
+                if (image != null)
+                {
+                    var bitmap = ImageUtility.ImageSourceToBitmap(image);
+                    var stickerWindow = new StickerWindow(bitmap);
+                    stickerWindow.Show();
+                }
             }
         }
 
