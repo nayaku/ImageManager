@@ -62,7 +62,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Menu HorizontalAlignment="Left">
-                <MenuItem Header="图片">
+                <MenuItem Header="图片" SubmenuOpened="{s:Action PictureMenuSubmenuOpened}">
                     <MenuItem
                         Command="{s:Action AddPictures}"
                         Header="添加图片"
@@ -71,6 +71,15 @@
                         Command="{s:Action AddFolders}"
                         Header="添加文件夹"
                         InputGestureText="Ctrl+Shift+O" />
+                    <Separator />
+                    <MenuItem
+                        Command="{s:Action AddClipboardImage}"
+                        Header="从剪贴板添加图片"
+                        IsEnabled="{Binding IsClipboardContainsImage}" />
+                    <MenuItem
+                        Command="{s:Action StickClipboardImage}"
+                        Header="从剪贴板创建贴片"
+                        IsEnabled="{Binding IsClipboardContainsImage}" />
                     <Separator />
                     <MenuItem Command="{s:Action ImportData}" Header="导入数据库" />
                     <MenuItem Command="{s:Action ExportData}" Header="导出数据库" />

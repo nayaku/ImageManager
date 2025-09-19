@@ -49,6 +49,10 @@ namespace ImageManager.Windows
             AddToDatabase.IsEnabled = true;
         }
 
+        ~StickerWindow()
+        {
+            _sourceImage.Dispose();
+        }
 
         private void StickerImage_Loaded(object sender, RoutedEventArgs e)
         {
