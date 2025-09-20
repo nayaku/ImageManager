@@ -64,13 +64,13 @@ namespace ImageManager
 
         void ThrowException(Exception e)
         {
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e);
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e, report: true);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e.Exception);
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e.Exception, report: true);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Exception.Message.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
             e.Handled = true;
         }
@@ -78,7 +78,7 @@ namespace ImageManager
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = (Exception)e.ExceptionObject;
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: ex);
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: ex, report: true);
             MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + ex.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
