@@ -170,7 +170,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
+    <Grid Background="{DynamicResource DefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -194,7 +194,6 @@
             x:Name="MainCanva"
             Grid.Row="1"
             Margin="0,0,3,0"
-            Background="{DynamicResource DefaultBrush}"
             MouseLeftButtonDown="MainCanva_MouseButtonDown"
             SizeChanged="{s:Action SizeChanged}">
             <ListBox
