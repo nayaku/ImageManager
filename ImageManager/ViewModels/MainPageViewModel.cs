@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using StyletIoC;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Dynamic.Core;
 using System.Windows;
 using System.Windows.Controls;
@@ -64,7 +65,7 @@ namespace ImageManager.ViewModels
                     return OrderBy switch
                     {
                         OrderByEnum.AddTime => Pictures.GroupBy(p => p.Item.AddTime.ToString("yyyy-MM")).ToList(),
-                        OrderByEnum.Title => Pictures.GroupBy(p => (p.Item.Title ?? "")[0].ToString()).ToList(),
+                        OrderByEnum.Title => Pictures.GroupBy(p => !string.IsNullOrEmpty(p.Item.Title) ? StringInfo.GetNextTextElement(p.Item.Title) : string.Empty).ToList(),
                         OrderByEnum.AddState => Pictures.GroupBy(p => p.Item.AddState switch
                         {
                             PictureAddStateEnum.WaitToAdd => "待添加",
