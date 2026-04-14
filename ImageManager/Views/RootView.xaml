@@ -52,7 +52,7 @@
         <KeyBinding
             Key="Delete"
             s:View.ActionTarget="{Binding MainPageViewModel}"
-            Command="{s:Action DeletPicture}" />
+            Command="{s:Action DeletePicture}" />
     </hc:Window.InputBindings>
     <hc:Window.NonClientAreaContent>
         <Grid>
