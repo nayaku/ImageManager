@@ -219,7 +219,7 @@ namespace ImageManager.ViewModels
                 query = query.Where(p => EF.Functions.Like(p.Title, "%" + rootViewModel.SearchText + "%"));
             if (FilterLabels.Count != 0)
                 query = query.Where(p => p.Labels.Count(l => FilterLabels.Contains(l)) == FilterLabels.Count);
-            var orderBy = Enum.GetName(OrderBy);
+            var orderBy = Enum.GetName(OrderBy)!;
             if (IsDesc)
                 orderBy += " desc";
             query = query.OrderBy(orderBy);
