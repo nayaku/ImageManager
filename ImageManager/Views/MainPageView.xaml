@@ -39,11 +39,10 @@
                                         Text="  ">
                                         <hc:SimplePanel>
                                             <Border CornerRadius="4,4,0,0">
-                                                <Image MouseLeftButtonDown="{s:Action OpenPicture}" Stretch="Uniform">
-                                                    <Image.Source>
-                                                        <BitmapImage UriSource="{Binding Item.ImageUri}" />
-                                                    </Image.Source>
-                                                </Image>
+                                                <Image
+                                                    MouseLeftButtonDown="{s:Action OpenPicture}"
+                                                    Source="{Binding Item.ImageUri}"
+                                                    Stretch="Uniform" />
                                             </Border>
                                             <CheckBox
                                                 HorizontalAlignment="Left"
