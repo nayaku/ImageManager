@@ -54,6 +54,10 @@ namespace ImageManager.Data
                 // 读取图片
                 reader.Seek(0, SeekOrigin.Begin);
                 fibitmap = FreeImageAPI.FreeImage.LoadFromStream(reader, FreeImageAPI.FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref fif);
+                if(fibitmap.IsNull)
+                {
+                    throw new ImageFormatNotSupportException("FreeImage 无法解码图片数据");
+                }
                 // 读取md5
                 reader.Seek(0, SeekOrigin.Begin);
                 md5 = MD5.HashData(reader);
