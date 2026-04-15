@@ -22,9 +22,9 @@ namespace ImageManager.Windows
         /// </summary>
         private double _zoomRate = 1.0f;
         /// <summary>
-        /// 鼠标按下的位置
+        /// 折叠时左上角的偏移
         /// </summary>
-        private System.Windows.Point _mousePoint;
+        private System.Windows.Point _foldOffsetPoint;
         /// <summary>
         /// 是否被折叠
         /// </summary>
@@ -124,26 +124,26 @@ namespace ImageManager.Windows
         /// <param name="point">中心位置</param>
         public void FoldSticker(System.Windows.Point point = new())
         {
-            if (_isFolded == false)
-            {
-                var bitmap = ImageUtility.ImageSourceToBitmap(StickerImage.Source);
-                var imageSize = StickerImage.DesiredSize;
-                var img = ImageUtility.Crop(bitmap, (int)point.X, (int)point.Y, 50, 50);
-                SetImage(img);
-                if (point.X < 25) point.X = 25;
-                if (point.Y < 25) point.Y = 25;
-                if (imageSize.Width - point.X < 25) point.X = imageSize.Width - 25;
-                if (imageSize.Height - point.Y < 25) point.Y = imageSize.Height - 25;
+            if (_isFolded != false)
+                return;
 
-                // 设置小窗口的位置为鼠标点击位置
-                _mousePoint = point;
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    Left += point.X - 25;
-                    Top += point.Y - 25;
-                }), null);
-                _isFolded = true;
-            }
+            var bitmap = ImageUtility.ImageSourceToBitmap(StickerImage.Source);
+            var imageSize = StickerImage.DesiredSize;
+            point.X = Math.Max(point.X - 25, 0);
+            point.Y = Math.Max(point.Y - 25, 0);
+            point.X = Math.Min(point.X, imageSize.Width - 50);
+            point.Y = Math.Min(point.Y, imageSize.Height - 50);
+            var img = ImageUtility.Crop(bitmap, (int)point.X, (int)point.Y, 50, 50);
+            SetImage(img);
+
+            // 设置小窗口的位置为鼠标点击位置
+            _foldOffsetPoint = point;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Left += point.X;
+                Top += point.Y;
+            }), null);
+            _isFolded = true;
         }
 
         /// <summary>
@@ -156,8 +156,8 @@ namespace ImageManager.Windows
                 // 展开
                 RefreshSticker();
                 _isFolded = false;
-                Left -= _mousePoint.X - 25;
-                Top -= _mousePoint.Y - 25;
+                Left -= _foldOffsetPoint.X;
+                Top -= _foldOffsetPoint.Y;
             }
         }
 
