@@ -37,7 +37,7 @@ namespace ImageManager.Windows
         private static List<StickerWindow> _instanceList { get; } = [];
         private Dictionary<StickerWindow, MenuItem> _stickerDict = [];
 
-        public StickerWindow(string imagePath) : this(FreeImageBitmap.FromFile(imagePath).ToBitmap())
+        public StickerWindow(string imagePath) : this(LoadBitmapFromFile(imagePath))
         {
             AddToDatabase.IsEnabled = false;
         }
@@ -52,6 +52,12 @@ namespace ImageManager.Windows
         ~StickerWindow()
         {
             _sourceImage.Dispose();
+        }
+
+        private static Bitmap LoadBitmapFromFile(string imagePath)
+        {
+            using var fib = FreeImageBitmap.FromFile(imagePath);
+            return fib.ToBitmap();
         }
 
         private void StickerImage_Loaded(object sender, RoutedEventArgs e)
