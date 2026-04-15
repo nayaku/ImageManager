@@ -29,29 +29,38 @@ namespace ImageManager.Data
         public Picture CreateTempPicture(string filePath, ReadOnlyCollection<Picture>? tempPictures = null,
             bool deleteSourceFile = false)
         {
-            using var fs = File.OpenRead(filePath);
-            using var reader = new BufferedStream(fs, 16 * 1024 * 1024); //16MB
-
-            // 判断是否为可读格式
-            var fif = FreeImageAPI.FreeImage.GetFileTypeFromStream(reader);
-            if (fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN)
+            byte[] md5;
+            FreeImageAPI.FREE_IMAGE_FORMAT fif;
+            FreeImageAPI.FIBITMAP fibitmap;
+            using (var fs = File.OpenRead(filePath))
+            using (var reader = new BufferedStream(fs, 16 * 1024 * 1024)) //16MB
             {
+
+                // 判断是否为可读格式
                 fif = FreeImageAPI.FreeImage.GetFIFFromFilename(filePath);
                 if (fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN)
                 {
-                    throw new ImageFormatNotSupportException("图片格式不支持！");
+                    if (fif == FreeImageAPI.FREE_IMAGE_FORMAT.FIF_UNKNOWN)
+                    {
+                        throw new ImageFormatNotSupportException("图片格式不支持！");
+                    }
                 }
-            }
-            if (!FreeImageAPI.FreeImage.FIFSupportsReading(fif))
-            {
-                throw new ImageFormatNotSupportException("图片格式不支持！");
+
+                if (!FreeImageAPI.FreeImage.FIFSupportsReading(fif))
+                {
+                    throw new ImageFormatNotSupportException("图片格式不支持读取！");
+                }
+
+                // 读取图片
+                reader.Seek(0, SeekOrigin.Begin);
+                fibitmap = FreeImageAPI.FreeImage.LoadFromStream(reader, FreeImageAPI.FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref fif);
+                // 读取md5
+                reader.Seek(0, SeekOrigin.Begin);
+                md5 = MD5.HashData(reader);
             }
 
-            // 读取图片
-            reader.Seek(0, SeekOrigin.Begin);
-            var fibitmap = FreeImageAPI.FreeImage.LoadFromStream(reader, FreeImageAPI.FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref fif);
-            var width = (int)FreeImageAPI.FreeImage.GetWidth(fibitmap);
-            var height = (int)FreeImageAPI.FreeImage.GetHeight(fibitmap);
+            int width = (int)FreeImageAPI.FreeImage.GetWidth(fibitmap);
+            int height = (int)FreeImageAPI.FreeImage.GetHeight(fibitmap);
             // 判断是否为位图
             if (FreeImageAPI.FreeImage.GetImageType(fibitmap) != FreeImageAPI.FREE_IMAGE_TYPE.FIT_BITMAP)
             {
@@ -64,14 +73,12 @@ namespace ImageManager.Data
             FreeImageAPI.FreeImage.Unload(fibitmap);
 
             // 相同图片判断
-            reader.Seek(0, SeekOrigin.Begin);
-            var md5 = MD5.HashData(reader);
             var samePictures = new List<Picture>();
             var samePicture = _context.Pictures.Where(p => p.Hash.SequenceEqual(md5)).SingleOrDefault();
             if (samePicture != null)
                 samePictures.Add(samePicture);
             if (tempPictures != null)
-                samePictures.AddRange(tempPictures.Where(p => p.Hash == md5).ToList());
+                samePictures.AddRange(tempPictures.Where(p => p.Hash.SequenceEqual(md5)).ToList());
 
             // 相似判断
             var phash = ImagePhash.ComputeDigest(bitmap.ToLuminanceImage()).Coefficients;
@@ -83,9 +90,6 @@ namespace ImageManager.Data
                     p => ImagePhash.GetCrossCorrelation(p.WeakHash, phash) > UserSettingData.SimilarityThreshold
                     ).ToList());
 
-            // 关闭文件，防止文件被占用
-            reader.Close();
-            fs.Close();
             // 保存到临时文件夹
             string saveFileName;
             do
