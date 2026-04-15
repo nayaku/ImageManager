@@ -98,7 +98,8 @@ namespace ImageManager.Data
             string saveFileName;
             do
             {
-                saveFileName = $"{md5}{Random.Shared.Next()}";
+                var md5String = Convert.ToBase64String(md5).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+                saveFileName = $"{md5String}{Random.Shared.Next()}";
             } while (File.Exists(Path.Join(UserSettingData.TempFolderPath, saveFileName + Path.GetExtension(filePath))));
             if (deleteSourceFile)
                 File.Move(filePath, Path.Join(UserSettingData.TempFolderPath, saveFileName + Path.GetExtension(filePath)));
