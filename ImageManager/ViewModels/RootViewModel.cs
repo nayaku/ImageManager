@@ -71,28 +71,16 @@ namespace ImageManager.ViewModels
             if (!MainPageViewModel.FilterLabels.Contains(label))
                 MainPageViewModel.FilterLabels.Add(label);
         }
-        public void SearchBarGotFocus()
+        public async Task SearchBarGotFocus()
         {
             UpdateSearchedLabels();
-            Task.Run(async () =>
-            {
-                await Task.Delay(100);
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ShowLabelPopup = true;
-                });
-            });
+            await Task.Delay(100);
+            ShowLabelPopup = true;
         }
-        public void SearchBarLostFocus()
+        public async Task SearchBarLostFocus()
         {
-            Task.Run(async () =>
-            {
-                await Task.Delay(100);
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    ShowLabelPopup = false;
-                });
-            });
+            await Task.Delay(100);
+            ShowLabelPopup = false;
         }
         public void SearchStarted(string searchText)
         {
