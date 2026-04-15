@@ -105,7 +105,7 @@ namespace ImageManager.ViewModels
             }
         }
 
-        private async void Download()
+        private async Task Download()
         {
 
             if (!Directory.Exists("Update"))
@@ -172,7 +172,7 @@ namespace ImageManager.ViewModels
             await downloader.DownloadFileTaskAsync(url, fileName, _cancellationTokenSource.Token);
         }
 
-        private async void Update()
+        private async Task Update()
         {
             if (!await NeedUpdateAsync())
             {
@@ -186,7 +186,7 @@ namespace ImageManager.ViewModels
                 State = StateEnum.Updating;
                 StateText = "正在下载更新...";
                 ShowDownloadProgress = true;
-                Download();
+                await Download();
             }
             catch (Exception ex)
             {

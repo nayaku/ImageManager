@@ -39,7 +39,7 @@
             _cancelAction = cancelFunc;
         }
 
-        public async void Process()
+        public async Task Process()
         {
             _canClose = false;
             var result = await Task.Run(() => _processFunc());
