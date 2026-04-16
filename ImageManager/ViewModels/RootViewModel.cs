@@ -61,26 +61,35 @@ namespace ImageManager.ViewModels
 
         public void UpdateSearchedLabels()
         {
-            if (SearchText == null || SearchText == "")
-                SearchedLabels = _context.Labels.OrderByDescending(l => l.Num).ToList();
-            else
-                SearchedLabels = _context.Labels.Where(l => l.Name.Contains(SearchText)).OrderByDescending(l => l.Num).ToList();
+            var query = _context.Labels.AsQueryable();
+            var searchText = SearchText?.Trim();
+            if (!string.IsNullOrEmpty(searchText))
+                query = query.Where(l => l.Name.Contains(searchText));
+            SearchedLabels = query.OrderByDescending(l => l.Num).ToList();
         }
         public void LabelClick(Label label)
         {
             if (!MainPageViewModel.FilterLabels.Contains(label))
                 MainPageViewModel.FilterLabels.Add(label);
+            SearchText = string.Empty;
         }
-        public async Task SearchBarGotFocus()
+        public void SearchBarGotFocus()
         {
             UpdateSearchedLabels();
-            await Task.Delay(100);
             ShowLabelPopup = true;
         }
-        public async Task SearchBarLostFocus()
+        public void SearchBarLostFocus()
         {
-            await Task.Delay(100);
             ShowLabelPopup = false;
+        }
+        public void SearchBarKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                // 取消搜索
+                SearchText = string.Empty;
+                ClearSerchBarFocus();
+            }
         }
         public void SearchStarted(string searchText)
         {
@@ -96,11 +105,15 @@ namespace ImageManager.ViewModels
                 UserSettingData.Save();
             }
         }
-        public void WindowMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ClearSerchBarFocus()
         {
-            //// 消除焦点
-            //Keyboard.ClearFocus();
-            //FocusManager.SetFocusedElement((DependencyObject)sender, (IInputElement)sender);
+            Keyboard.ClearFocus();
+            FocusManager.SetFocusedElement(View, View);
+        }
+        public void WindowMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // 消除焦点
+            ClearSerchBarFocus();
         }
 
         #region 菜单栏

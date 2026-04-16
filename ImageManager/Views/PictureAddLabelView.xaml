@@ -34,6 +34,7 @@
                 hc:InfoElement.Placeholder=""
                 hc:InfoElement.TitlePlacement="Left"
                 GotFocus="{s:Action SearchBarGotFocus}"
+                KeyDown="{s:Action SearchBarKeyDown}"
                 LostFocus="{s:Action SearchBarLostFocus}"
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="{s:Action UpdateSearchedLabels}" />
@@ -57,7 +58,8 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Command="{s:Action LabelClick}"
-                            CommandParameter="{Binding}">
+                            CommandParameter="{Binding}"
+                            Focusable="False">
                             <Button.Content>
                                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
@@ -77,19 +79,27 @@
                             </Button.Content>
                             <Button.Template>
                                 <ControlTemplate TargetType="{x:Type Button}">
-                                    <ContentPresenter
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch"
-                                        Content="{TemplateBinding Content}"
-                                        ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                        RecognizesAccessKey="True" />
+                                    <Border Padding="4,2,2,2" Background="Transparent">
+                                        <ContentPresenter
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Content="{TemplateBinding Content}"
+                                            ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                            RecognizesAccessKey="True" />
+                                    </Border>
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
             </ListBox>
         </Popup>
         <StackPanel
