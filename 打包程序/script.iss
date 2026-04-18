@@ -49,7 +49,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#ProjectPath}\ImageManager.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#ProjectPath}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#ProjectPath}\*"; \
+  DestDir: "{app}"; \
+  Flags: ignoreversion recursesubdirs createallsubdirs; \
+  Excludes: "*.pdb"
 ; 注意: 不要在任何共享的系统文件使用 "Flags: ignoreversion"
 
 [Icons]
