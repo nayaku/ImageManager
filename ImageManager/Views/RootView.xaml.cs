@@ -6,6 +6,5 @@ namespace ImageManager.Views
         {
             InitializeComponent();
         }
-
     }
 }

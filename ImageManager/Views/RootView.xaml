@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewModels="clr-namespace:ImageManager.ViewModels"
+    xmlns:model="clr-namespace:ImageManager.Data.Model"
     Title="素材管理姬"
     Width="1280"
     Height="768"
@@ -166,7 +167,7 @@
                 PlacementTarget="{Binding ElementName=SearchLabelBar}">
                 <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding SearchedLabels}">
                     <ListBox.ItemTemplate>
-                        <DataTemplate DataType="data:Label">
+                        <DataTemplate DataType="{x:Type model:Label}">
                             <Button
                                 Margin="0"
                                 HorizontalAlignment="Stretch"
@@ -280,7 +281,10 @@
             </Popup>
         </Grid>
     </hc:Window.NonClientAreaContent>
-    <hc:SimplePanel>
+    <hc:SimplePanel
+        AllowDrop="True"
+        Drop="{s:Action Drop}"
+        PreviewDragOver="{s:Action DragOver}">
         <ContentControl x:Name="MainPage" s:View.Model="{Binding MainPageViewModel}" />
         <ScrollViewer HorizontalAlignment="Right" VerticalScrollBarVisibility="Hidden">
             <StackPanel

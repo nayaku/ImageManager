@@ -139,6 +139,22 @@ namespace ImageManager.ViewModels
             }
         }
 
+        public void DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        public void Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                e.Data.GetData(DataFormats.FileDrop) is string[] paths &&
+                paths.Length > 0)
+                AddPicturesInner([.. paths]);
+        }
+
         public void AddPicturesInner(List<string> dirFiles)
         {
             var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
