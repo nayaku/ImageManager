@@ -6,7 +6,10 @@ using ImageManager.Tools;
 using ImageManager.Tools.Extension;
 using ImageManager.Windows;
 using StyletIoC;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
+using ComTypes = System.Runtime.InteropServices.ComTypes;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using IContainer = StyletIoC.IContainer;
@@ -141,7 +144,9 @@ namespace ImageManager.ViewModels
 
         public void DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+            e.Effects = (e.Data.GetDataPresent(DataFormats.FileDrop) || 
+                         e.Data.GetDataPresent(DataFormats.Bitmap) ||
+                         e.Data.GetDataPresent("FileContents"))
                 ? DragDropEffects.Copy
                 : DragDropEffects.None;
             e.Handled = true;
@@ -152,7 +157,27 @@ namespace ImageManager.ViewModels
             if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
                 e.Data.GetData(DataFormats.FileDrop) is string[] paths &&
                 paths.Length > 0)
+            {
                 AddPicturesInner([.. paths]);
+            }
+            else if (e.Data.GetDataPresent(DataFormats.Bitmap) &&
+                     e.Data.GetData(DataFormats.Bitmap) is BitmapSource bitmap)
+            {
+                var tempFile = Path.GetTempFileName();
+                using (var fileStream = new FileStream(tempFile, FileMode.Create))
+                {
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                    encoder.Save(fileStream);
+                }
+                AddPicturesInner([tempFile]);
+            }
+            else if (e.Data.GetDataPresent("FileContents"))
+            {
+                var tempFile = VirtualFileHelper.SaveVirtualFileToDisk(e.Data);
+                if (tempFile.Length > 0)
+                    AddPicturesInner([.. tempFile]);
+            }
         }
 
         public void AddPicturesInner(List<string> dirFiles)
@@ -350,7 +375,7 @@ namespace ImageManager.ViewModels
             ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;
         }
 
-        public void Closed()
+        public new void Closed()
         {
             Application.Current.Shutdown();
         }
