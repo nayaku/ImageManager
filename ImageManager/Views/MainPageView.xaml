@@ -40,7 +40,7 @@
                                         <hc:SimplePanel>
                                             <Border CornerRadius="4,4,0,0">
                                                 <Image
-                                                    MouseLeftButtonDown="{s:Action OpenPicture}"
+                                                    MouseLeftButtonDown="{s:Action StickPicture}"
                                                     Source="{Binding Item.ImageUri}"
                                                     Stretch="Uniform" />
                                             </Border>

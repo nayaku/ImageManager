@@ -117,7 +117,7 @@ namespace ImageManager.ViewModels
                         Header = "贴片式打开",
                         Command = new RelayCommand((obj) =>
                         {
-                            OpenPictureCommand();
+                            StickPictureCommand();
                         }),
                     },
                     new MenuItemViewModel()
@@ -292,21 +292,24 @@ namespace ImageManager.ViewModels
         }
 
         #region 右键菜单栏
-        public void OpenPicture(object sender, MouseButtonEventArgs e)
+        public void StickPicture(object sender, MouseButtonEventArgs e)
         {
             if (IsAddPictureMode)
                 return;
             var picture = ((PictureSelectableItemWrapper)((Image)sender).DataContext).Item;
-            var sticker = new StickerWindow(Path.Join(picture.ImageFolderPath, picture.Path));
-            sticker.Show();
+            var picturePath = Path.Join(picture.ImageFolderPath, picture.Path);
+            //var sticker = new StickerWindow(Path.Join(picture.ImageFolderPath, picture.Path));
+            //sticker.Show();
+            var stickerViewModel = new StickerViewModel(picturePath);
+            WindowManager.ShowWindow(stickerViewModel);
         }
-        public void OpenPictureCommand()
+        public void StickPictureCommand()
         {
             SelectedPictures.ForEach(picture =>
             {
                 var path = Path.Join(picture.ImageFolderPath, picture.Path);
-                var sticker = new StickerWindow(path);
-                sticker.Show();
+                var stickerViewModel = new StickerViewModel(path);
+                WindowManager.ShowWindow(stickerViewModel);
             });
         }
         private IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);

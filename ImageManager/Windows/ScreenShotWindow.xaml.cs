@@ -21,22 +21,24 @@ namespace ImageManager.Windows
         private Bitmap gfxScreenShoot;
         // 全屏显示
         private int minX, minY, totalWidth, totalHeight;
+        private IWindowManager _windowManager;
 
         public static bool IsShowing { get; private set; } = false;
 
-        public static bool ShowScreenShotWindow()
+        public static bool ShowScreenShotWindow(IWindowManager windowManager)
         {
             if (IsShowing)
                 return false;
-            var screenShotWindow = new ScreenShotWindow();
+            var screenShotWindow = new ScreenShotWindow(windowManager);
             screenShotWindow.Show();
             IsShowing = true;
             screenShotWindow.Closed += (s, e) => { IsShowing = false; };
             return true;
         }
 
-        private ScreenShotWindow()
+        private ScreenShotWindow(IWindowManager windowManager)
         {
+            _windowManager = windowManager;
             ScreenShoot();
             InitializeComponent();
         }
@@ -205,13 +207,19 @@ namespace ImageManager.Windows
             }
 
             // 显示贴图窗口
-            var stickerWindow = new StickerWindow(screenShootBitmap)
-            {
-                // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
-                Left = Canvas.GetLeft(cropRectangle) + Left + 10,
-                Top = Canvas.GetTop(cropRectangle) + Top + 10
-            };
-            stickerWindow.Show();
+            //var stickerWindow = new StickerWindow(screenShootBitmap)
+            //{
+            //    // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
+            //    Left = Canvas.GetLeft(cropRectangle) + Left + 10,
+            //    Top = Canvas.GetTop(cropRectangle) + Top + 10
+            //};
+            //stickerWindow.Show();
+            // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
+            var point = new System.Windows.Point(
+                (Canvas.GetLeft(cropRectangle) + Left + 10) * dpiScale.DpiScaleX,
+                (Canvas.GetTop(cropRectangle) + Top + 10) * dpiScale.DpiScaleY);
+            var stickerViewModel = new ViewModels.StickerViewModel(screenShootBitmap, point);
+            _windowManager.ShowWindow(stickerViewModel);
         }
 
         private void Window_MouseUp(object sender, MouseButtonEventArgs e)

@@ -233,8 +233,8 @@ namespace ImageManager.ViewModels
                 if (image != null)
                 {
                     var bitmap = ImageUtility.ImageSourceToBitmap(image);
-                    var stickerWindow = new StickerWindow(bitmap);
-                    stickerWindow.Show();
+                    var stickerViewModel = new StickerViewModel(bitmap);
+                    _windowManager.ShowWindow(stickerViewModel);
                 }
             }
         }
@@ -316,19 +316,19 @@ namespace ImageManager.ViewModels
                     Execute.PostToUIThreadAsync(async () =>
                     {
                         await Task.Delay(500);
-                        ScreenShotWindow.ShowScreenShotWindow();
+                        ScreenShotWindow.ShowScreenShotWindow(_windowManager);
                         await Task.Delay(300);
                         WindowState = preWindowState;
                     });
                 }
                 else
                 {
-                    ScreenShotWindow.ShowScreenShotWindow();
+                    ScreenShotWindow.ShowScreenShotWindow(_windowManager);
                 }
             }
             else
             {
-                ScreenShotWindow.ShowScreenShotWindow();
+                ScreenShotWindow.ShowScreenShotWindow(_windowManager);
             }
 
         }
@@ -375,7 +375,7 @@ namespace ImageManager.ViewModels
             ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;
         }
 
-        public new void Closed()
+        protected override void OnClose()
         {
             Application.Current.Shutdown();
         }
