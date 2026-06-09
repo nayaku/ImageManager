@@ -114,7 +114,7 @@
                         Header="贴片式打开" />
                     <MenuItem
                         s:View.ActionTarget="{Binding MainPageViewModel}"
-                        Command="{s:Action OpenPictureWithexternalProgram}"
+                        Command="{s:Action OpenPictureWithExternalProgram}"
                         Header="使用外部程序打开" />
                     <Separator />
                     <MenuItem
