@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using ImageManager.Logging;
+using System.ComponentModel;
 using System.Xml.Serialization;
-using ImageManager.Logging;
 using Timer = System.Timers.Timer;
 
 namespace ImageManager.Data

@@ -4,7 +4,6 @@ using ImageManager.Data.Model;
 using ImageManager.Logging;
 using ImageManager.Views;
 using StyletIoC;
-using System.Windows;
 
 namespace ImageManager.ViewModels
 {

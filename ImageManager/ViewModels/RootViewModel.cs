@@ -1,8 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using HandyControl.Controls;
+﻿using HandyControl.Controls;
 using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
@@ -11,6 +7,10 @@ using ImageManager.Tools;
 using ImageManager.Tools.Extension;
 using ImageManager.Windows;
 using StyletIoC;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
 using DataFormats = System.Windows.DataFormats;
@@ -115,7 +115,7 @@ namespace ImageManager.ViewModels
                         {
                             File.Delete(file);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             LoggerFactory.GetLogger(nameof(RootViewModel)).Error(ex);
                         }
@@ -222,7 +222,7 @@ namespace ImageManager.ViewModels
 
         public void DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = (e.Data.GetDataPresent(DataFormats.FileDrop) || 
+            e.Effects = (e.Data.GetDataPresent(DataFormats.FileDrop) ||
                          e.Data.GetDataPresent(DataFormats.Bitmap) ||
                          e.Data.GetDataPresent("FileContents"))
                 ? DragDropEffects.Copy

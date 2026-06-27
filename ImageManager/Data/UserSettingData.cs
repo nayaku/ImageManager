@@ -66,8 +66,8 @@ namespace ImageManager.Data
 
 
         private static UserSettingData? _default = null;
-        public static UserSettingData Default => _default 
-            ??= Load<UserSettingData>(_settingDataFile) 
+        public static UserSettingData Default => _default
+            ??= Load<UserSettingData>(_settingDataFile)
             ?? new UserSettingData();
 
 

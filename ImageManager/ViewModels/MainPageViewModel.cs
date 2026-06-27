@@ -3,7 +3,6 @@ using HandyControl.Tools.Extension;
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Tools.Helper;
-using ImageManager.Windows;
 using Microsoft.EntityFrameworkCore;
 using StyletIoC;
 using System.Collections.Specialized;
