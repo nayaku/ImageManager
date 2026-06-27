@@ -14,16 +14,18 @@
     AllowsTransparency="True"
     Background="Transparent"
     BorderThickness="0"
-    ContextMenuService.IsEnabled="{Binding IsFolded, Converter={StaticResource Boolean2BooleanReConverter}}"
+    ContextMenuService.IsEnabled="{Binding StickerState.IsFolded, Converter={StaticResource Boolean2BooleanReConverter}}"
+    Left="{Binding StickerState.Left, Mode=TwoWay}"
     MouseDoubleClick="{s:Action MouseDoubleClick}"
     MouseDown="Window_MouseDown"
     MouseWheel="{s:Action MouseWheel}"
-    Opacity="{Binding WindowOpacity}"
+    Opacity="{Binding EffectiveOpacity}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     ShowNonClientArea="False"
     ShowTitle="False"
     SizeToContent="WidthAndHeight"
+    Top="{Binding StickerState.Top, Mode=TwoWay}"
     Topmost="True"
     WindowStyle="None"
     mc:Ignorable="d">
@@ -190,7 +192,7 @@
         <Border.LayoutTransform>
             <TransformGroup>
                 <ScaleTransform ScaleX="{Binding FlipScaleX}" ScaleY="{Binding FlipScaleY}" />
-                <RotateTransform Angle="{Binding RotationAngle}" />
+                <RotateTransform Angle="{Binding StickerState.RotationAngle}" />
             </TransformGroup>
         </Border.LayoutTransform>
     </Border>

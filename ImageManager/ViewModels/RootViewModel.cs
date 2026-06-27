@@ -1,19 +1,26 @@
-﻿using HandyControl.Controls;
+﻿using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
+using HandyControl.Controls;
 using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
+using ImageManager.Logging;
 using ImageManager.Tools;
 using ImageManager.Tools.Extension;
 using ImageManager.Windows;
 using StyletIoC;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows;
-using ComTypes = System.Runtime.InteropServices.ComTypes;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using Application = System.Windows.Application;
+using Clipboard = System.Windows.Clipboard;
+using DataFormats = System.Windows.DataFormats;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
 using IContainer = StyletIoC.IContainer;
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using Label = ImageManager.Data.Model.Label;
+using Screen = Stylet.Screen;
+using Window = System.Windows.Window;
 
 namespace ImageManager.ViewModels
 {
@@ -36,6 +43,11 @@ namespace ImageManager.ViewModels
             get => UserSettingData.IsHideWhenScreenShoot;
             set => UserSettingData.IsHideWhenScreenShoot = value;
         }
+        public bool RestoreStickerOnStartup
+        {
+            get => UserSettingData.RestoreStickerOnStartup;
+            set => UserSettingData.RestoreStickerOnStartup = value;
+        }
         public bool IsClipboardContainsImage => Clipboard.ContainsImage();
 
         public RootViewModel(IWindowManager windowManager, IContainer container, ImageContext context)
@@ -48,7 +60,7 @@ namespace ImageManager.ViewModels
 
         public void Loaded()
         {
-            var res = !HotKey.Regist((System.Windows.Window)View, HotKey.KeyModifiers.Ctrl | HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Alt, Key.X, () =>
+            var res = !HotKey.Regist((Window)View, HotKey.KeyModifiers.Ctrl | HotKey.KeyModifiers.Shift | HotKey.KeyModifiers.Alt, Key.X, () =>
             {
                 ScreenShot();
             });
@@ -60,6 +72,72 @@ namespace ImageManager.ViewModels
 
             // 检查更新
             CheckUpdateAsync();
+
+            // 还原或清理贴片
+            RestoreOrClearStickers();
+        }
+
+        /// <summary>
+        /// 启动时：勾选则还原上次打开的贴片并清理孤儿图片；未勾选则清空全部贴片配置与 STMP 图片。
+        /// </summary>
+        private void RestoreOrClearStickers()
+        {
+            var folder = UserSettingData.StickerFolderPath;
+            if (!Directory.Exists(folder))
+                return;
+
+            if (UserSettingData.RestoreStickerOnStartup)
+            {
+                var validFiles = new HashSet<string>();
+                foreach (var fileName in UserSettingData.Stickers.ToList())
+                {
+                    var imagePath = Path.Join(folder, fileName);
+                    var statePath = Path.Join(folder, fileName + ".xml");
+                    var state = SettingsBase.Load<StickerStateData>(statePath);
+                    if (state != null && File.Exists(imagePath))
+                    {
+                        validFiles.Add(fileName);
+                        validFiles.Add(fileName + ".xml");
+                        _windowManager.ShowWindow(new StickerViewModel(state));
+                    }
+                    else
+                    {
+                        // 图片或状态缺失，剔除残留登记
+                        UserSettingData.Stickers.Remove(fileName);
+                    }
+                }
+                // 删除未被任何贴片引用的孤儿文件（图片与 xml）
+                foreach (var file in Directory.GetFiles(folder))
+                {
+                    if (!validFiles.Contains(Path.GetFileName(file)))
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                        }
+                        catch(Exception ex)
+                        {
+                            LoggerFactory.GetLogger(nameof(RootViewModel)).Error(ex);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // 不还原：清空登记与全部 STMP 文件
+                UserSettingData.Stickers.Clear();
+                foreach (var file in Directory.GetFiles(folder))
+                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerFactory.GetLogger(nameof(RootViewModel)).Error(ex);
+                    }
+                }
+            }
         }
 
         public void UpdateSearchedLabels()
@@ -105,7 +183,7 @@ namespace ImageManager.ViewModels
             {
                 ThemeManager.Current.ApplicationTheme = theme;
                 UserSettingData.Theme = theme;
-                UserSettingData.Save();
+                UserSettingData.Flush();
             }
         }
         private void ClearSerchBarFocus()
@@ -130,12 +208,12 @@ namespace ImageManager.ViewModels
         /// </summary>
         public void AddPictures()
         {
-            var dialog = new System.Windows.Forms.OpenFileDialog
+            var dialog = new OpenFileDialog
             {
                 Multiselect = true
             };
             var res = dialog.ShowDialog();
-            if (res == System.Windows.Forms.DialogResult.OK)
+            if (res == DialogResult.OK)
             {
                 // 扫描和准备文件
                 AddPicturesInner([.. dialog.FileNames]);
@@ -193,9 +271,9 @@ namespace ImageManager.ViewModels
         /// </summary>
         public void AddFolders()
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (result == DialogResult.OK)
             {
                 // 扫描和准备文件
                 var addImageProgressViewModelWrap = new AddImageProgressViewModelWrap(
@@ -245,13 +323,13 @@ namespace ImageManager.ViewModels
         public void ImportData()
         {
             // 选择要导入的文件
-            var dialog = new System.Windows.Forms.OpenFileDialog
+            var dialog = new OpenFileDialog
             {
                 Filter = "数据库文件|*" + PictureDataArchive.Extension,
                 Multiselect = true,
             };
             var result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (result == DialogResult.OK)
             {
                 var addImageProgressViewModel = new AddImageProgressViewModelWrap(
                                        new List<string>(dialog.FileNames), AddPictureSuccess);
@@ -288,12 +366,12 @@ namespace ImageManager.ViewModels
         public void ExportData()
         {
             // 选择要导出到的文件夹和文件名
-            var dialog = new System.Windows.Forms.SaveFileDialog
+            var dialog = new SaveFileDialog
             {
                 Filter = "数据库文件|*" + PictureDataArchive.Extension,
             };
             var result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            if (result == DialogResult.OK)
             {
                 var exportImageProgressViewModelWrap = new ExportImageProgressViewModelWrap(
                     _context.Pictures.ToList(), dialog.FileName);
@@ -377,6 +455,9 @@ namespace ImageManager.ViewModels
 
         protected override void OnClose()
         {
+            // 标记退出：随后 Shutdown 逐个关闭贴片时，各贴片只落盘自身状态、不删文件
+            StickerViewModel.IsShuttingDown = true;
+            UserSettingData.Flush();
             Application.Current.Shutdown();
         }
     }

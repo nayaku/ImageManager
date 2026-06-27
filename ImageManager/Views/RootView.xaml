@@ -90,6 +90,7 @@
                         Header="截图"
                         InputGestureText="Ctrl+Alt+Shift+X" />
                     <CheckBox Content="截图时隐藏" IsChecked="{Binding IsHideWhenScreenShoot}" />
+                    <CheckBox Content="启动时还原贴片" IsChecked="{Binding RestoreStickerOnStartup}" />
                 </MenuItem>
                 <MenuItem Header="选择">
                     <MenuItem
