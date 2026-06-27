@@ -16,15 +16,7 @@
 		<NeutralLanguage>zh-CN</NeutralLanguage>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>TRACE;Core</DefineConstants>
-		<DebugType>portable</DebugType>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugNotRelease|AnyCPU'">
-	  <DefineConstants>TRACE;Core</DefineConstants>
-	  <DebugType>portable</DebugType>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	<PropertyGroup>
 		<DefineConstants>TRACE;Core</DefineConstants>
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
