@@ -1,6 +1,5 @@
 using FreeImageAPI;
 using ImageManager.Data;
-using ImageManager.Logging;
 using ImageManager.Tools;
 using ImageManager.Views;
 using System.Collections.ObjectModel;
@@ -10,7 +9,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
 using Window = HandyControl.Controls.Window;
@@ -34,27 +32,11 @@ namespace ImageManager.ViewModels
         private readonly StickerViewModelWrapper _wrapper;
         private readonly Point? _initPoint;
         private readonly bool _isRestore;
-        private double _dpiScaleX = 1.0;
-        private double _dpiScaleY = 1.0;
-
-        /// <summary>
-        /// 主程序退出中：贴片关闭时只落盘、不清理文件，避免误删还原数据。
-        /// </summary>
-        public static bool IsShuttingDown { get; set; }
 
         public static ObservableCollection<StickerViewModelWrapper> Instances { get; } = [];
 
-        public BitmapImage ImageSource { get; private set; }
+        public ImageSource ImageSource { get; private set; }
         public BitmapImage ThumbnailSource { get; private set; }
-        public double DisplayWidth { get; private set; }
-        public double DisplayHeight { get; private set; }
-        public double FlipScaleX { get; private set; } = 1.0;
-        public double FlipScaleY { get; private set; } = 1.0;
-        /// <summary>
-        /// 窗口实际透明度
-        /// 折叠时强制不透明，展开时取持久化透明度
-        /// </summary>
-        public double EffectiveOpacity { get; private set; } = 1.0;
 
         /// <summary>
         /// 贴片持久化状态
@@ -135,80 +117,41 @@ namespace ImageManager.ViewModels
 
         protected override void OnViewLoaded()
         {
-            var dpi = VisualTreeHelper.GetDpi(View);
-            _dpiScaleX = dpi.DpiScaleX;
-            _dpiScaleY = dpi.DpiScaleY;
 
+            // 还原时，若上次折叠，则按上次裁剪区域生成局部小图
             if (_isRestore)
             {
-                ApplyRestoreState();
-                return;
+                if (_state.IsFolded)
+                {
+                    int cropW = Math.Min(_sourceBitmap.Width, (int)(64 / StickerState.ZoomRate));
+                    int cropH = Math.Min(_sourceBitmap.Height, (int)(64 / StickerState.ZoomRate));
+                    var croppedBitmap = new CroppedBitmap(_originalImageSource, new Int32Rect(_state.FoldCropX, _state.FoldCropY, cropW, cropH));
+                    ImageSource = croppedBitmap;
+                }
             }
 
-            UpdateTransform();
-            RefreshOpacity();
             if (_initPoint != null)
             {
-                var view = (StickerView)View;
-                view.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
-                {
-                    _state.Left = _initPoint.Value.X / _dpiScaleX;
-                    _state.Top = _initPoint.Value.Y / _dpiScaleY;
-                });
+                // 只有在这个时候，设置 Left/Top ，才会同时被DPI转换。
+                _state.Top = _initPoint.Value.Y;
+                _state.Left = _initPoint.Value.X;
             }
-        }
-
-        // 按当前显示器 DPI 还原（缩放因子/裁剪为源像素，故物理尺寸与上次一致）
-        private void ApplyRestoreState()
-        {
-            if (_state.IsFolded)
-            {
-                ApplyFoldedVisual();
-            }
-            else
-            {
-                UpdateTransform();
-            }
-            RefreshOpacity();
-            // Left/Top/RotationAngle/IsFolded 已是 _state 的值，绑定自动生效
         }
 
         protected override void OnClose()
         {
-            if (IsShuttingDown)
-            {
-                // 退出兜底：落盘最新状态，保留文件供下次还原
-                _state.Flush();
-                _sourceBitmap.Dispose();
-                return;
-            }
-
-            // 用户主动关闭单张贴片：移出清单并删除其图片与状态文件
             _state.Flush();
-            UserSettingData.Default.Stickers.Remove(_state.ImageFileName);
-            DeleteStickerFiles();
             _sourceBitmap.Dispose();
-            Instances.Remove(_wrapper);
-        }
-
-        private void DeleteStickerFiles()
-        {
-            try
-            {
-                if (File.Exists(_state.FilePath))
-                    File.Delete(_state.FilePath);
-                if (File.Exists(ImageFilePath))
-                    File.Delete(ImageFilePath);
-            }
-            catch (Exception ex)
-            {
-                LoggerFactory.GetLogger(nameof(StickerViewModel)).Error(ex);
-            }
         }
 
         // ── {s:Action} 命令与事件方法 ────────────────────────────────────────
 
-        public void CloseWindow() => RequestClose();
+        public void CloseWindow()
+        {
+            // 用户主动关闭单张贴片：移出清单
+            UserSettingData.Default.Stickers.Remove(_state.ImageFileName);
+            RequestClose();
+        }
 
         public void CopyImage()
         {
@@ -230,11 +173,10 @@ namespace ImageManager.ViewModels
 
         public void MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var view = (StickerView)View;
             if (_state.IsFolded)
                 Expand();
             else
-                Fold(e.GetPosition(view.StickerImage));
+                Fold(e);
         }
 
         public void IncreaseZoom(string zoomRate)
@@ -248,9 +190,9 @@ namespace ImageManager.ViewModels
         { if (_state.IsFolded) return; RotationInner(0); }
 
         public void HorizontalFlip()
-        { if (_state.IsFolded) return; _state.IsFlippedH = !_state.IsFlippedH; UpdateTransform(); }
+        { if (_state.IsFolded) return; _state.IsFlippedH = !_state.IsFlippedH; }
         public void VerticalFlip()
-        { if (_state.IsFolded) return; _state.IsFlippedV = !_state.IsFlippedV; UpdateTransform(); }
+        { if (_state.IsFolded) return; _state.IsFlippedV = !_state.IsFlippedV; }
 
         public void IncreaseOpacity(string opacityStr)
         { if (_state.IsFolded) return; OpacityInner(_state.WindowOpacity + double.Parse(opacityStr)); }
@@ -277,53 +219,52 @@ namespace ImageManager.ViewModels
 
         private void ZoomInner(double rate)
         {
-            var minRate = 40.0 / Math.Min(_sourceBitmap.Width, _sourceBitmap.Height);
+            var minRate = 40 / Math.Min(_sourceBitmap.Width, _sourceBitmap.Height);
             _state.ZoomRate = Math.Max(rate, minRate);
-            UpdateTransform();
         }
 
         private void OpacityInner(double opacity)
         {
             _state.WindowOpacity = Math.Clamp(opacity, 0.05, 1.0);
-            RefreshOpacity();
         }
 
         private void RotationInner(double angle)
         {
             _state.RotationAngle = angle % 360;
-            UpdateTransform();
         }
 
         // ── 折叠/展开 ────────────────────────────────────────────────────────
 
-        private void Fold(Point clickPosInDip)
+        private void Fold(MouseButtonEventArgs e)
         {
-            if (_state.IsFolded) return;
+            // view
+            var view = (StickerView)View;
 
-            double pixelX = clickPosInDip.X * _dpiScaleX / _state.ZoomRate;
-            double pixelY = clickPosInDip.Y * _dpiScaleY / _state.ZoomRate;
-
-            var cropW = Math.Min(_sourceBitmap.Width, 64);
-            var cropH = Math.Min(_sourceBitmap.Height, 64);
-            var x = Math.Clamp((int)pixelX - cropW / 2, 0, _sourceBitmap.Width - cropW);
-            var y = Math.Clamp((int)pixelY - cropH / 2, 0, _sourceBitmap.Height - cropH);
-            _state.FoldCropX = x; _state.FoldCropY = y; _state.FoldCropW = cropW; _state.FoldCropH = cropH;
-
-            ApplyFoldedVisual();
+            var clickInImage = e.GetPosition(view.StickerImage);
+            // 转换为像素坐标
+            int pixelX = (int)(clickInImage.X / view.StickerImage.ActualWidth * _sourceBitmap.Width);
+            int pixelY = (int)(clickInImage.Y / view.StickerImage.ActualHeight * _sourceBitmap.Height);
+            int cropW = Math.Min(_sourceBitmap.Width, (int)(64 / StickerState.ZoomRate));
+            int cropH = Math.Min(_sourceBitmap.Height, (int)(64 / StickerState.ZoomRate));
+            pixelX = Math.Clamp(pixelX - cropW / 2, 0, _sourceBitmap.Width - cropW);
+            pixelY = Math.Clamp(pixelY - cropH / 2, 0, _sourceBitmap.Height - cropH);
+            _state.FoldCropX = pixelX;
+            _state.FoldCropY = pixelY;
+            var croppedBitmap = new CroppedBitmap(_originalImageSource, new Int32Rect(pixelX, pixelY, cropW, cropH));
+            ImageSource = croppedBitmap;
             _state.IsFolded = true;
 
-            double foldedW = cropW / _dpiScaleX;
-            double foldedH = cropH / _dpiScaleY;
+            // 计算折叠后窗口的边界框尺寸，考虑旋转角度
             double rad = _state.RotationAngle * Math.PI / 180.0;
             double cosA = Math.Abs(Math.Cos(rad));
             double sinA = Math.Abs(Math.Sin(rad));
-            double bbW = foldedW * cosA + foldedH * sinA + 2;
-            double bbH = foldedW * sinA + foldedH * cosA + 2;
+            double bbW = croppedBitmap.Width * cosA + croppedBitmap.Height * sinA;
+            double bbH = croppedBitmap.Width * sinA + croppedBitmap.Height * cosA;
+            bbW = bbW * _state.ZoomRate + 4; //px 边框为 2px，四周共 4px
+            bbH = bbH * _state.ZoomRate + 4; //px
 
-            RefreshOpacity();
-
-            var view = (StickerView)View;
-            var clickInWindow = Mouse.GetPosition(view);
+            // 计算折叠后窗口位置偏移量，使点击点位于折叠后窗口中心
+            var clickInWindow = e.GetPosition(view);
             _state.FoldOffsetX = clickInWindow.X - bbW / 2;
             _state.FoldOffsetY = clickInWindow.Y - bbH / 2;
             _state.Left += _state.FoldOffsetX;
@@ -332,39 +273,12 @@ namespace ImageManager.ViewModels
 
         private void Expand()
         {
-            if (!_state.IsFolded) return;
-
             ImageSource = _originalImageSource;
             _state.IsFolded = false;
-            UpdateTransform();
 
             _state.Left -= _state.FoldOffsetX;
             _state.Top -= _state.FoldOffsetY;
-            RefreshOpacity();
-        }
 
-        // 按 _state 中的折叠裁剪区域生成局部小图，并设置显示尺寸与翻转
-        private void ApplyFoldedVisual()
-        {
-            using var cropped = ImageUtility.Crop(_sourceBitmap, _state.FoldCropX, _state.FoldCropY, _state.FoldCropW, _state.FoldCropH);
-            ImageSource = ImageUtility.BitmapToBitmapImage(cropped);
-            DisplayWidth = _state.FoldCropW / _dpiScaleX;
-            DisplayHeight = _state.FoldCropH / _dpiScaleY;
-            FlipScaleX = _state.IsFlippedH ? -1.0 : 1.0;
-            FlipScaleY = _state.IsFlippedV ? -1.0 : 1.0;
-        }
-
-        private void UpdateTransform()
-        {
-            FlipScaleX = _state.IsFlippedH ? -1.0 : 1.0;
-            FlipScaleY = _state.IsFlippedV ? -1.0 : 1.0;
-            DisplayWidth = _sourceBitmap.Width * _state.ZoomRate / _dpiScaleX;
-            DisplayHeight = _sourceBitmap.Height * _state.ZoomRate / _dpiScaleY;
-        }
-
-        private void RefreshOpacity()
-        {
-            EffectiveOpacity = _state.IsFolded ? 1.0 : _state.WindowOpacity;
         }
     }
 }

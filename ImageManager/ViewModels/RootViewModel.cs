@@ -455,8 +455,6 @@ namespace ImageManager.ViewModels
 
         protected override void OnClose()
         {
-            // 标记退出：随后 Shutdown 逐个关闭贴片时，各贴片只落盘自身状态、不删文件
-            StickerViewModel.IsShuttingDown = true;
             UserSettingData.Flush();
             Application.Current.Shutdown();
         }

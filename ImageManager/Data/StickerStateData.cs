@@ -23,13 +23,15 @@ namespace ImageManager.Data
         public double RotationAngle { get; set; }
         public bool IsFlippedH { get; set; }
         public bool IsFlippedV { get; set; }
+        public double FlipScaleX => (IsFlippedH ? -1 : 1) * ZoomRate;
+        public double FlipScaleY => (IsFlippedV ? -1 : 1) * ZoomRate;
+
         public double WindowOpacity { get; set; } = 1.0;
+        public double EffectiveOpacity => IsFolded ? 1.0 : WindowOpacity;
 
         public bool IsFolded { get; set; }
         public int FoldCropX { get; set; }
         public int FoldCropY { get; set; }
-        public int FoldCropW { get; set; }
-        public int FoldCropH { get; set; }
         public double FoldOffsetX { get; set; }
         public double FoldOffsetY { get; set; }
 

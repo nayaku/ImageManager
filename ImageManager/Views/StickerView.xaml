@@ -19,7 +19,7 @@
     MouseDoubleClick="{s:Action MouseDoubleClick}"
     MouseDown="Window_MouseDown"
     MouseWheel="{s:Action MouseWheel}"
-    Opacity="{Binding EffectiveOpacity}"
+    Opacity="{Binding StickerState.EffectiveOpacity}"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     ShowNonClientArea="False"
@@ -184,14 +184,11 @@
     <Border BorderBrush="Gray" BorderThickness="2">
         <Image
             x:Name="StickerImage"
-            Width="{Binding DisplayWidth}"
-            Height="{Binding DisplayHeight}"
-            SnapsToDevicePixels="True"
             Source="{Binding ImageSource}"
-            UseLayoutRounding="True" />
+            Stretch="None" />
         <Border.LayoutTransform>
             <TransformGroup>
-                <ScaleTransform ScaleX="{Binding FlipScaleX}" ScaleY="{Binding FlipScaleY}" />
+                <ScaleTransform ScaleX="{Binding StickerState.FlipScaleX}" ScaleY="{Binding StickerState.FlipScaleY}" />
                 <RotateTransform Angle="{Binding StickerState.RotationAngle}" />
             </TransformGroup>
         </Border.LayoutTransform>

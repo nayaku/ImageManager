@@ -185,11 +185,6 @@ namespace ImageManager.Windows
             var top = (int)(Canvas.GetTop(cropRectangle) * scaleY);
             var width = (int)(cropRectangle.Width * scaleX);
             var height = (int)(cropRectangle.Height * scaleY);
-            if (width < 50 || height < 50)
-            {
-                Growl.ErrorGlobal("截图区域长宽不得小于50像素，请重新截图！");
-                return;
-            }
             Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
 
             var screenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
@@ -216,8 +211,8 @@ namespace ImageManager.Windows
             //stickerWindow.Show();
             // 设置窗口位置为截图时的位置，加上一定偏移量，避免找不到窗口
             var point = new System.Windows.Point(
-                (Canvas.GetLeft(cropRectangle) + Left + 10) * dpiScale.DpiScaleX,
-                (Canvas.GetTop(cropRectangle) + Top + 10) * dpiScale.DpiScaleY);
+                (Canvas.GetLeft(cropRectangle) + Left),
+                (Canvas.GetTop(cropRectangle) + Top));
             var stickerViewModel = new ViewModels.StickerViewModel(screenShootBitmap, point);
             _windowManager.ShowWindow(stickerViewModel);
         }
