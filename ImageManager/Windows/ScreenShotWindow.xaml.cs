@@ -185,6 +185,11 @@ namespace ImageManager.Windows
             var top = (int)(Canvas.GetTop(cropRectangle) * scaleY);
             var width = (int)(cropRectangle.Width * scaleX);
             var height = (int)(cropRectangle.Height * scaleY);
+            if (width < 1 || height < 1)
+            {
+                Growl.ErrorGlobal("截图区域长宽不得小于1像素，请重新截图！");
+                return;
+            }
             Debug.WriteLine($"Cropping Bitmap at ({left}, {top}), Size: ({width}, {height})");
 
             var screenShootBitmap = gfxScreenShoot.Clone(new System.Drawing.Rectangle(left, top, width, height), gfxScreenShoot.PixelFormat);
