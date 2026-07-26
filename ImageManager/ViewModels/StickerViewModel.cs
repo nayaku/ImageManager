@@ -288,7 +288,6 @@ namespace ImageManager.ViewModels
             _state.FoldCropY = pixelY;
             var croppedBitmap = new CroppedBitmap(_originalImageSource, new Int32Rect(pixelX, pixelY, cropW, cropH));
             ImageSource = croppedBitmap;
-            _state.IsFolded = true;
 
             // 计算折叠后窗口的边界框尺寸，考虑旋转角度
             double rad = _state.RotationAngle * Math.PI / 180.0;
@@ -303,18 +302,27 @@ namespace ImageManager.ViewModels
             var clickInWindow = e.GetPosition(view);
             _state.FoldOffsetX = clickInWindow.X - bbW / 2;
             _state.FoldOffsetY = clickInWindow.Y - bbH / 2;
-            _state.Left += _state.FoldOffsetX;
-            _state.Top += _state.FoldOffsetY;
+            double newLeft = _state.Left + _state.FoldOffsetX;
+            double newTop = _state.Top + _state.FoldOffsetY;
+            view.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                _state.Left = newLeft;
+                _state.Top = newTop;
+                _state.IsFolded = true;
+            });
         }
 
         private void Expand()
         {
-            ImageSource = _originalImageSource;
-            _state.IsFolded = false;
+            var view = (StickerView)View;
+            view.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+            {
+                ImageSource = _originalImageSource;
+                _state.IsFolded = false;
 
-            _state.Left -= _state.FoldOffsetX;
-            _state.Top -= _state.FoldOffsetY;
-
+                _state.Left -= _state.FoldOffsetX;
+                _state.Top -= _state.FoldOffsetY;
+            });
         }
     }
 }
