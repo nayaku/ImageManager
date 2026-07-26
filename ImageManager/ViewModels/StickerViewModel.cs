@@ -7,8 +7,10 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
 using Window = HandyControl.Controls.Window;
@@ -32,6 +34,7 @@ namespace ImageManager.ViewModels
         private readonly StickerViewModelWrapper _wrapper;
         private readonly Point? _initPoint;
         private readonly bool _isRestore;
+        private readonly bool _canZoomInInitially; // 是否允许初始缩放（来自剪贴板和图库文件时允许）
 
         public static ObservableCollection<StickerViewModelWrapper> Instances { get; } = [];
 
@@ -50,24 +53,29 @@ namespace ImageManager.ViewModels
 
         // 来自图库文件：复制原文件保留格式
         public StickerViewModel(string imagePath) : this(LoadBitmapFromFile(imagePath),
-                  new StickerStateData(SaveImageFromFile(imagePath), true), null, false)
+                  new StickerStateData(SaveImageFromFile(imagePath), true), null, false, true)
         { }
-        // 来自截图/剪贴板：编码为 PNG
-        public StickerViewModel(Bitmap bitmap, Point? initPoint = null)
-            : this(bitmap, new StickerStateData(SaveImageFromBitmap(bitmap), false), initPoint, false)
+        // 来自剪贴板
+        public StickerViewModel(Bitmap bitmap)
+            : this(bitmap, new StickerStateData(SaveImageFromBitmap(bitmap), false), null, false, true)
+        { }
+        // 来自截图
+        public StickerViewModel(Bitmap bitmap, Point initPoint)
+            : this(bitmap, new StickerStateData(SaveImageFromBitmap(bitmap), false), initPoint, false, false)
         { }
         // 启动还原：从 STMP 已有文件加载，不再复制
         public StickerViewModel(StickerStateData state)
             : this(LoadBitmapFromFile(Path.Join(UserSettingData.Default.StickerFolderPath, state.ImageFileName)),
-                   state, null, true)
+                   state, null, true, false)
         { }
 
-        private StickerViewModel(Bitmap bitmap, StickerStateData state, Point? initPoint, bool isRestore)
+        private StickerViewModel(Bitmap bitmap, StickerStateData state, Point? initPoint, bool isRestore, bool canZoomInInitially)
         {
             _sourceBitmap = bitmap;
             _state = state;
             _initPoint = initPoint;
             _isRestore = isRestore;
+            _canZoomInInitially = canZoomInInitially;
             _originalImageSource = ImageUtility.BitmapToBitmapImage(bitmap);
             ImageSource = _originalImageSource;
 
@@ -135,6 +143,34 @@ namespace ImageManager.ViewModels
                 // 只有在这个时候，设置 Left/Top ，才会同时被DPI转换。
                 _state.Top = _initPoint.Value.Y;
                 _state.Left = _initPoint.Value.X;
+            }
+
+            // 初始缩放：如果图片尺寸大于屏幕尺寸的 90%，则按比例缩小到屏幕内
+            if (_canZoomInInitially)
+            {
+                var view = (StickerView)View;
+                view.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+                {
+                    var actualHeight = view.StickerImage.ActualHeight;
+                    var actualWidth = view.StickerImage.ActualWidth;
+                    var interopHelper = new WindowInteropHelper(view);
+                    var screen = System.Windows.Forms.Screen.FromHandle(interopHelper.Handle);
+                    var screenWidth = screen.WorkingArea.Width;
+                    var screenHeight = screen.WorkingArea.Height;
+                    DpiScale dpiInfo = VisualTreeHelper.GetDpi(view);
+                    double scaleX = dpiInfo.DpiScaleX;
+                    double scaleY = dpiInfo.DpiScaleY;
+                    double wpfWidth = screenWidth / scaleX;
+                    double wpfHeight = screenHeight / scaleY;
+                    if (actualWidth > wpfWidth * 0.9 || actualHeight > wpfHeight * 0.9)
+                    {
+                        // Adjust the size or position if needed
+                        double widthRatio = wpfWidth / actualWidth;
+                        double heightRatio = wpfHeight / actualHeight;
+                        double zoomFactor = Math.Min(widthRatio, heightRatio) * 0.9; // Slightly smaller than the screen
+                        StickerState.ZoomRate = zoomFactor;
+                    }
+                });
             }
         }
 
