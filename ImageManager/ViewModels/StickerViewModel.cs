@@ -1,10 +1,13 @@
 using FreeImageAPI;
 using ImageManager.Data;
+using ImageManager.Logging;
 using ImageManager.Tools;
+using ImageManager.Tools.Helper;
 using ImageManager.Views;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -192,7 +195,17 @@ namespace ImageManager.ViewModels
         public void CopyImage()
         {
             if (_state.IsFolded) return;
-            Clipboard.SetImage(ImageUtility.BitmapToBitmapImage(_sourceBitmap));
+            //Clipboard.SetImage(ImageUtility.BitmapToBitmapImage(_sourceBitmap));
+
+            try
+            {
+                ImageClipboardHelper.SetImage(_sourceBitmap);
+            }
+            catch (ExternalException ex)
+            {
+                MessageBox.Show($"复制图片到剪贴板失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggerFactory.GetLogger(nameof(ImageClipboardHelper)).Error(ex);
+            }
         }
 
         public void MouseWheel(object sender, MouseWheelEventArgs e)
