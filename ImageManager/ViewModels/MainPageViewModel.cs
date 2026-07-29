@@ -18,6 +18,7 @@ using System.Windows.Media;
 using static ImageManager.Data.UserSettingData;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
+using System.Runtime.InteropServices;
 
 namespace ImageManager.ViewModels
 {
@@ -355,7 +356,7 @@ namespace ImageManager.ViewModels
                     Clipboard.SetDataObject(dataObject, true);
                 }
             }
-            catch (Exception ex)
+            catch (ExternalException ex)
             {
                 MessageBox.Show($"复制图片到剪贴板失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -370,7 +371,17 @@ namespace ImageManager.ViewModels
                 var path = Path.Join(picture.ImageFolderPath, picture.Path);
                 paths.Add(path);
             });
-            Clipboard.SetDataObject(string.Join('\n', paths));
+            var dataObject = new DataObject(DataFormats.Text, string.Join('\n', paths));
+            try
+            {
+                Clipboard.SetDataObject(dataObject, true);
+            }
+            catch (ExternalException ex)
+            {
+                MessageBox.Show($"复制图片路径到剪贴板失败：{ex.Message}", "错误",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggerFactory.GetLogger(nameof(MainPageViewModel)).Error(ex);
+            }
         }
         public void AddPictureLabel()
         {
