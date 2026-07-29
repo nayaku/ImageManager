@@ -1,6 +1,8 @@
-﻿using HandyControl.Tools.Command;
+﻿using FreeImageAPI;
+using HandyControl.Tools.Command;
 using HandyControl.Tools.Extension;
 using ImageManager.Data;
+using ImageManager.Logging;
 using ImageManager.Data.Model;
 using ImageManager.Tools.Helper;
 using Microsoft.EntityFrameworkCore;
@@ -330,14 +332,37 @@ namespace ImageManager.ViewModels
         }
         public void CopyPicture()
         {
-            var body = string.Join("<br>", SelectedPictures.Select(picture =>
-               $"<img src='{Path.Join(picture.ImageFolderPath, picture.Path)}'>"
-            ));
+            var pictures = SelectedPictures.ToList();
+            if (pictures.Count == 0) return;
 
-            var html = ClipboardHelper.GetHtml(body);
-            var dataObject = new DataObject();
-            dataObject.SetData(DataFormats.Html, html);
-            Clipboard.SetDataObject(dataObject);
+            try
+            {
+                if (pictures.Count == 1)
+                {
+                    // 单选：复制真实位图（PNG + CF_BITMAP），可直接粘入 PS / 聊天框
+                    var path = Path.Join(pictures[0].ImageFolderPath, pictures[0].Path);
+                    using (var fib = FreeImageBitmap.FromFile(path))
+                    {
+                        using var bitmap = fib.ToBitmap();
+                        ImageClipboardHelper.SetImage(bitmap);
+                    }
+                }
+                else
+                {
+                    // 多选：以文件拖放格式复制路径列表，粘到文件夹 / 其他程序直接出文件
+                    var paths = pictures
+                        .Select(p => Path.Join(p.ImageFolderPath, p.Path))
+                        .ToArray();
+                    var dataObject = new DataObject(DataFormats.FileDrop, paths);
+                    Clipboard.SetDataObject(dataObject, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"复制图片到剪贴板失败：{ex.Message}", "错误",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                LoggerFactory.GetLogger(nameof(MainPageViewModel)).Error(ex);
+            }
         }
         public void CopyPicturePath()
         {
