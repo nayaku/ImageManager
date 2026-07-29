@@ -341,11 +341,9 @@ namespace ImageManager.ViewModels
                 {
                     // 单选：复制真实位图（PNG + CF_BITMAP），可直接粘入 PS / 聊天框
                     var path = Path.Join(pictures[0].ImageFolderPath, pictures[0].Path);
-                    using (var fib = FreeImageBitmap.FromFile(path))
-                    {
-                        using var bitmap = fib.ToBitmap();
-                        ImageClipboardHelper.SetImage(bitmap);
-                    }
+                    using var fib = FreeImageBitmap.FromFile(path);
+                    using var bitmap = fib.ToBitmap();
+                    ImageClipboardHelper.SetImage(bitmap);
                 }
                 else
                 {
