@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
+    xmlns:model="clr-namespace:ImageManager.Data.Model"
     Title="添加标签"
     Width="320"
     Height="140"
@@ -49,7 +50,7 @@
             PlacementTarget="{Binding ElementName=SearchLabelBar}">
             <ListBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding SearchedLabels}">
                 <ListBox.ItemTemplate>
-                    <DataTemplate DataType="data:Label">
+                    <DataTemplate DataType="{x:Type model:Label}">
                         <Button
                             Margin="0"
                             HorizontalAlignment="Stretch"
