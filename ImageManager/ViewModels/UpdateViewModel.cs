@@ -57,9 +57,9 @@ namespace ImageManager.ViewModels
             return false;
         }
 
-        public void Loaded()
+        public async Task LoadedAsync()
         {
-            Update();
+            await Update();
         }
 
         public void Closed()

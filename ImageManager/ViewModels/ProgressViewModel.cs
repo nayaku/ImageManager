@@ -19,8 +19,7 @@
         /// </summary>
         public string Message { get; set; }
 
-        public string Title =>
-            string.Format("{0}中...({1:F2}%)", _isDoingCleanUp ? "取消" : "处理", Progress);
+        public string Title => $"{(_isDoingCleanUp ? "取消" : "处理")}中...({Progress:F2}%)";
 
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
@@ -44,9 +43,14 @@
             _canClose = false;
             var result = await Task.Run(() => _processFunc());
             if (!result || _cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                _isDoingCleanUp = true;
                 await Task.Run(() => _cancelAction?.Invoke());
+            }
             else
+            {
                 await Task.Run(() => _donection());
+            }
             _canClose = true;
             RequestClose();
         }
@@ -56,7 +60,7 @@
             _cancellationTokenSource.Cancel();
         }
 
-        public Task<bool> CanCloseAsync()
+        public override Task<bool> CanCloseAsync()
         {
             return Task.Run(() =>
             {
