@@ -5,9 +5,9 @@
 		<UseWPF>true</UseWPF>
 		<AssemblyName>ImageManager</AssemblyName>
 		<RootNamespace>ImageManager</RootNamespace>
-		<Version>3.2.5.0</Version>
+		<Version>3.2.6.0</Version>
 		<Configurations>Debug;Release;DebugNotRelease</Configurations>
-		<Copyright>Copyright © Nayaku 2022</Copyright>
+		<Copyright>Copyright © Nayaku 2026</Copyright>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
