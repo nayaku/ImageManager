@@ -27,6 +27,33 @@ namespace ImageManager.Tools
             return bitmapImage;
         }
 
+        /// <summary>
+        /// Bitmap 直接转 BitmapSource，不经过任何编码器。
+        /// 整屏截图走编码器（如 TIFF）内存峰值可达数百 MB，容易 OOM；
+        /// 这里直接拷贝像素，并沿用 Bitmap 自身的 DPI，配合 Stretch=None 实现 1:1 像素显示
+        /// </summary>
+        public static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
+        {
+            var rect = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
+            var data = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            try
+            {
+                // 截图不含透明度，用 Bgr32 忽略 alpha 通道，避免 CopyFromScreen 未写 alpha 导致全透明
+                var obj = BitmapSource.Create(
+                    data.Width, data.Height,
+                    bitmap.HorizontalResolution, bitmap.VerticalResolution,
+                    PixelFormats.Bgr32, null,
+                    data.Scan0, data.Stride * data.Height, data.Stride);
+                obj.Freeze();
+                return obj;
+            }
+            finally
+            {
+                bitmap.UnlockBits(data);
+            }
+        }
+
         // BitmapImage --> Bitmap
         public static Bitmap BitmapImageToBitmap(BitmapImage bitmapImage)
         {

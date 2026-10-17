@@ -1,4 +1,5 @@
 using HandyControl.Controls;
+using ImageManager.Logging;
 using ImageManager.Tools;
 using System.Diagnostics;
 using System.Drawing;
@@ -16,51 +17,80 @@ namespace ImageManager.Windows
     /// </summary>
     public partial class ScreenShotWindow
     {
+        private static readonly Logger _logger = LoggerFactory.GetLogger(nameof(ScreenShotWindow));
+
+        public static ScreenShotWindow? Instance { get; private set; }
+
         private double mouseDownX, mouseDownY;
         private Rectangle? cropRectangle;
-        private Bitmap gfxScreenShoot;
+        private Bitmap? gfxScreenShoot;
         // 全屏显示
         private int minX, minY, totalWidth, totalHeight;
-        private IWindowManager _windowManager;
+        private readonly IWindowManager _windowManager;
 
-        public static bool IsShowing { get; private set; } = false;
 
         public static bool ShowScreenShotWindow(IWindowManager windowManager)
         {
-            if (IsShowing)
+            if (Instance != null)
                 return false;
             var screenShotWindow = new ScreenShotWindow(windowManager);
+            // 截屏失败就不显示窗口：全屏遮罩显示出来后再出错，整个桌面会被罩死
+            if (!screenShotWindow.ScreenShoot())
+            {
+                screenShotWindow.Close();
+                Growl.ErrorGlobal("截屏失败，请重试！");
+                return false;
+            }
             screenShotWindow.Show();
-            IsShowing = true;
-            screenShotWindow.Closed += (s, e) => { IsShowing = false; };
+            Instance = screenShotWindow;
             return true;
         }
 
         private ScreenShotWindow(IWindowManager windowManager)
         {
             _windowManager = windowManager;
-            ScreenShoot();
             InitializeComponent();
-        }
-
-        ~ScreenShotWindow()
-        {
-            gfxScreenShoot.Dispose();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             AdjustWindowSize();
             AddScreenShootToCanvas();
+            // 确保窗口拿到键盘焦点，否则收不到 Esc
+            Activate();
+            Focus();
         }
 
         /// <summary>
-        /// 截屏
+        /// 截屏，须在窗口显示前调用。
+        /// 返回是否成功；失败时不要显示窗口，否则全屏遮罩会罩死桌面
         /// </summary>
-        private void ScreenShoot()
+        private bool ScreenShoot()
+        {
+            try
+            {
+                CaptureScreens();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // 显示器枚举失败、内存不足、锁屏或远程桌面下 CopyFromScreen 失败等
+                _logger.Log(LogLevel.Error, exception: ex, report: true);
+                gfxScreenShoot?.Dispose();
+                gfxScreenShoot = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 抓取所有显示器画面到 <see cref="gfxScreenShoot"/>
+        /// </summary>
+        private void CaptureScreens()
         {
             // 获取所有显示器的工作区域
             var screens = DisplayAPI.EnumerateDisplays() ?? throw new Exception("获取显示器信息失败！");
+            if (screens.Length == 0)
+                throw new Exception("未检测到任何显示器！");
             minX = int.MaxValue;
             minY = int.MaxValue;
             totalWidth = 0;
@@ -125,13 +155,13 @@ namespace ImageManager.Windows
 
         private void AddScreenShootToCanvas()
         {
+            Debug.Assert(gfxScreenShoot != null);
             // 获取当前DPI并调整Bitmap的DPI以正确显示
             var dpi = VisualTreeHelper.GetDpi(this);
             gfxScreenShoot.SetResolution((float)(96 * dpi.DpiScaleX), (float)(96 * dpi.DpiScaleY));
-            var bitmapImage = ImageUtility.BitmapToBitmapImage(gfxScreenShoot);
             CaptureCanvas.Children.Add(new System.Windows.Controls.Image()
             {
-                Source = bitmapImage,
+                Source = ImageUtility.BitmapToBitmapSource(gfxScreenShoot),
                 Stretch = Stretch.None
             });
         }
@@ -142,6 +172,25 @@ namespace ImageManager.Windows
             {
                 CaptureCanvas.Children.Remove(cropRectangle);
                 cropRectangle = null;
+            }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            // 在此释放截图位图，不用终结器：终结器里访问其他托管对象顺序不可控，
+            // 且构造阶段失败时字段为 null，会在终结器线程抛异常直接终止进程
+            gfxScreenShoot?.Dispose();
+            gfxScreenShoot = null;
+            if (ReferenceEquals(Instance, this))
+                Instance = null;
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                Close();
             }
         }
 
@@ -176,6 +225,9 @@ namespace ImageManager.Windows
 
         private void CropBitmap()
         {
+            Debug.Assert(cropRectangle != null);
+            Debug.Assert(gfxScreenShoot != null);
+
             // 获取当前窗口缩放因子
             DpiScale dpiScale = VisualTreeHelper.GetDpi(this);
             var scaleX = dpiScale.DpiScaleX;

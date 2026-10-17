@@ -8,6 +8,8 @@
     Title="ScreenShootWindow"
     Width="800"
     Height="450"
+    Closed="Window_Closed"
+    KeyDown="Window_KeyDown"
     Loaded="Window_Loaded"
     MouseDown="Window_MouseDown"
     MouseMove="Window_MouseMove"
@@ -91,5 +93,5 @@
                 Stroke="Black" />
         </Grid>
     </hc:SimplePanel>-->
-    <Canvas x:Name="CaptureCanvas"/>
+    <Canvas x:Name="CaptureCanvas" />
 </Window>
