@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Windows;
 
 namespace ImageManager.ViewModels
@@ -17,7 +16,7 @@ namespace ImageManager.ViewModels
         public bool ShowErrorIcon => State == StateEnum.Error;
 
         public string StateText { get; private set; } = "";
-        public string CurrentVersion { get; } = Assembly.GetEntryAssembly().GetName().Version.ToString(3);
+        public string CurrentVersion { get; } = App.AppVersion.ToString(3);
         public string LatestVersion { get; private set; } = "";
         public string UpdateLog { get; private set; } = "";
         public bool ShowDownloadProgress { get; private set; }
@@ -37,7 +36,7 @@ namespace ImageManager.ViewModels
             {
                 using var client = GetGithubHttpClient();
                 var response = await client.GetAsync("releases/latest");
-                var version = Assembly.GetEntryAssembly().GetName().Version;
+                var version = App.AppVersion;
                 var json = await response.Content.ReadAsStringAsync();
                 var jsonObject = JObject.Parse(json);
                 var latestVersion = new Version((string)jsonObject["tag_name"]);
@@ -93,7 +92,7 @@ namespace ImageManager.ViewModels
                 foreach (var releasejson in jsonArray)
                 {
                     var version = (string)releasejson["tag_name"];
-                    if (new Version(version) <= new Version(CurrentVersion))
+                    if (new Version(version) <= App.AppVersion)
                         return;
                     var published_at = DateTime.Parse((string)releasejson["published_at"]);
                     var body = (string)releasejson["body"];
@@ -122,7 +121,7 @@ namespace ImageManager.ViewModels
                 {
                     Timeout = TimeSpan.FromSeconds(1)
                 };
-                var googleResult = await googleClient.GetAsync("http://www.google.com");
+                using var googleResult = await googleClient.GetAsync("http://www.google.com");
                 canConnectGoogle = googleResult.StatusCode == HttpStatusCode.OK;
             }
             catch (Exception)

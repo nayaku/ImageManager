@@ -35,7 +35,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **Views/** — 纯 XAML，几乎无代码隐藏；通过 `{Binding}` 绑定 VM 属性
 - **Controls/** — 自定义控件与附加属性：`ScrollViewerMonitor`（滚动到底部时自动触发懒加载命令，支撑下方"滚动追加"）、`Canvas`
 - **Windows/** — 独立浮窗（`ScreenShotWindow`），运行于主 Shell 之外
-- **Logging/** — 轻量自定义日志：`Logger` / `LoggerFactory`
+- **Logging/** — 轻量自定义日志 `Logger` / `LoggerFactory`，以及崩溃上报 `Report`，详见下方"日志与崩溃上报"
 
 页面导航使用 Stylet 的 `INavigationController` / `IConductor`，托管在 `RootViewModel` 中。
 
@@ -101,10 +101,28 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - `static Load<T>(filePath)` — 反序列化；文件不存在或解析失败返回 `null`（异常已记入日志），调用方须处理 null
 - `Save()` 内部加锁并自动创建目录
 
+### 日志与崩溃上报
+
+- **目录**：`Tools/AppPaths.cs` 统一定义，根目录为 `%LocalAppData%\ImageManager`（安装目录可能不可写），
+  日志在 `Logs\`，崩溃包在 `Crashes\`
+- **日志**：`Logger.Log` 写 Info 及以上等级，文件名为 `{PID}_{yyyy-MM-dd}.log`（按进程、按天），
+  多线程写入由静态锁保护；`Logger.GetLogPath(date)` 供打包时定位日志文件
+- **崩溃上报**（仅 Release）：`Log(..., report: true)` 触发 `Report.ReportCrash`，
+  打包 `crash.txt`（版本、OS、运行时、内存、异常）和当前进程最近 3 天的日志为 zip，
+  以 multipart 上传至 `ReportUrl`，成功即删 zip，失败则保留在 `Crashes\`；同一崩溃 10 分钟内只报一次
+- **同步/异步**：默认在线程池后台上报，不阻塞 UI；进程即将退出的场景（启动失败、
+  `AppDomain.UnhandledException`）须传 `waitReport: true` 同步等待，否则后台任务会被杀掉
+- `Report` 内部不抛异常，所有 Growl 通知经 `Notify` 切回 UI 线程
+- **机器信息**：`Tools/Machine.cs` 通过 WMI（`System.Management`）获取 CPU/主板/系统盘序列号与 OS 名称；
+  `GetMachineCode()` 为三者拼接后的 MD5，随崩溃包上报。启动时会把这些信息写入日志
+- 版本号统一用 `App.AppVersion`
+
 ### 关键工具类（`Tools/`）
 
 | 文件 | 用途 |
 |---|---|
+| `AppPaths.cs` | 用户数据目录（日志、崩溃包）路径常量 |
+| `Machine.cs` | WMI 读取硬件序列号、OS 名称，生成机器码 |
 | `HotKey.cs` | 全局 Win32 热键注册（截图：Ctrl+Shift+Alt+X） |
 | `DisplayAPI.cs` | 多显示器检测与 DPI 处理 |
 | `ImageUtility.cs` | 使用 FreeImage 加载/缩放图片 |
@@ -128,7 +146,8 @@ HandyControls 主题在 `App.xaml` 中设置，支持运行时切换明/暗模�
 ## 重要约定
 
 - **单实例**：通过 `App.xaml.cs` 中的命名 `Mutex` 强制单实例；第二次启动会激活已有窗口
-- **错误处理**：`App.xaml.cs` 中有全局 `UnhandledException` 和 `DispatcherUnhandledException` 处理器，自动上传错误日志
+- **错误处理**：`App.xaml.cs` 中有全局 `UnhandledException`（同步上报后退出）和
+  `DispatcherUnhandledException`（`Handled = true`，后台上报、程序继续运行）处理器，仅 Release 注册
 - **允许不安全代码**：用于 Win32 P/Invoke 和 FreeImage 互操作
 - 中文（`zh-CN`）为默认语言；XAML 中所有 UI 字符串均为中文
 - 安装包使用 **Inno Setup** 构建（拖放相关已知问题见 `design/development.md`）

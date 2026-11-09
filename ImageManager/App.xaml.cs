@@ -1,7 +1,12 @@
 using HandyControl.Themes;
+using ImageManager.Logging;
+using ImageManager.Tools;
 using ImageManager.Windows;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using LoggerFactory = ImageManager.Logging.LoggerFactory;
@@ -11,6 +16,10 @@ namespace ImageManager
 {
     public partial class App : Application
     {
+        private Logger _logger = LoggerFactory.GetLogger(nameof(App));
+        public static Version AppVersion =>
+            Assembly.GetEntryAssembly()!.GetName().Version!;
+
         public App()
         {
 #if !DEBUG
@@ -31,17 +40,24 @@ namespace ImageManager
         // 每次启动应用程序，都会验证名称为OnlyRun的互斥是否存在 
         protected override void OnStartup(StartupEventArgs e)
         {
-            OperatingSystem os = Environment.OSVersion;
-            Version ver = os.Version;
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Info, $"System Version: {ver}");
-
             var location = Assembly.GetEntryAssembly()!.Location;
-            var bs = System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(location));
+            var bs = MD5.HashData(Encoding.UTF8.GetBytes(location));
             mutex = new Mutex(true, Convert.ToBase64String(bs), out var isNewInstance);
             if (isNewInstance)
             {
                 try
                 {
+                    var cpuId = Machine.GetCpuId();
+                    _logger.Log(LogLevel.Info, $"CPU ID: {cpuId}");
+                    var boardId = Machine.GetBoardId();
+                    _logger.Log(LogLevel.Info, $"Board ID: {boardId}");
+                    var hdId = Machine.GetHDId();
+                    _logger.Log(LogLevel.Info, $"HD ID: {hdId}");
+                    var osName = Machine.GetOperatingSystem();
+                    _logger.Log(LogLevel.Info, $"OS: {osName} ({RuntimeInformation.OSArchitecture})");
+                    var machineCode = Machine.GetMachineCode();
+                    _logger.Log(LogLevel.Info, $"Machine Code: {machineCode}");
+
                     base.OnStartup(e);
                 }
                 catch (Exception ex)
@@ -67,8 +83,10 @@ namespace ImageManager
         {
             // 关闭截图窗口
             ScreenShotWindow.Instance?.Close();
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e, report: true);
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
+            // 之后紧接着 Shutdown，须同步上报
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e, report: true, waitReport: true);
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" +
+                e.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -76,7 +94,8 @@ namespace ImageManager
             // 关闭截图窗口
             ScreenShotWindow.Instance?.Close();
             LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: e.Exception, report: true);
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + e.Exception.Message.ToString(), "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" +
+                e.Exception.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
             e.Handled = true;
         }
 
@@ -85,8 +104,10 @@ namespace ImageManager
             // 关闭截图窗口
             ScreenShotWindow.Instance?.Close();
             var ex = (Exception)e.ExceptionObject;
-            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: ex, report: true);
-            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" + ex.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
+            // 进程即将退出，须同步上报
+            LoggerFactory.GetLogger(nameof(App)).Log(LogLevel.Fatal, exception: ex, report: true, waitReport: true);
+            MessageBox.Show("我们很抱歉，当前应用程序遇到一些问题，该操作已经终止。我们将会上传错误日志以便开发人员解决问题。\n错误信息：" +
+                ex.Message, "意外的操作", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
     }
