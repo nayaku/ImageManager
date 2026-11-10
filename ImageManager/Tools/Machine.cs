@@ -32,9 +32,10 @@ namespace ImageManager.Tools
             try
             {
                 using var searcher = new ManagementObjectSearcher("select ProcessorId from Win32_Processor");
-                foreach (var share in searcher.Get())
+                using var collection = searcher.Get();
+                foreach (var item in collection)
                 {
-                    return share["ProcessorId"]?.ToString()?.Trim() ?? "";
+                    return item["ProcessorId"]?.ToString()?.Trim() ?? "";
                 }
             }
             catch (Exception ex)
@@ -52,10 +53,11 @@ namespace ImageManager.Tools
         {
             try
             {
-                using var searcher = new ManagementObjectSearcher("select SerialNumber from Win32_BaseBoard");
-                foreach (var share in searcher.Get())
+                using var searcher = new ManagementObjectSearcher("SELECT UUID FROM Win32_ComputerSystemProduct");
+                using var collection = searcher.Get();
+                foreach (var item in collection)
                 {
-                    return share["SerialNumber"]?.ToString()?.Trim() ?? "";
+                    return item["UUID"]?.ToString()?.Trim() ?? "";
                 }
             }
             catch (Exception ex)
@@ -79,14 +81,16 @@ namespace ImageManager.Tools
                 using var partSearcher = new ManagementObjectSearcher(
                     $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{systemDrive}'}} " +
                     "WHERE AssocClass = Win32_LogicalDiskToPartition");
-                foreach (var partition in partSearcher.Get())
+                using var partCollection = partSearcher.Get();
+                foreach (var partition in partCollection)
                 {
                     var diskIndex = partition["DiskIndex"];
 
                     // 磁盘索引 → 物理盘序列号
                     using var diskSearcher = new ManagementObjectSearcher(
                         $"select SerialNumber from Win32_DiskDrive where Index = {diskIndex}");
-                    foreach (var disk in diskSearcher.Get())
+                    using var diskCollection = diskSearcher.Get();
+                    foreach (var disk in diskCollection)
                         return disk["SerialNumber"]?.ToString()?.Trim() ?? "";
                 }
             }
@@ -102,9 +106,10 @@ namespace ImageManager.Tools
             try
             {
                 using var searcher = new ManagementObjectSearcher("select Caption from Win32_OperatingSystem");
-                foreach (var share in searcher.Get())
+                using var collection = searcher.Get();
+                foreach (var item in collection)
                 {
-                    return share["Caption"]?.ToString()?.Trim() ?? "";
+                    return item["Caption"]?.ToString()?.Trim() ?? "";
                 }
             }
             catch (Exception ex)

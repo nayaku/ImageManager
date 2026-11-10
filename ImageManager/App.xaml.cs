@@ -47,6 +47,8 @@ namespace ImageManager
             {
                 try
                 {
+                    base.OnStartup(e);
+
                     var cpuId = Machine.GetCpuId();
                     _logger.Log(LogLevel.Info, $"CPU ID: {cpuId}");
                     var boardId = Machine.GetBoardId();
@@ -57,8 +59,6 @@ namespace ImageManager
                     _logger.Log(LogLevel.Info, $"OS: {osName} ({RuntimeInformation.OSArchitecture})");
                     var machineCode = Machine.GetMachineCode();
                     _logger.Log(LogLevel.Info, $"Machine Code: {machineCode}");
-
-                    base.OnStartup(e);
                 }
                 catch (Exception ex)
                 {
