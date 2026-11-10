@@ -117,12 +117,21 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
   `GetMachineCode()` 为三者拼接后的 MD5，随崩溃包上报。启动时会把这些信息写入日志
 - 版本号统一用 `App.AppVersion`
 
+### 机器心跳与在线人数
+
+- `Tools/ServerApi.cs` 集中服务端访问，`BaseUrl` 为唯一的服务端地址（`Report` 的上报地址也由它拼接）
+- **心跳**：`RootViewModel.Loaded` 调用 `ServerApi.StartHeartbeat()`，启动即 POST `machines/`，
+  之后每 20 分钟一次（须小于服务端 1 小时会话窗口）；Debug/Release 均运行，失败只记 Warn 日志、不弹通知
+- **在线人数**：`GetOnlineCountAsync()` 请求 `machines/current`，失败返回 `null`；仅在「关于」窗口显示
+- `Machine.GetMachineCode()` 结果已用 `Lazy` 缓存
+
 ### 关键工具类（`Tools/`）
 
 | 文件 | 用途 |
 |---|---|
 | `AppPaths.cs` | 用户数据目录（日志、崩溃包）路径常量 |
 | `Machine.cs` | WMI 读取硬件序列号、OS 名称，生成机器码 |
+| `ServerApi.cs` | 服务端地址、机器心跳、在线人数查询 |
 | `HotKey.cs` | 全局 Win32 热键注册（截图：Ctrl+Shift+Alt+X） |
 | `DisplayAPI.cs` | 多显示器检测与 DPI 处理 |
 | `ImageUtility.cs` | 使用 FreeImage 加载/缩放图片 |

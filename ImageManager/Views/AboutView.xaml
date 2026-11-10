@@ -61,6 +61,15 @@
             </TextBlock>
             <TextBlock FontSize="15" Text="{Binding Version}" />
         </StackPanel>
+        <StackPanel
+            Margin="0,5"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBlock FontSize="15">
+                当前在线：
+            </TextBlock>
+            <TextBlock FontSize="15" Text="{Binding OnlineCount}" />
+        </StackPanel>
 
         <Border Height="80" />
         <StackPanel

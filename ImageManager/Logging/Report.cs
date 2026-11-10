@@ -12,7 +12,7 @@ namespace ImageManager.Logging
 {
     public static class Report
     {
-        private const string ReportUrl = "http://im2.ngmks.com/api/v1/crashes/";
+        private const string ReportUrl = ServerApi.BaseUrl + "crashes/";
         private const int LogPackDays = 3;
 
         private static readonly Dictionary<(LogLevel, string, string?), DateTime> _lastReports = [];

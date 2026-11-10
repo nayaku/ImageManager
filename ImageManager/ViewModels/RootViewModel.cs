@@ -73,6 +73,9 @@ namespace ImageManager.ViewModels
             // 检查更新
             CheckUpdateAsync();
 
+            // 机器心跳
+            ServerApi.StartHeartbeat();
+
             // 还原或清理贴片
             RestoreOrClearStickers();
         }

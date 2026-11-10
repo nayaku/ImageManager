@@ -7,7 +7,14 @@ namespace ImageManager.Tools
 {
     public static class Machine
     {
-        public static string GetMachineCode()
+        private static readonly Lazy<string> _machineCode = new(ComputeMachineCode);
+
+        /// <summary>
+        /// 机器码（缓存，WMI 查询较慢）
+        /// </summary>
+        public static string GetMachineCode() => _machineCode.Value;
+
+        private static string ComputeMachineCode()
         {
             var cpuId = GetCpuId();
             var boardId = GetBoardId();
