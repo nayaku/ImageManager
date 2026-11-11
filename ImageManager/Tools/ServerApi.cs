@@ -11,7 +11,7 @@ namespace ImageManager.Tools
     /// </summary>
     public static class ServerApi
     {
-        public const string BaseUrl = "http://imapi.ngmks.com/api/v1/";
+        public const string BaseUrl = "https://im.ngmks.com/api/v1/";
 
         /// <summary>
         /// 心跳间隔，须小于服务端 1 小时的会话窗口
