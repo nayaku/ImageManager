@@ -31,6 +31,7 @@ namespace ImageManager.ViewModels
 
     public class StickerViewModel : Screen
     {
+        private readonly Logger _logger = LoggerFactory.GetLogger(nameof(StickerViewModel));
         private readonly Bitmap _sourceBitmap;
         private readonly BitmapImage _originalImageSource;
         private readonly StickerStateData _state;
@@ -203,8 +204,8 @@ namespace ImageManager.ViewModels
             }
             catch (ExternalException ex)
             {
+                _logger.Error($"{ex.Message}，剪贴板占用者：{ImageClipboardHelper.GetClipboardOpener()}");
                 MessageBox.Show($"复制图片到剪贴板失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                LoggerFactory.GetLogger(nameof(ImageClipboardHelper)).Error(ex);
             }
         }
 

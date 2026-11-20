@@ -27,6 +27,7 @@ namespace ImageManager.ViewModels
         private readonly object _fatherViewModel;
         private ImageContext _context;
         private int _skipNum = 0;
+        private readonly Logger _logger = LoggerFactory.GetLogger(nameof(MainPageViewModel));
 
         [Inject]
         public IWindowManager WindowManager;
@@ -358,9 +359,10 @@ namespace ImageManager.ViewModels
             }
             catch (ExternalException ex)
             {
+                // 先记录占用者再弹窗：弹窗期间占用者可能已释放
+                _logger.Error($"{ex.Message}，剪贴板占用者：{ImageClipboardHelper.GetClipboardOpener()}");
                 MessageBox.Show($"复制图片到剪贴板失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                LoggerFactory.GetLogger(nameof(MainPageViewModel)).Error(ex);
             }
         }
         public void CopyPicturePath()
@@ -378,9 +380,9 @@ namespace ImageManager.ViewModels
             }
             catch (ExternalException ex)
             {
+                _logger.Error($"{ex.Message}，剪贴板占用者：{ImageClipboardHelper.GetClipboardOpener()}");
                 MessageBox.Show($"复制图片路径到剪贴板失败：{ex.Message}", "错误",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                LoggerFactory.GetLogger(nameof(MainPageViewModel)).Error(ex);
             }
         }
         public void AddPictureLabel()

@@ -1,5 +1,7 @@
+ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
@@ -12,24 +14,54 @@ namespace ImageManager.Tools.Helper
     {
         /// <summary>
         /// 复制图片到剪贴板。
-        /// 同时写入 PNG（保留透明，Photoshop / 浏览器 / Office 优先取用）
-        /// 与 CF_BITMAP（白底合成，供画图、聊天软件等只认位图的程序取用）
         /// </summary>
         public static void SetImage(Bitmap bitmap)
         {
             var dataObject = new DataObject();
 
-            // PNG：带 alpha 通道。流不能提前释放，需等 SetDataObject 渲染完毕
-            using var pngStream = new MemoryStream();
+            // PNG：带 alpha 通道。流不可释放：若 SetDataObject 中途失败，
+            // 剪贴板仍持有本 DataObject，之后别的程序取数据时还会读这个流
+            var pngStream = new MemoryStream();
             bitmap.Save(pngStream, ImageFormat.Png);
             pngStream.Position = 0;
             dataObject.SetData("PNG", pngStream, false);
 
-            // CF_BITMAP：位图没有 alpha，透明区直接放会变黑，故先合成白底
-            using var opaque = FlattenOnWhite(bitmap);
-            dataObject.SetData(DataFormats.Bitmap, ToBitmapSource(opaque), true);
+            // 查看网络上其他项目，大多只放了一个png进去；比如:
+            // https://github.com/d2phap/ImageGlass/blob/642f0d791671c9d6f1b54f15074bf5c03fae62a1/v9/Components/ImageGlass.Base/WinApi/ClipboardEx.cs#L30
+            // https://github.com/mono/mono/blob/main/mcs/class/System.Windows.Forms/System.Windows.Forms/Clipboard.cs
+            // 因此这里注释掉
+            
+            // // CF_BITMAP：位图没有 alpha，透明区直接放会变黑，故先合成白底
+            // using var opaque = FlattenOnWhite(bitmap);
+            // dataObject.SetData(DataFormats.Bitmap, ToBitmapSource(opaque), true);
 
             Clipboard.SetDataObject(dataObject, true);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetOpenClipboardWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+        /// <summary>
+        /// 查询当前打开着剪贴板的进程，用于 CLIPBRD_E_CANT_OPEN 时定位占用者
+        /// </summary>
+        public static string GetClipboardOpener()
+        {
+            var hwnd = GetOpenClipboardWindow();
+            if (hwnd == IntPtr.Zero)
+                return "无（已释放，或占用者未关联窗口）";
+            GetWindowThreadProcessId(hwnd, out var pid);
+            try
+            {
+                using var process = Process.GetProcessById((int)pid);
+                return $"{process.ProcessName} (PID {pid})";
+            }
+            catch (Exception e) when (e is ArgumentException or InvalidOperationException)
+            {
+                return $"PID {pid}（进程已退出）";
+            }
         }
 
         /// <summary>
