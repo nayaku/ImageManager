@@ -61,7 +61,7 @@ namespace ImageManager.Logging
                 if (crashId != null)
                 {
                     Notify(() => Growl.SuccessGlobal($"崩溃上报成功，ID: {crashId}"));
-                    File.Delete(zipPath);
+                    // File.Delete(zipPath);
                 }
             }
             catch (Exception e)
