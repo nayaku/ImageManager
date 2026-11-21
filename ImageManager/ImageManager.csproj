@@ -26,7 +26,11 @@
 	  </Resource>
 	</ItemGroup>
 	<ItemGroup>
-		<Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+		<!--
+			SDK 默认已把 Properties\DesignTimeResources.xaml 包含为 Page，此处只补设计器元数据。
+			必须用 Update 而非 Include：Include 会与默认通配重复，命令行构建 .sln 时报 NETSDK1022。
+		-->
+		<Page Update="Properties\DesignTimeResources.xaml">
 			<Generator>MSBuild:Compile</Generator>
 			<SubType>Designer</SubType>
 			<ContainsDesignTimeResources>true</ContainsDesignTimeResources>
