@@ -1,9 +1,10 @@
-﻿using HandyControl.Controls;
+using HandyControl.Controls;
 using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
 using ImageManager.Logging;
 using ImageManager.Settings;
+using ImageManager.Themes;
 using ImageManager.Tools;
 using ImageManager.Tools.Extension;
 using ImageManager.Windows;
@@ -11,6 +12,7 @@ using StyletIoC;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
@@ -186,15 +188,89 @@ namespace ImageManager.ViewModels
         {
             MainPageViewModel.RefreshPicture();
         }
-        public void ShowThemeConfig() => ThemeConfigShow = true;
-        public void ChangeTheme(ApplicationTheme theme)
+        public void ShowThemeConfig()
         {
-            if (ThemeManager.Current.ApplicationTheme != theme)
+            // 每次打开面板都取一次最新的系统强调色
+            RefreshSystemAccent();
+            ThemeConfigShow = true;
+        }
+
+        /// <summary>
+        /// 当前主题模式，写入即生效并存盘。
+        /// </summary>
+        public ThemeMode ThemeMode
+        {
+            get => ViewSettingsData.ThemeMode;
+            set
             {
-                ThemeManager.Current.ApplicationTheme = theme;
-                ViewSettingsData.Theme = theme;
+                if (ViewSettingsData.ThemeMode == value)
+                    return;
+                ViewSettingsData.ThemeMode = value;
+                AppTheme.Apply(value, ViewSettingsData.AccentIndex);
+                RefreshSystemAccent();
                 ViewSettingsData.Flush();
             }
+        }
+
+        /// <summary>
+        /// 跟随系统时强调色不可选，改由系统决定。
+        /// </summary>
+        public bool IsAccentSelectable => ThemeMode != ThemeMode.System;
+
+        /// <summary>
+        /// 系统提供的强调色，仅在跟随系统时展示。
+        /// </summary>
+        public Brush SystemAccentBrush { get; private set; } = Brushes.Transparent;
+
+        private void RefreshSystemAccent()
+        {
+            var brush = ThemeManager.Current.GetAccentColorFromSystem();
+            if (brush != null)
+            {
+                var copy = brush.Clone();
+                copy.Freeze();
+                brush = copy;
+            }
+            SystemAccentBrush = brush ?? Brushes.Transparent;
+        }
+
+        /// <summary>
+        /// 当前强调色序号，写入即生效并存盘。
+        /// </summary>
+        public int AccentIndex
+        {
+            get => ViewSettingsData.AccentIndex;
+            set
+            {
+                if (ViewSettingsData.AccentIndex == value)
+                    return;
+                ViewSettingsData.AccentIndex = value;
+                AppTheme.ApplyAccent(value);
+                ViewSettingsData.Flush();
+            }
+        }
+
+        public void ChangeTheme(ThemeMode mode) => ThemeMode = mode;
+
+        /// <summary>
+        /// 切换强调色。参数来自 XAML 的字符串序号，这里自行解析。
+        /// 跟随系统时强调色由系统决定，这里直接忽略。
+        /// </summary>
+        public void ChangeAccent(string index)
+        {
+            if (!IsAccentSelectable)
+                return;
+            if (int.TryParse(index, out var value))
+                AccentIndex = value;
+        }
+
+        /// <summary>
+        /// 恢复默认外观：跟随系统 + 默认强调色。
+        /// </summary>
+        public void ResetAppearance()
+        {
+            ThemeMode = ThemeMode.System;
+            AccentIndex = 0;
         }
         private void ClearSerchBarFocus()
         {
@@ -460,7 +536,8 @@ namespace ImageManager.ViewModels
             // 得手动调用
             _container.BuildUp(MainPageViewModel);
             MainPageViewModel.ParametersInjected();
-            ThemeManager.Current.ApplicationTheme = ViewSettingsData.Theme;
+            AppTheme.Apply(ViewSettingsData.ThemeMode, ViewSettingsData.AccentIndex);
+            RefreshSystemAccent();
         }
 
         protected override void OnClose()

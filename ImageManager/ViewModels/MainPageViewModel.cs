@@ -1,5 +1,4 @@
-﻿using FreeImageAPI;
-using HandyControl.Tools.Command;
+using FreeImageAPI;
 using HandyControl.Tools.Extension;
 using ImageManager.Data;
 using ImageManager.Data.Model;
@@ -17,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using static ImageManager.Settings.ViewSettingsData;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
@@ -56,6 +56,19 @@ namespace ImageManager.ViewModels
             }
         }
         public BindableCollection<PictureSelectableItemWrapper> Pictures { get; set; }
+
+        /// <summary>
+        /// 是否正在加载图片，用于骨架屏。
+        /// </summary>
+        public bool IsLoading { get; set; }
+        /// <summary>
+        /// 图库里是否已有图片，用于空态。
+        /// </summary>
+        public bool HasPictures => Pictures?.Count > 0;
+        /// <summary>
+        /// 是否有选中项。
+        /// </summary>
+        public bool HasSelection => SelectPictureNum > 0;
 
         public bool IsDesc { get => ViewSettings.IsDesc; set => ViewSettings.IsDesc = value; }
         public OrderByEnum OrderBy { get => ViewSettings.OrderBy; set => ViewSettings.OrderBy = value; }
@@ -101,9 +114,6 @@ namespace ImageManager.ViewModels
         public BindableCollection<Label> FilterLabels { get; set; } = new();
         public bool ShowFilterLabelPanel { get; set; }
 
-        // 右键菜单栏
-        public List<MenuItemViewModel> ContextMenuItems { get; set; }
-
         public MainPageViewModel(object fatherViewModel, ImageContext context)
         {
             _fatherViewModel = fatherViewModel;
@@ -114,101 +124,6 @@ namespace ImageManager.ViewModels
                 ShowFilterLabelPanel = FilterLabels.Count > 0;
                 RefreshPicture();
             };
-
-            // 切换右键菜单栏
-            if (!IsAddPictureMode)
-            {
-                ContextMenuItems = new()
-                {
-                    new MenuItemViewModel()
-                    {
-                        Header = "贴片式打开",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            StickPictureCommand();
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header = "使用外部程序打开",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            OpenPictureWithExternalProgram();
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        IsSeparator = true,
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header = "拷贝图片",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            CopyPicture();
-                        }),
-                        InputGestureText = "Ctrl+C",
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header ="拷贝图片路径",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            CopyPicturePath();
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        IsSeparator = true,
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header = "添加标签",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            AddPictureLabel();
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header = "删除图片",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            DeletePicture();
-                        }),
-                    },
-                };
-            }
-            else
-            {
-                ContextMenuItems = new()
-                {
-                    new MenuItemViewModel()
-                    {
-                        Header = "添加标签",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            AddPictureLabel();
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header="接受添加",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            AcceptToAdd(true);
-                        }),
-                    },
-                    new MenuItemViewModel()
-                    {
-                        Header="拒绝添加",
-                        Command = new RelayCommand((obj) =>
-                        {
-                            AcceptToAdd(false);
-                        }),
-                    },
-                };
-            }
             _context = context;
         }
 
@@ -237,7 +152,7 @@ namespace ImageManager.ViewModels
                 PictureNum = query.Count();
             // 分页
             query = query.Skip(_skipNum).Take(takeNum);
-            var resPictures = query.Select(p => new PictureSelectableItemWrapper(p));
+            var resPictures = query.Select(p => new PictureSelectableItemWrapper(p, IsAddPictureMode));
             // 第一次加载
             if (_skipNum == 0)
             {
@@ -259,7 +174,27 @@ namespace ImageManager.ViewModels
         public void RefreshPicture()
         {
             _skipNum = 0;
-            UpdatePicture();
+            var dispatcher = Application.Current?.Dispatcher;
+            // 空库刷新时先让骨架屏渲染一帧，再执行查询
+            if (dispatcher == null || HasPictures)
+            {
+                UpdatePicture();
+                return;
+            }
+            IsLoading = true;
+            dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    try
+                    {
+                        UpdatePicture();
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+                    }
+                }),
+                DispatcherPriority.Background);
         }
 
         public void FetchMorePicture()
@@ -320,6 +255,36 @@ namespace ImageManager.ViewModels
                 WindowManager.ShowWindow(stickerViewModel);
             });
         }
+
+        /// <summary>
+        /// 卡片悬停浮层：把单张图片贴到桌面。
+        /// </summary>
+        public void StickPictureOf(PictureSelectableItemWrapper? wrapper)
+        {
+            if (wrapper?.Item == null)
+                return;
+            var picture = wrapper.Item;
+            var picturePath = Path.Join(picture.ImageFolderPath, picture.Path);
+            WindowManager.ShowWindow(new StickerViewModel(picturePath));
+        }
+
+        /// <summary>
+        /// 空态：添加图片，仅在主页可用。
+        /// </summary>
+        public void EmptyAddPictures()
+        {
+            if (_fatherViewModel is RootViewModel root)
+                root.AddPictures();
+        }
+
+        /// <summary>
+        /// 空态：添加文件夹，仅在主页可用。
+        /// </summary>
+        public void EmptyAddFolders()
+        {
+            if (_fatherViewModel is RootViewModel root)
+                root.AddFolders();
+        }
         private IEnumerable<Picture> SelectedPictures => Pictures.Where(x => x.IsSelected).Select(x => x.Item);
         public void OpenPictureWithExternalProgram()
         {
@@ -336,6 +301,17 @@ namespace ImageManager.ViewModels
                 p.Start();
             });
 
+        }
+
+        /// <summary>
+        /// 卡片悬停浮层：用外部程序打开单张图片。
+        /// </summary>
+        public void OpenPictureOf(PictureSelectableItemWrapper? wrapper)
+        {
+            if (wrapper?.Item == null)
+                return;
+            var path = Path.Join(wrapper.Item.ImageFolderPath, wrapper.Item.Path);
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
         }
         public void CopyPicture()
         {
@@ -466,6 +442,16 @@ namespace ImageManager.ViewModels
                     p.AcceptToAdd = accept;
             });
         }
+
+        /// <summary>
+        /// 右键菜单：接受添加。
+        /// </summary>
+        public void AcceptAdd() => AcceptToAdd(true);
+
+        /// <summary>
+        /// 右键菜单：拒绝添加。
+        /// </summary>
+        public void RejectAdd() => AcceptToAdd(false);
         #endregion
 
         #region 来自上一层调用

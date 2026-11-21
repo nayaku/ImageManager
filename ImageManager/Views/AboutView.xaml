@@ -1,91 +1,81 @@
-﻿<hc:Window
+<hc:Window
     x:Class="ImageManager.Views.AboutView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hc="https://handyorg.github.io/handycontrol"
-    xmlns:local="clr-namespace:ImageManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
     Title="关于"
-    Width="600"
-    Height="350"
+    Width="560"
+    Height="360"
     d:DataContext="{d:DesignInstance Type=viewmodels:AboutViewModel}"
+    Background="{DynamicResource AppCardBrush}"
+    ResizeMode="NoResize"
+    ShowMinButton="False"
+    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <hc:Window.Resources>
-        <Style x:Key="LinkButton" TargetType="Button">
-
-            <Setter Property="Width" Value="Auto" />
-
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <ContentPresenter
-                            VerticalAlignment="Center"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}">
-                            <ContentPresenter.Resources>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="TextDecorations" Value="Underline" />
-                                </Style>
-                            </ContentPresenter.Resources>
-                        </ContentPresenter>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Foreground" Value="#FF55AAFF" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="true">
-                    <Setter Property="Foreground" Value="#FFD64C4C" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </hc:Window.Resources>
-    <StackPanel>
+    <StackPanel
+        Margin="40,26,40,30"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
+        <Image
+            Width="60"
+            Height="60"
+            HorizontalAlignment="Center"
+            RenderOptions.BitmapScalingMode="HighQuality"
+            Source="/icon.ico" />
         <TextBlock
-            Margin="0,40"
+            Margin="0,14,0,6"
             HorizontalAlignment="Center"
-            FontSize="40"
+            FontSize="20"
             FontWeight="SemiBold"
-            Foreground="Orange">
-            素 材 管 理 姬
+            Foreground="{DynamicResource PrimaryTextBrush}"
+            Text="素材管理姬" />
+        <TextBlock
+            HorizontalAlignment="Center"
+            FontSize="12.5"
+            Foreground="{DynamicResource ThirdlyTextBrush}">
+            <Run Text="v" />
+            <Run Text="{Binding Version, Mode=OneWay}" />
+            <Run Text="　·　在线　" />
+            <Run Text="{Binding OnlineCount, Mode=OneWay}" />
         </TextBlock>
-        <StackPanel
-            Margin="0,5"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <TextBlock FontSize="15">
-                版本号：
-            </TextBlock>
-            <TextBlock FontSize="15" Text="{Binding Version}" />
-        </StackPanel>
-        <StackPanel
-            Margin="0,5"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <TextBlock FontSize="15">
-                当前在线：
-            </TextBlock>
-            <TextBlock FontSize="15" Text="{Binding OnlineCount}" />
+
+        <Border
+            Height="1"
+            Margin="0,20"
+            Background="{DynamicResource AppStrokeBrush}" />
+
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+            <Button
+                Height="34"
+                Padding="16,0"
+                Command="{s:Action OpenProjectHome}"
+                Style="{StaticResource ButtonPrimary}">
+                <StackPanel Orientation="Horizontal">
+                    <Path
+                        Width="13"
+                        Height="13"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Data="M14 4h6v6M20 4l-8.5 8.5M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"
+                        Stretch="Uniform"
+                        Stroke="White"
+                        StrokeEndLineCap="Round"
+                        StrokeLineJoin="Round"
+                        StrokeThickness="1.9" />
+                    <TextBlock VerticalAlignment="Center" Text="项目主页" />
+                </StackPanel>
+            </Button>
         </StackPanel>
 
-        <Border Height="80" />
-        <StackPanel
-            Margin="0,5"
+        <TextBlock
+            Margin="0,18,0,0"
             HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <TextBlock>
-                项目地址：
-            </TextBlock>
-            <Button
-                Command="{s:Action OpenProjectHome}"
-                Content="https://github.com/nayaku/ImageManager"
-                Style="{DynamicResource LinkButton}" />
-        </StackPanel>
-        <TextBlock Margin="0,5" HorizontalAlignment="Center">
-            作者： Nayaku
-        </TextBlock>
+            FontSize="11"
+            Foreground="{DynamicResource ThirdlyTextBrush}"
+            Text="作者 Nayaku" />
     </StackPanel>
 </hc:Window>

@@ -40,6 +40,8 @@ namespace ImageManager
         // 每次启动应用程序，都会验证名称为OnlyRun的互斥是否存在 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // 配色令牌要在任何窗口解析资源前注册
+            Themes.AppPalette.Register();
             var location = Assembly.GetEntryAssembly()!.Location;
             var bs = MD5.HashData(Encoding.UTF8.GetBytes(location));
             mutex = new Mutex(true, Convert.ToBase64String(bs), out var isNewInstance);

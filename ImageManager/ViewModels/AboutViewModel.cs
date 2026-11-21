@@ -1,4 +1,4 @@
-﻿using ImageManager.Tools;
+using ImageManager.Tools;
 using System.Reflection;
 
 namespace ImageManager.ViewModels

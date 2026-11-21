@@ -1,4 +1,4 @@
-﻿<hc:Window
+<hc:Window
     x:Class="ImageManager.Views.UpdateView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,58 +10,315 @@
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewmodels="clr-namespace:ImageManager.ViewModels"
     Title="检查更新"
-    Width="600"
-    Height="350"
+    Width="640"
     d:DataContext="{d:DesignInstance Type=viewmodels:UpdateViewModel}"
+    Background="{DynamicResource AppCardBrush}"
     Closed="{s:Action Closed}"
     Loaded="{s:Action LoadedAsync}"
     SizeToContent="Height"
     mc:Ignorable="d">
+    <StackPanel Margin="24,20,24,24">
 
-    <Border Grid.Row="0" BorderThickness="5,12">
-        <StackPanel Orientation="Vertical">
-            <StackPanel Margin="0,6" Orientation="Horizontal">
+        <!--  状态头  -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid
+                Grid.Column="0"
+                Width="42"
+                Height="42"
+                VerticalAlignment="Top">
+                <Border
+                    Background="{DynamicResource PrimaryBrush}"
+                    CornerRadius="13"
+                    Opacity="0.12"
+                    Visibility="{Binding ShowDownloadIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                <Border
+                    Background="{DynamicResource SuccessBrush}"
+                    CornerRadius="13"
+                    Opacity="0.12"
+                    Visibility="{Binding ShowIsLastestIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                <Border
+                    Background="{DynamicResource DangerBrush}"
+                    CornerRadius="13"
+                    Opacity="0.12"
+                    Visibility="{Binding ShowErrorIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+                <Border
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    CornerRadius="13"
+                    Visibility="{Binding ShowCheckProgress, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+
                 <hc:LoadingCircle
-                    Width="10"
-                    Height="10"
-                    DotCount="3"
-                    DotDiameter="3"
+                    Width="20"
+                    Height="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    DotCount="6"
+                    DotDiameter="4"
                     IsRunning="True"
                     Visibility="{Binding ShowCheckProgress, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+
                 <Path
-                    Width="15"
-                    Height="15"
-                    Data="{StaticResource SuccessGeometry}"
-                    Fill="{StaticResource SuccessBrush}"
+                    Width="20"
+                    Height="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="M12 3v11M7 9.5l5 5 5-5M4 19.5h16"
                     Stretch="Uniform"
+                    Stroke="{DynamicResource PrimaryBrush}"
+                    StrokeEndLineCap="Round"
+                    StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round"
+                    StrokeThickness="2"
+                    Visibility="{Binding ShowDownloadIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+
+                <Path
+                    Width="20"
+                    Height="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM8 12.4l2.7 2.7L16 9.4"
+                    Stretch="Uniform"
+                    Stroke="{DynamicResource SuccessBrush}"
+                    StrokeEndLineCap="Round"
+                    StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round"
+                    StrokeThickness="2.1"
                     Visibility="{Binding ShowIsLastestIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+
                 <Path
-                    Width="15"
-                    Height="15"
-                    Data="{StaticResource ErrorGeometry}"
-                    Fill="{StaticResource DangerBrush}"
+                    Width="20"
+                    Height="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Data="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7.4v6M12 16.5v.1"
                     Stretch="Uniform"
+                    Stroke="{DynamicResource DangerBrush}"
+                    StrokeEndLineCap="Round"
+                    StrokeLineJoin="Round"
+                    StrokeStartLineCap="Round"
+                    StrokeThickness="2"
                     Visibility="{Binding ShowErrorIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
+            </Grid>
+
+            <StackPanel Grid.Column="1" Margin="14,1,0,0">
                 <TextBlock
-                    Margin="4,0"
-                    FontSize="16px"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource PrimaryTextBrush}"
                     Text="{Binding StateText, Mode=OneWay}" />
+
+                <!--  有新版本：版本迁移  -->
+                <StackPanel
+                    Margin="0,7,0,0"
+                    Orientation="Horizontal"
+                    Visibility="{Binding HasNewVersion, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                    <TextBlock
+                        FontSize="12.5"
+                        Foreground="{DynamicResource SecondaryTextBrush}"
+                        Text="{Binding CurrentVersion, StringFormat=v{0}}" />
+                    <TextBlock
+                        Margin="7,0"
+                        FontSize="12.5"
+                        Foreground="{DynamicResource ThirdlyTextBrush}"
+                        Text="→" />
+                    <TextBlock
+                        FontSize="12.5"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        Text="{Binding LatestVersion, StringFormat=v{0}}" />
+                </StackPanel>
+
+                <!--  其它状态：一句说明  -->
+                <TextBlock
+                    Margin="0,7,0,0"
+                    FontSize="12.5"
+                    Foreground="{DynamicResource ThirdlyTextBrush}"
+                    Text="{Binding StateSubText}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasNewVersion, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}" />
+
+                <TextBlock
+                    Margin="0,5,0,0"
+                    FontSize="11.5"
+                    Foreground="{DynamicResource ThirdlyTextBrush}"
+                    Text="下载完成后会自动启动安装程序并退出当前版本"
+                    Visibility="{Binding HasNewVersion, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
             </StackPanel>
-            <TextBlock Margin="0,4">
-                当前版本：<Run FontWeight="Bold" Text="{Binding CurrentVersion, Mode=OneTime}" />
-                ，最新版本：<Run FontWeight="Bold" Text="{Binding LatestVersion, Mode=OneWay}" />
-            </TextBlock>
+        </Grid>
 
-            <mdxam:MarkdownScrollViewer
-                MaxHeight="400"
-                Markdown="{Binding UpdateLog, Mode=OneWay}"
-                Visibility="{Binding UpdateLog, Converter={x:Static s:BoolToVisibilityConverter.Instance}}" />
-            <TextBlock Text="{Binding DownloadProgressText, Mode=OneWay}" />
+        <!--  更新日志  -->
+        <Border
+            Margin="0,18,0,0"
+            Background="{DynamicResource AppCardBrush}"
+            BorderBrush="{DynamicResource AppStrokeBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Visibility="{Binding HasUpdateLog, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+            <DockPanel>
+                <Border
+                    Height="34"
+                    BorderBrush="{DynamicResource AppStrokeBrush}"
+                    BorderThickness="0,0,0,1"
+                    DockPanel.Dock="Top">
+                    <Grid Margin="15,0">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource PrimaryTextBrush}"
+                                Text="{Binding LogTitle}" />
+                            <TextBlock
+                                Margin="7,0"
+                                FontSize="11.5"
+                                Foreground="{DynamicResource ThirdlyTextBrush}"
+                                Text="·" />
+                            <TextBlock
+                                FontSize="11.5"
+                                Foreground="{DynamicResource ThirdlyTextBrush}"
+                                Text="GitHub Releases" />
+                        </StackPanel>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="11.5"
+                            Foreground="{DynamicResource ThirdlyTextBrush}"
+                            Text="{Binding UpdateLogCountText}" />
+                    </Grid>
+                </Border>
+                <ScrollViewer
+                    MaxHeight="300"
+                    Margin="15,4,15,12"
+                    VerticalScrollBarVisibility="Auto">
+                    <ItemsControl AlternationCount="9999" ItemsSource="{Binding ReleaseNotes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    x:Name="NoteBlock"
+                                    Margin="0,2,0,8"
+                                    Padding="0,10,0,0"
+                                    BorderBrush="{DynamicResource AppStrokeBrush}"
+                                    BorderThickness="0,1,0,0">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock
+                                                FontSize="12.5"
+                                                FontWeight="SemiBold"
+                                                Foreground="{DynamicResource PrimaryTextBrush}"
+                                                Text="{Binding Version, StringFormat=v{0}}" />
+                                            <Grid
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding IsNewest, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                                <Border
+                                                    Background="{DynamicResource PrimaryBrush}"
+                                                    CornerRadius="4"
+                                                    Opacity="0.12" />
+                                                <TextBlock
+                                                    Margin="6,1"
+                                                    FontSize="10"
+                                                    Foreground="{DynamicResource PrimaryBrush}"
+                                                    Text="新版本" />
+                                            </Grid>
+                                            <Grid
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding IsCurrent, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                                <Border Background="{DynamicResource AppSurfaceBrush}" CornerRadius="4" />
+                                                <TextBlock
+                                                    Margin="6,1"
+                                                    FontSize="10"
+                                                    Foreground="{DynamicResource SecondaryTextBrush}"
+                                                    Text="当前版本" />
+                                            </Grid>
+                                            <TextBlock
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="11"
+                                                Foreground="{DynamicResource ThirdlyTextBrush}"
+                                                Text="{Binding Date}" />
+                                        </StackPanel>
+                                        <ItemsControl Margin="0,6,0,0" ItemsSource="{Binding Items}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,2">
+                                                        <Ellipse
+                                                            Width="4"
+                                                            Height="4"
+                                                            Margin="3,8,0,0"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Top"
+                                                            Fill="{DynamicResource ThirdlyTextBrush}"
+                                                            Opacity="0.55" />
+                                                        <TextBlock
+                                                            Margin="15,0,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource SecondaryTextBrush}"
+                                                            LineHeight="20"
+                                                            Text="{Binding}"
+                                                            TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ContentPresenter}}" Value="0">
+                                        <Setter TargetName="NoteBlock" Property="BorderThickness" Value="0" />
+                                        <Setter TargetName="NoteBlock" Property="Padding" Value="0,6,0,0" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!--  下载进度  -->
+        <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowDownloadProgress, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+            <Grid>
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{DynamicResource SecondaryTextBrush}"
+                    Text="正在下载" />
+                <TextBlock
+                    HorizontalAlignment="Right"
+                    FontSize="12.5"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource PrimaryBrush}"
+                    Text="{Binding DownloadProgressPercentText}" />
+            </Grid>
             <ProgressBar
+                Margin="0,8,0,0"
+                Background="{DynamicResource AppSurfaceBrush}"
+                Foreground="{DynamicResource PrimaryBrush}"
                 Maximum="100"
-                Visibility="{Binding ShowDownloadProgress, Converter={x:Static s:BoolToVisibilityConverter.Instance}}"
+                Style="{StaticResource AppThinProgress}"
                 Value="{Binding DownloadProgress, Mode=OneWay}" />
+            <TextBlock
+                Margin="0,7,0,0"
+                FontSize="11"
+                Foreground="{DynamicResource ThirdlyTextBrush}"
+                Text="{Binding DownloadProgressText}" />
         </StackPanel>
-    </Border>
 
+        <!--  失败详情  -->
+        <Grid Margin="0,12,0,0" Visibility="{Binding ShowErrorIcon, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+            <Border
+                Background="{DynamicResource DangerBrush}"
+                CornerRadius="8"
+                Opacity="0.10" />
+            <TextBlock
+                Margin="12,9"
+                FontSize="11.5"
+                Foreground="{DynamicResource DangerBrush}"
+                Text="{Binding ErrorDetail}"
+                TextWrapping="Wrap" />
+        </Grid>
+    </StackPanel>
 </hc:Window>

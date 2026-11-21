@@ -1,4 +1,4 @@
-﻿using HandyControl.Themes;
+using ImageManager.Themes;
 
 namespace ImageManager.Settings
 {
@@ -12,9 +12,13 @@ namespace ImageManager.Settings
         public override string FilePath => SettingDataFile;
 
         /// <summary>
-        /// 主题
+        /// 主题模式（明 / 暗 / 跟随系统）
         /// </summary>
-        public ApplicationTheme Theme { get; set; } = ApplicationTheme.Light;
+        public ThemeMode ThemeMode { get; set; } = ThemeMode.System;
+        /// <summary>
+        /// 强调色序号，对应 Themes/Tokens.Common.xaml 中的 AppAccent0..5
+        /// </summary>
+        public int AccentIndex { get; set; } = 0;
         /// <summary>
         /// 卡片宽度
         /// </summary>
