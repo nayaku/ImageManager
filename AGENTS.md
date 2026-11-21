@@ -1,1 +1,1 @@
-Generated from CLAUDE.md. Do not edit by hand.
+@CLAUDE.md
