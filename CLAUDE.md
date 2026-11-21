@@ -6,7 +6,7 @@
 
 **素材管理姬 (ImageManager)** — 一款面向画师的 WPF 桌面图片素材管理工具。核心功能：基于标签的分类管理、感知哈希去重、截图捕获、多格式图片支持。
 
-- 框架：.NET 8.0-windows，WPF
+- 框架：.NET 8，TFM `net8.0-windows7.0`（WPF）
 - UI：HandyControls（Material Design）、XAML
 - MVVM：Stylet 1.3.7（IoC 容器 + MVVM 框架）
 - `INotifyPropertyChanged` 通过 **PropertyChanged.Fody**（编译期 IL 织入）实现，ViewModel 中无需手动调用 `OnPropertyChanged`
@@ -14,7 +14,7 @@
 ## 构建与运行
 
 ```powershell
-# 构建（推荐直接构建项目；sln 见下方说明）
+# 构建项目
 dotnet build ImageManager/ImageManager.csproj
 
 # 构建整个解决方案
@@ -27,10 +27,12 @@ dotnet run --project ImageManager/ImageManager.csproj
 dotnet publish ImageManager/ImageManager.csproj -c Release
 ```
 
-> ⚠️ 命令行构建 `ImageManager.sln` 可能报 `NETSDK1022`（`Properties\DesignTimeResources.xaml` 被重复包含）：
-> csproj 里对该文件有一条带 `Condition` 的显式 `<Page Include>`，在解决方案上下文下条件成立，与 SDK 默认通配重复。
-> 遇到时改用 `dotnet build ImageManager/ImageManager.csproj`，或给 csproj 加 `EnableDefaultPageItems=false` 再显式声明。
 > 构建前需先关闭正在运行的 `ImageManager.exe`，否则输出被占用（`MSB3027`）。
+
+`Properties\DesignTimeResources.xaml` 已由 SDK 默认通配包含为 `Page`，csproj 只用 `<Page Update>` 补设计器元数据
+（`Generator` / `SubType` / `ContainsDesignTimeResources`），因此 `dotnet build ImageManager.sln` 与
+`dotnet build ImageManager/ImageManager.csproj` 都能直接构建。
+**不要改回 `<Page Include>`**：解决方案上下文下会与默认通配重复，报 `NETSDK1022`。
 
 项目没有自动化测试，测试均为运行应用后手动验证。
 
@@ -38,23 +40,23 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 
 ### Stylet MVVM
 
-- **Bootstrapper.cs** — IoC 注册、启动时执行 EF Core 迁移、单实例 Mutex 检测
+- **Bootstrapper.cs** — IoC 注册、启动时执行 EF Core 迁移
 - **ViewModels/** — 全部业务逻辑；Stylet 按命名约定将 VM 与 View 绑定（`FooViewModel` ↔ `FooView`）
-- **Views/** — 纯 XAML，几乎无代码隐藏；通过 `{Binding}` 绑定 VM 属性
+- **Views/** — 以 XAML 为主，通过 `{Binding}` 绑定 VM；只有 `MainPageView.xaml.cs`（框选）与 `ProgressView.xaml.cs`（进度文字排版）等少数视图带后台代码
 - **Controls/** — 自定义控件与附加属性：`ScrollViewerMonitor`（滚动到底部时自动触发懒加载命令，支撑下方"滚动追加"）、`Canvas`、`CornerClip`（圆角裁剪：`Radius` 裁四角，`TopRadius` 只裁上面两角——`Border` 自身不会裁子元素）
 - **Windows/** — 独立浮窗（`ScreenShotWindow`），运行于主 Shell 之外
 - **Logging/** — 轻量自定义日志 `Logger` / `LoggerFactory`，以及崩溃上报 `Report`，详见下方"日志与崩溃上报"
 
-页面导航使用 Stylet 的 `INavigationController` / `IConductor`，托管在 `RootViewModel` 中。
-
-> 注：贴纸窗口已从早期的 `Windows/StickerWindow` 重构为标准 MVVM（`StickerViewModel : Screen` + `StickerView`），通过 Stylet 的 `WindowManager.ShowWindow(vm)` 弹出，旧实现已删除。详见下方"贴纸（Sticker）"。
+`RootViewModel : Screen` 直接持有 `MainPageViewModel`，`RootView.xaml` 用 `<ContentControl s:View.Model="{Binding MainPageViewModel}" />`
+承载主页；项目未使用 Stylet 的 `IConductor` / `INavigationController`。
 
 ### 贴纸（Sticker）
 
 将图片以无边框置顶浮窗"贴"在桌面，供画师参考。入口：主页双击/右键打开图片，或向主窗口拖入图片。
+实现是标准 MVVM：`StickerViewModel : Screen` + `StickerView`，由 `WindowManager.ShowWindow(vm)` 弹出。
 
 - **StickerViewModel.cs** — 单张贴纸的全部逻辑：缩放、旋转、水平/垂直翻转、窗口透明度（均可用滚轮 + 修饰键调节：Ctrl=透明度、Shift=旋转、无=缩放）
-- **视图变换全部下沉到绑定**：VM 不再持有 `DisplayWidth` / `FlipScaleX` / `EffectiveOpacity` 之类的派生属性，也不手算 DPI；
+- **视图变换全部下沉到绑定**：VM 不持有 `DisplayWidth` 之类的派生属性，也不手算 DPI；
   `StickerView.xaml` 中 `Image` 用 `Stretch="None"`，翻转/缩放/旋转/透明度一律绑定 `StickerState` 上的计算属性
   （`FlipScaleX`、`FlipScaleY`、`EffectiveOpacity`），DPI 交由 WPF 处理
 - 双击**折叠（Fold）**：将贴纸收缩为点击位置的局部小图，再次双击展开。
@@ -63,8 +65,8 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **初始缩放**：图库/剪贴板来源的贴片在 `DispatcherPriority.Loaded` 后测量 `ActualWidth/Height`，
   若超出所在屏幕工作区（换算为 DIP 后）的 90%，则按较小比例把 `ZoomRate` 压到屏幕内（再乘 0.9 留边）；
   截图（已指定 `initPoint`）与启动还原不参与，由 `_canZoomInInitially` 控制
-- `Instances` 静态集合保存所有已创建贴片的缩略图，供集中管理/聚焦
-- **落盘**：创建贴片时图片即写入 `SD\STMP`（图库来源用 `File.Copy` 保留原格式，截图/剪贴板编码为 PNG，文件名为 GUID）。`AddToDatabase()` 直接复用该 STMP 文件回存图库，不再写临时文件
+- `Instances` 静态集合保存所有贴片包装（`StickerViewModelWrapper`，暴露 `ThumbnailSource`）；贴纸右键菜单「参考图列表」据此列出全部贴片，点击即 `FocusAndExpand()`
+- **落盘**：创建贴片时图片即写入 `SD\STMP`（图库来源用 `File.Copy` 保留原格式，截图/剪贴板编码为 PNG，文件名为 GUID）。`AddToDatabase()` 直接复用该 STMP 文件回存图库
 - **状态持久化**：每张贴片一个独立的 `STMP\{GUID}.xml`，由 `StickerStateData`（继承 `SettingsBase`）自行防抖存盘——
   任意属性变更即触发，无轮询、无状态比对。窗口坐标由 XAML 双向绑定（`Left/Top` `Mode=TwoWay`）直接写入 state。
   `AppStateData.Stickers` 仅是一份 `ObservableCollection<string>` 文件名登记表，不含状态数据。
@@ -136,7 +138,6 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **心跳**：`RootViewModel.Loaded` 调用 `ServerApi.StartHeartbeat()`，启动即 POST `machines/`，
   之后每 20 分钟一次（须小于服务端 1 小时会话窗口）；Debug/Release 均运行，失败只记 Warn 日志、不弹通知
 - **在线人数**：`GetOnlineCountAsync()` 请求 `machines/current`，失败返回 `null`；仅在「关于」窗口显示
-- `Machine.GetMachineCode()` 结果已用 `Lazy` 缓存
 
 ### 关键工具类（`Tools/`）
 
@@ -148,9 +149,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 | `HotKey.cs` | 全局 Win32 热键注册（截图：Ctrl+Shift+Alt+X） |
 | `DisplayAPI.cs` | 多显示器检测与 DPI 处理 |
 | `ImageUtility.cs` | 使用 FreeImage 加载/缩放图片 |
-| `MouseTool.cs` | 全局鼠标钩子，用于贴纸拖拽 |
 | `VirtualFileHelper.cs` | 通过 COM `IDataObject` 将拖入的虚拟文件落盘到临时目录 |
-| `Helper/ClipboardHelper.cs` | 剪贴板图片粘贴支持 |
 | `Helper/ImageClipboardHelper.cs` | 复制图片到剪贴板（仅写 PNG，保留透明）；`GetClipboardOpener()` 查询剪贴板占用进程，复制失败（`ExternalException`）时先记日志再弹窗 |
 | `Helper/ControlsSearchHelper.cs` | 可视化树查找子控件（如定位 `ScrollViewer`） |
 | `Extension/ContainerEx.cs` | StyletIoC `BuildUp` 扩展，注入后回调 `IInjectionAware.ParametersInjected` |
@@ -194,8 +193,8 @@ HandyControls 负责明暗切换，程序自己的配色令牌在 `Themes/` 维�
 
 - 图片顶角跟随卡片圆角、底部两角为直角：`controls:CornerClip.TopRadius="10"`
 - 空图库：矢量插画 + 添加图片/文件夹按钮（由 `HasPictures` 取反控制）；首批加载先渲染骨架屏（`IsLoading`，`RefreshPicture` 用 `Dispatcher.BeginInvoke` 让骨架先出一帧）
-- 状态栏：`● N 张图片` +「已选 N」胶囊 + 卡片宽度滑块（120 ~ `MaxCardWidth`）
-- 卡片右键菜单为**原生声明式 `MenuItem`**（与画布空白处菜单同一套样式，图标用主题画刷），普通 / 添加模式靠 `IsAddPictureMode` 切换可见性；批量操作用 `AcceptAdd()` / `RejectAdd()` 薄包装，避免 `CommandParameter="True"` 字符串直接传给 `bool` 参数。早期的 `MenuItemViewModel` + `ContextMenuItems` 数据驱动方案已删除，新增菜单项直接写 XAML
+- 状态栏：「N 张图片」+「已选 N」胶囊 + 卡片宽度滑块（120 ~ `MaxCardWidth`）
+- 卡片右键菜单为**原生声明式 `MenuItem`**（与画布空白处菜单同一套样式，图标用主题画刷），普通 / 添加模式靠 `IsAddPictureMode` 切换可见性；批量操作用 `AcceptAdd()` / `RejectAdd()` 薄包装，避免 `CommandParameter="True"` 字符串直接传给 `bool` 参数；新增菜单项直接写 XAML
 - `PictureSelectableItemWrapper` 提供派生状态 `IsRejected`、`ContentOpacity`、`ConflictText`；`AcceptToAdd` 的 setter 里手动 `NotifyOfPropertyChange` 通知它们（依赖 `Item.*`，Fody 侦测不到）
 
 ### 检查更新（UpdateView / UpdateViewModel）
@@ -228,7 +227,7 @@ HandyControls 负责明暗切换，程序自己的配色令牌在 `Themes/` 维�
 - **`DataTemplate.Triggers` 里用 `RelativeSource AncestorType` 不可靠**（卡片悬停浮层曾因此完全不出现）→ 触发器写进元素自己的 `Style`
 - **`MenuItem.Icon` 内不要用 `RelativeSource AncestorType=MenuItem` 取 `Foreground`**：取不到，图标会因 `Stroke=null` 而不显示 → 直接引用主题画刷；危险色由外层 `Foreground` + 内层 `TemplateBinding` 传递
 - **HandyControl 的 `ProgressBar` 自带百分比文字叠加**：需要纯净进度条时套自定义模板（`AppThinProgress`）
-- **MdXaml 不适合结构化日志**：`MarkdownScrollViewer` 会把 `##` 与列表渲染得松散、样式难控 → 版本历史用 `ItemsControl` + `ReleaseNote` 渲染（包仍在引用，仅更新窗口不再使用）
+- **MdXaml 不适合结构化日志**：`MarkdownScrollViewer` 会把 `##` 与列表渲染得松散、样式难控 → 版本历史用 `ItemsControl` + `ReleaseNote` 渲染（MdXaml 包仍被引用，但没有控件使用）
 - **Stylet `s:Action` 的 `CommandParameter` 是字符串**：传给 `int` / `bool` 形参会抛 `ArgumentException` → 用 `string` 形参自行解析，或加无参薄包装（如 `AcceptAdd` / `RejectAdd`）
 - **Fody 只通知同类属性**：依赖 `Item.xxx` 的派生属性（`IsRejected`、`ContentOpacity`）Fody 侦测不到，需在 setter 里手动 `NotifyOfPropertyChange`
 - **重复导入同一张图会命中 MD5 去重**：卡片显示「重复」角标且圆形勾禁用，属预期行为，不是 UI bug
