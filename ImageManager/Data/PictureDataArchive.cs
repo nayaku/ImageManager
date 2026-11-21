@@ -1,4 +1,5 @@
 ﻿using ImageManager.Data.Model;
+using ImageManager.Settings;
 using Joveler.Compression.XZ;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -24,7 +25,7 @@ namespace ImageManager.Data
         public static readonly string Magic = "PDAF";
         public static readonly string Extension = ".pdaf";
 
-        private UserSettingData _userSettingData;
+        private UserSettingsData _userSettingData;
         private ImageContext _context;
         private string _filePath;
         private static bool _isInitialized = false;
@@ -32,7 +33,7 @@ namespace ImageManager.Data
         public List<Picture> Pictures { get; set; }
         public EventHandler<ProgressEventArgs> ProgressChanged { get; set; }
 
-        public PictureDataArchive(UserSettingData userSettingData, ImageContext context, string filePath)
+        public PictureDataArchive(UserSettingsData userSettingData, ImageContext context, string filePath)
         {
             _userSettingData = userSettingData;
             _context = context;

@@ -1,6 +1,7 @@
 ﻿using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using ImageManager.Tools.Extension;
 using StyletIoC;
 using Logger = ImageManager.Logging.Logger;
@@ -10,7 +11,7 @@ namespace ImageManager.ViewModels
     public class AddImageProgressViewModelWrap : ProgressViewModelWrapBase, IInjectionAware
     {
         [Inject]
-        public UserSettingData UserSettingData { get; set; }
+        public UserSettingsData UserSettingData { get; set; }
         [Inject]
         public ImageContext Context { get; set; }
         [Inject]

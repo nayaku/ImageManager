@@ -3,6 +3,7 @@ using HandyControl.Data;
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using StyletIoC;
 
 namespace ImageManager.ViewModels
@@ -14,7 +15,7 @@ namespace ImageManager.ViewModels
         [Inject]
         public IContainer Container { get; set; }
         [Inject]
-        public UserSettingData UserSettingData { get; set; }
+        public UserSettingsData UserSettingData { get; set; }
 
         public List<Picture> Pictures { get; private set; }
         private string _dataFilePath;

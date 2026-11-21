@@ -2,6 +2,7 @@
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using ImageManager.Views;
 using StyletIoC;
 
@@ -33,8 +34,8 @@ namespace ImageManager.ViewModels
 
             MainPageViewModel = new(this, context)
             {
-                UserSetting = new() { AutoSave = false },
-                OrderBy = UserSettingData.OrderByEnum.AddState,
+                ViewSettings = new() { AutoSave = false },
+                OrderBy = ViewSettingsData.OrderByEnum.AddState,
                 IsGroup = true,
             };
             _context = context;

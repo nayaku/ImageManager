@@ -1,4 +1,5 @@
 using ImageManager.Logging;
+using ImageManager.Settings;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -53,7 +54,7 @@ namespace ImageManager.Data.Model
         public string ImageFolderPath { get; set; }
         public void SetDefaultImageFolderPath()
         {
-            var path = UserSettingData.Default.ImageFolderPath;
+            var path = UserSettingsData.Default.ImageFolderPath;
             if (!System.IO.Path.IsPathRooted(path))
                 path = System.IO.Path.Join(AppDomain.CurrentDomain.BaseDirectory, path);
             ImageFolderPath = path;

@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
 
-namespace ImageManager.Data
+namespace ImageManager.Settings
 {
     /// <summary>
     /// 单张贴片的持久化状态（每张贴片一个 STMP\{GUID}.xml）。
@@ -11,7 +11,7 @@ namespace ImageManager.Data
     {
         [XmlIgnore]
         public override string FilePath =>
-            Path.Join(UserSettingData.Default.StickerFolderPath, ImageFileName + ".xml");
+            Path.Join(UserSettingsData.Default.StickerFolderPath, ImageFileName + ".xml");
 
         public string ImageFileName { get; set; } = string.Empty;
         public bool IsFromDatabase { get; set; }

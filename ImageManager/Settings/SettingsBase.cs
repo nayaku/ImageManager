@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using Timer = System.Timers.Timer;
 
-namespace ImageManager.Data
+namespace ImageManager.Settings
 {
     /// <summary>
     /// SettingsBase是一个抽象类，用于管理应用程序的设置。

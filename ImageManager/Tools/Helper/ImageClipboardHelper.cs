@@ -1,4 +1,4 @@
- using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -30,7 +30,7 @@ namespace ImageManager.Tools.Helper
             // https://github.com/d2phap/ImageGlass/blob/642f0d791671c9d6f1b54f15074bf5c03fae62a1/v9/Components/ImageGlass.Base/WinApi/ClipboardEx.cs#L30
             // https://github.com/mono/mono/blob/main/mcs/class/System.Windows.Forms/System.Windows.Forms/Clipboard.cs
             // 因此这里注释掉
-            
+
             // // CF_BITMAP：位图没有 alpha，透明区直接放会变黑，故先合成白底
             // using var opaque = FlattenOnWhite(bitmap);
             // dataObject.SetData(DataFormats.Bitmap, ToBitmapSource(opaque), true);

@@ -4,6 +4,7 @@ using HandyControl.Tools.Extension;
 using ImageManager.Data;
 using ImageManager.Data.Model;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using ImageManager.Tools.Helper;
 using Microsoft.EntityFrameworkCore;
 using StyletIoC;
@@ -16,7 +17,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using static ImageManager.Data.UserSettingData;
+using static ImageManager.Settings.ViewSettingsData;
 using Label = ImageManager.Data.Model.Label;
 using Path = System.IO.Path;
 
@@ -34,7 +35,11 @@ namespace ImageManager.ViewModels
         [Inject]
         public IContainer Container;
         [Inject]
-        public UserSettingData UserSetting { get; set; }
+        public ViewSettingsData ViewSettings { get; set; }
+        [Inject]
+        public ConfigurationData Configuration { get; set; }
+        [Inject]
+        public AppStateData AppState { get; set; }
 
 
         public bool IsAddPictureMode => _fatherViewModel is AddImageViewModel;
@@ -52,13 +57,13 @@ namespace ImageManager.ViewModels
         }
         public BindableCollection<PictureSelectableItemWrapper> Pictures { get; set; }
 
-        public bool IsDesc { get => UserSetting.IsDesc; set => UserSetting.IsDesc = value; }
-        public OrderByEnum OrderBy { get => UserSetting.OrderBy; set => UserSetting.OrderBy = value; }
+        public bool IsDesc { get => ViewSettings.IsDesc; set => ViewSettings.IsDesc = value; }
+        public OrderByEnum OrderBy { get => ViewSettings.OrderBy; set => ViewSettings.OrderBy = value; }
         public bool IsOrderByAddTime => OrderBy == OrderByEnum.AddTime;
         public bool IsOrderByTitle => OrderBy == OrderByEnum.Title;
         public bool IsOrderByAddingState => OrderBy == OrderByEnum.AddState;
 
-        public bool IsGroup { get => UserSetting.IsGroup; set => UserSetting.IsGroup = value; }
+        public bool IsGroup { get => ViewSettings.IsGroup; set => ViewSettings.IsGroup = value; }
         public List<IGrouping<string, PictureSelectableItemWrapper>>? PictureGroups
         {
             get
@@ -88,8 +93,8 @@ namespace ImageManager.ViewModels
 
         public double CardWidth
         {
-            get => UserSetting.CardWidth;
-            set { UserSetting.CardWidth = value; }
+            get => ViewSettings.CardWidth;
+            set { ViewSettings.CardWidth = value; }
         }
         public double MaxCardWidth { get; set; }
 
@@ -209,9 +214,9 @@ namespace ImageManager.ViewModels
 
         public void UpdatePicture()
         {
-            var takeNum = UserSetting.TakePictureNumOneTime;
+            var takeNum = Configuration.TakePictureNumOneTime;
             if (_skipNum == 0)
-                takeNum = UserSetting.FirstLoadPictureNum;
+                takeNum = Configuration.FirstLoadPictureNum;
             IQueryable<Picture> query;
             if (_fatherViewModel is AddImageViewModel addImageViewModel)
                 query = addImageViewModel.Pictures.AsQueryable();
@@ -423,7 +428,7 @@ namespace ImageManager.ViewModels
                     if (p.Item.ThumbnailPath != null)
                         deleteFiles.Add(Path.Join(p.Item.ImageFolderPath, p.Item.ThumbnailPath));
                 });
-                UserSetting.WaitToDeleteFiles = deleteFiles;
+                AppState.WaitToDeleteFiles = deleteFiles;
             }
         }
 

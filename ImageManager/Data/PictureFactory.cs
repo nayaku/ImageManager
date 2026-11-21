@@ -1,4 +1,5 @@
 ﻿using ImageManager.Data.Model;
+using ImageManager.Settings;
 using Shipwreck.Phash;
 using Shipwreck.Phash.Bitmaps;
 using System.Collections.ObjectModel;
@@ -8,10 +9,10 @@ namespace ImageManager.Data
 {
     public class PictureFactory
     {
-        private UserSettingData UserSettingData;
+        private UserSettingsData UserSettingData;
         private ImageContext _context;
 
-        public PictureFactory(UserSettingData userSettingData, ImageContext context)
+        public PictureFactory(UserSettingsData userSettingData, ImageContext context)
         {
             UserSettingData = userSettingData;
             _context = context;
@@ -142,7 +143,7 @@ namespace ImageManager.Data
                 accept = true;
 
             // 生成Picture数据
-            var dirPath = UserSettingData.Default.TempFolderPath;
+            var dirPath = UserSettingsData.Default.TempFolderPath;
             if (!Path.IsPathRooted(dirPath))
                 dirPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, dirPath);
             var picture = new Picture(false)

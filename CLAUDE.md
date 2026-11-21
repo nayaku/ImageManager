@@ -59,7 +59,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **落盘**：创建贴片时图片即写入 `SD\STMP`（图库来源用 `File.Copy` 保留原格式，截图/剪贴板编码为 PNG，文件名为 GUID）。`AddToDatabase()` 直接复用该 STMP 文件回存图库，不再写临时文件
 - **状态持久化**：每张贴片一个独立的 `STMP\{GUID}.xml`，由 `StickerStateData`（继承 `SettingsBase`）自行防抖存盘——
   任意属性变更即触发，无轮询、无状态比对。窗口坐标由 XAML 双向绑定（`Left/Top` `Mode=TwoWay`）直接写入 state。
-  `UserSettingData.Stickers` 仅是一份 `ObservableCollection<string>` 文件名登记表，不含状态数据。
+  `AppStateData.Stickers` 仅是一份 `ObservableCollection<string>` 文件名登记表，不含状态数据。
   状态只保存 DPI 无关量（缩放因子、源像素裁剪、DIP 坐标）
 - **启动还原**：勾选主界面「启动时还原贴片」（`RestoreStickerOnStartup`）后，`RootViewModel.RestoreOrClearStickers()`
   遍历登记表逐个 `SettingsBase.Load<StickerStateData>` 重建贴片，剔除图片或 xml 缺失的残留登记，并删除未被引用的 STMP 孤儿文件；
@@ -80,23 +80,28 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **Data/Model/** — `Picture`（图片记录，含 MD5 和感知哈希）、`Label`（标签），多对多关系
 - **PictureFactory.cs** — 图片导入处理：格式识别、MD5 哈希、感知哈希（Shipwreck.Phash）、缩略图生成
 - **PictureDataArchive.cs** — 自定义图库归档格式 `.pdaf`（Magic `PDAF`）：`Save` / `Load` 实现整库的导入/导出，并通过 `ProgressChanged` 事件汇报进度（对应 `ExportImageProgressViewModelWrap` 等 VM）
-- **SettingsBase.cs** — 所有 XML 配置类的抽象基类，详见下方"配置持久化"
-- **UserSettingData.cs** — 用户偏好设置（`SettingsBase` 子类），序列化为 `UserSettings.xml`（XML，非 SQLite）；
-  贴片相关成员为 `StickerFolderPath`（`SD\STMP`）、`RestoreStickerOnStartup` 开关，以及
-  `ObservableCollection<string> Stickers`——只登记已打开贴片的图片文件名，状态数据存在各贴片自己的 xml 里
-- **StickerStateData.cs** — 单张贴片的持久化状态（`SettingsBase` 子类，落盘为 `STMP\{GUID}.xml`），
-  仅含 DPI 无关量：坐标、缩放因子、旋转、翻转、透明度、折叠裁剪起点与偏移；
-  `FlipScaleX` / `FlipScaleY` / `EffectiveOpacity` 为供 XAML 直接绑定的计算属性
 - **Migrations/** — EF Core 代码优先迁移；新建 Schema 变更需执行 `dotnet ef migrations add <Name>`。`MigrationCustom.cs` / `MigratorEx.cs` 为自定义迁移逻辑（标准 EF 迁移之外的数据/结构修补）
 
 ### 配置持久化
 
-`Data/SettingsBase.cs` 是所有 XML 配置类的统一入口（`UserSettingData`、`StickerStateData` 均继承它）。新增配置类照此约定即可自动获得存盘能力：
+配置类全部位于 `Settings/`（命名空间 `ImageManager.Settings`），均为 XML 文件（非 SQLite），按用途拆分：
 
-- 继承 `SettingsBase : PropertyChangedBase`，重写 `abstract string FilePath`（须标 `[XmlIgnore]`）
+| 类 | 文件 | 内容 |
+|---|---|---|
+| `UserSettingsData` | `UserSettings.xml` | 用户可调设置：存储路径（`StorePath` 及派生的 `ImageFolderPath` / `TempFolderPath` / `StickerFolderPath`）、`RestoreStickerOnStartup`、`ClearUnUsedLabel`、缩略图宽度、相似度阈值、`IsHideWhenScreenShoot`；用 `[SettingsItem]` / `[HideInSettings]`（`SettingsAttribute.cs`）标注展示名与说明，数值项另用 `[Range]` 标注取值范围；构造时自动创建 IMG/TMP/STMP 目录 |
+| `ViewSettingsData` | `ViewSettings.xml` | 界面状态：主题、卡片宽度、排序（`OrderByEnum`）、升降序、分组 |
+| `ConfigurationData` | `Configuration.xml` | 内部参数：`FirstLoadPictureNum`、`TakePictureNumOneTime` |
+| `AppStateData` | `AppState.xml` | 程序运行状态：`WaitToDeleteFiles`、`Stickers`（贴片文件名登记表） |
+| `StickerStateData` | `STMP\{GUID}.xml` | 单张贴片状态，详见"贴纸（Sticker）" |
+
+前四个类各有 `static Default` 单例，并在 `Bootstrapper` 中以 `ToInstance` 注册进 IoC，VM 通过 `[Inject]` 获取。
+
+`SettingsBase.cs` 是所有配置类的基类。新增配置类照此约定即可自动获得存盘能力：
+
+- 继承 `SettingsBase : PropertyChangedBase`，重写 `abstract string FilePath`（只读属性不会被序列化；若可写则须标 `[XmlIgnore]`），并提供 `static Default => Load<T>(...) ?? new T()` 单例
 - **自动防抖存盘**：`OnPropertyChanged` 触发 800ms 单次 `Timer`，期间的连续变更合并为一次写盘。
   由 PropertyChanged.Fody 织入，故普通自动属性赋值即会触发——无需手写存盘调用
-- `Flush()` — 停掉定时器并立即写盘（如 `RootViewModel.OnClose` 中对 `UserSettingData`）
+- `Flush()` — 停掉定时器并立即写盘（如 `RootViewModel.OnClose` 中对全部配置）
 - `AutoSave = false` — 临时实例可关闭自动存盘
 - `static Load<T>(filePath)` — 反序列化；文件不存在或解析失败返回 `null`（异常已记入日志），调用方须处理 null
 - `Save()` 内部加锁并自动创建目录
@@ -145,7 +150,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 
 ### 图片加载与性能
 
-- 图片懒加载；首批加载数量由 `UserSettingData.FirstLoadPictureNum` 控制（默认 50），滚动时按 `TakePictureNumOneTime`（默认 20）追加
+- 图片懒加载；首批加载数量由 `ConfigurationData.FirstLoadPictureNum` 控制（默认 50），滚动时按 `TakePictureNumOneTime`（默认 20）追加
 - FreeImage.Standard 处理非标准格式（WebP、PSD 等）；标准格式使用 `System.Drawing` / WPF `BitmapImage`
 - 导入时计算感知哈希（`Shipwreck.Phash`），用于相似图搜索
 

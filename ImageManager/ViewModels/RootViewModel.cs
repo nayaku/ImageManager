@@ -3,6 +3,7 @@ using HandyControl.Data;
 using HandyControl.Themes;
 using ImageManager.Data;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using ImageManager.Tools;
 using ImageManager.Tools.Extension;
 using ImageManager.Windows;
@@ -31,7 +32,13 @@ namespace ImageManager.ViewModels
         private IContainer _container;
 
         [Inject]
-        public UserSettingData UserSettingData { get; set; }
+        public UserSettingsData UserSettingData { get; set; }
+        [Inject]
+        public ViewSettingsData ViewSettingsData { get; set; }
+        [Inject]
+        public ConfigurationData ConfigurationData { get; set; }
+        [Inject]
+        public AppStateData AppState { get; set; }
         public bool ThemeConfigShow { get; set; } = false;
         public string SearchText { get; set; }
         public List<Label> SearchedLabels { get; set; }
@@ -92,7 +99,7 @@ namespace ImageManager.ViewModels
             if (UserSettingData.RestoreStickerOnStartup)
             {
                 var validFiles = new HashSet<string>();
-                foreach (var fileName in UserSettingData.Stickers.ToList())
+                foreach (var fileName in AppState.Stickers.ToList())
                 {
                     var imagePath = Path.Join(folder, fileName);
                     var statePath = Path.Join(folder, fileName + ".xml");
@@ -106,7 +113,7 @@ namespace ImageManager.ViewModels
                     else
                     {
                         // 图片或状态缺失，剔除残留登记
-                        UserSettingData.Stickers.Remove(fileName);
+                        AppState.Stickers.Remove(fileName);
                     }
                 }
                 // 删除未被任何贴片引用的孤儿文件（图片与 xml）
@@ -128,7 +135,7 @@ namespace ImageManager.ViewModels
             else
             {
                 // 不还原：清空登记与全部 STMP 文件
-                UserSettingData.Stickers.Clear();
+                AppState.Stickers.Clear();
                 foreach (var file in Directory.GetFiles(folder))
                 {
                     try
@@ -185,8 +192,8 @@ namespace ImageManager.ViewModels
             if (ThemeManager.Current.ApplicationTheme != theme)
             {
                 ThemeManager.Current.ApplicationTheme = theme;
-                UserSettingData.Theme = theme;
-                UserSettingData.Flush();
+                ViewSettingsData.Theme = theme;
+                ViewSettingsData.Flush();
             }
         }
         private void ClearSerchBarFocus()
@@ -453,12 +460,15 @@ namespace ImageManager.ViewModels
             // 得手动调用
             _container.BuildUp(MainPageViewModel);
             MainPageViewModel.ParametersInjected();
-            ThemeManager.Current.ApplicationTheme = UserSettingData.Theme;
+            ThemeManager.Current.ApplicationTheme = ViewSettingsData.Theme;
         }
 
         protected override void OnClose()
         {
             UserSettingData.Flush();
+            ViewSettingsData.Flush();
+            ConfigurationData.Flush();
+            AppState.Flush();
             Application.Current.Shutdown();
         }
     }

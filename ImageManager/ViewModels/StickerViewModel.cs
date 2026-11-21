@@ -1,6 +1,6 @@
 using FreeImageAPI;
-using ImageManager.Data;
 using ImageManager.Logging;
+using ImageManager.Settings;
 using ImageManager.Tools;
 using ImageManager.Tools.Helper;
 using ImageManager.Views;
@@ -69,7 +69,7 @@ namespace ImageManager.ViewModels
         { }
         // 启动还原：从 STMP 已有文件加载，不再复制
         public StickerViewModel(StickerStateData state)
-            : this(LoadBitmapFromFile(Path.Join(UserSettingData.Default.StickerFolderPath, state.ImageFileName)),
+            : this(LoadBitmapFromFile(Path.Join(UserSettingsData.Default.StickerFolderPath, state.ImageFileName)),
                    state, null, true, false)
         { }
 
@@ -103,7 +103,7 @@ namespace ImageManager.ViewModels
         private static string SaveImageFromFile(string imagePath)
         {
             var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(imagePath);
-            File.Copy(imagePath, Path.Join(UserSettingData.Default.StickerFolderPath, fileName));
+            File.Copy(imagePath, Path.Join(UserSettingsData.Default.StickerFolderPath, fileName));
             return fileName;
         }
 
@@ -111,18 +111,18 @@ namespace ImageManager.ViewModels
         private static string SaveImageFromBitmap(Bitmap bitmap)
         {
             var fileName = Guid.NewGuid().ToString("N") + ".png";
-            bitmap.Save(Path.Join(UserSettingData.Default.StickerFolderPath, fileName), ImageFormat.Png);
+            bitmap.Save(Path.Join(UserSettingsData.Default.StickerFolderPath, fileName), ImageFormat.Png);
             return fileName;
         }
 
-        private string ImageFilePath => Path.Join(UserSettingData.Default.StickerFolderPath, _state.ImageFileName);
+        private string ImageFilePath => Path.Join(UserSettingsData.Default.StickerFolderPath, _state.ImageFileName);
 
         // ── 状态持久化 ───────────────────────────────────────────────────────
 
         // 新建贴片
         private void RegisterNewSticker()
         {
-            UserSettingData.Default.Stickers.Add(_state.ImageFileName);
+            AppStateData.Default.Stickers.Add(_state.ImageFileName);
         }
 
         // ── View 生命周期 ────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ namespace ImageManager.ViewModels
         public void CloseWindow()
         {
             // 用户主动关闭单张贴片：移出清单
-            UserSettingData.Default.Stickers.Remove(_state.ImageFileName);
+            AppStateData.Default.Stickers.Remove(_state.ImageFileName);
             RequestClose();
         }
 
