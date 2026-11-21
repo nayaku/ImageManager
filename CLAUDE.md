@@ -14,7 +14,10 @@
 ## 构建与运行
 
 ```powershell
-# 构建
+# 构建（推荐直接构建项目；sln 见下方说明）
+dotnet build ImageManager/ImageManager.csproj
+
+# 构建整个解决方案
 dotnet build ImageManager.sln
 
 # 运行
@@ -23,6 +26,11 @@ dotnet run --project ImageManager/ImageManager.csproj
 # 发布（Release）
 dotnet publish ImageManager/ImageManager.csproj -c Release
 ```
+
+> ⚠️ 命令行构建 `ImageManager.sln` 可能报 `NETSDK1022`（`Properties\DesignTimeResources.xaml` 被重复包含）：
+> csproj 里对该文件有一条带 `Condition` 的显式 `<Page Include>`，在解决方案上下文下条件成立，与 SDK 默认通配重复。
+> 遇到时改用 `dotnet build ImageManager/ImageManager.csproj`，或给 csproj 加 `EnableDefaultPageItems=false` 再显式声明。
+> 构建前需先关闭正在运行的 `ImageManager.exe`，否则输出被占用（`MSB3027`）。
 
 项目没有自动化测试，测试均为运行应用后手动验证。
 
@@ -33,7 +41,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - **Bootstrapper.cs** — IoC 注册、启动时执行 EF Core 迁移、单实例 Mutex 检测
 - **ViewModels/** — 全部业务逻辑；Stylet 按命名约定将 VM 与 View 绑定（`FooViewModel` ↔ `FooView`）
 - **Views/** — 纯 XAML，几乎无代码隐藏；通过 `{Binding}` 绑定 VM 属性
-- **Controls/** — 自定义控件与附加属性：`ScrollViewerMonitor`（滚动到底部时自动触发懒加载命令，支撑下方"滚动追加"）、`Canvas`
+- **Controls/** — 自定义控件与附加属性：`ScrollViewerMonitor`（滚动到底部时自动触发懒加载命令，支撑下方"滚动追加"）、`Canvas`、`CornerClip`（圆角裁剪：`Radius` 裁四角，`TopRadius` 只裁上面两角——`Border` 自身不会裁子元素）
 - **Windows/** — 独立浮窗（`ScreenShotWindow`），运行于主 Shell 之外
 - **Logging/** — 轻量自定义日志 `Logger` / `LoggerFactory`，以及崩溃上报 `Report`，详见下方"日志与崩溃上报"
 
@@ -89,7 +97,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 | 类 | 文件 | 内容 |
 |---|---|---|
 | `UserSettingsData` | `UserSettings.xml` | 用户可调设置：存储路径（`StorePath` 及派生的 `ImageFolderPath` / `TempFolderPath` / `StickerFolderPath`）、`RestoreStickerOnStartup`、`ClearUnUsedLabel`、缩略图宽度、相似度阈值、`IsHideWhenScreenShoot`；用 `[SettingsItem]` / `[HideInSettings]`（`SettingsAttribute.cs`）标注展示名与说明，数值项另用 `[Range]` 标注取值范围；构造时自动创建 IMG/TMP/STMP 目录 |
-| `ViewSettingsData` | `ViewSettings.xml` | 界面状态：主题、卡片宽度、排序（`OrderByEnum`）、升降序、分组 |
+| `ViewSettingsData` | `ViewSettings.xml` | 界面状态：主题模式（`ThemeMode`：明 / 暗 / 跟随系统，默认跟随系统）、强调色序号（`AccentIndex`）、卡片宽度、排序（`OrderByEnum`）、升降序、分组 |
 | `ConfigurationData` | `Configuration.xml` | 内部参数：`FirstLoadPictureNum`、`TakePictureNumOneTime` |
 | `AppStateData` | `AppState.xml` | 程序运行状态：`WaitToDeleteFiles`、`Stickers`（贴片文件名登记表） |
 | `StickerStateData` | `STMP\{GUID}.xml` | 单张贴片状态，详见"贴纸（Sticker）" |
@@ -154,9 +162,52 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 - FreeImage.Standard 处理非标准格式（WebP、PSD 等）；标准格式使用 `System.Drawing` / WPF `BitmapImage`
 - 导入时计算感知哈希（`Shipwreck.Phash`），用于相似图搜索
 
-### 主题
+### 主题与设计令牌
 
-HandyControls 主题在 `App.xaml` 中设置，支持运行时切换明/暗模式。主题资源为合并字典——禁止硬编码 `Colors` 或 `Brushes`，应使用 HandyControls 提供的命名资源键。
+HandyControls 负责明暗切换，程序自己的配色令牌在 `Themes/` 维护。**禁止硬编码 `Color` / `Brush`**，一律引用资源键（`DynamicResource` 或 `StaticResource`）。
+
+- **`Themes/AppTheme.cs`** — `ThemeMode` 枚举（`Light` / `Dark` / `System`）与唯一入口 `Apply(mode, accentIndex)`
+  - 明 / 暗：`ThemeManager.Current.UsingSystemTheme = false` 后设 `ApplicationTheme`
+  - 跟随系统：`UsingSystemTheme = true`，并监听 `SystemEvents.UserPreferenceChanged` 重新同步令牌
+  - 强调色：6 种预设（`Tokens.Common.xaml` 的 `AppAccent0..5`），写入 `ThemeManager.Current.AccentColor`
+  - **跟随系统时不下发自定义强调色**——HandyControl 会改用系统强调色；此时主题面板展示 `GetAccentColorFromSystem()` 的系统色，6 个预设色块禁用（`RootViewModel.IsAccentSelectable`）
+- **`Themes/AppPalette.cs`** — 程序自有令牌：`AppPageBrush`、`AppCardBrush`、`AppSurfaceBrush`、`AppStrokeBrush`、`AppImageBackdropBrush`
+  - 切换主题时**替换 `Application.Resources` 中同名的资源值**（新画刷实例）
+  - ⚠️ 不要复用画刷实例改 `Color`：`ResourceDictionary` 会把放进去的 `Freezable` 冻结
+- **`Themes/Tokens.Common.xaml`** — 常量与通用样式：圆角（`AppCardCorner` 10 / `AppPanelCorner` 12）、三档阴影（`AppCardShadow` / `AppHoverShadow` / `AppPopupShadow`）、强调色 `AppAccent0..5`、`AppCircleCheck`（圆形勾选框）、`AppRoundIconButton`（卡片悬浮圆钮）、`AppSegmentButton`、`AppAccentDot`（强调色色块）、`AppTagPill`、`AppCountPill`、「不添加」提示的三个画刷（`AppRejectChip*`）
+- **`Themes/Overrides.xaml`** — 全局 `ToolTip` 样式、`AppCardWidthSlider`（状态栏卡片宽度滑块）、`AppThinProgress`（6px 细进度条）
+- 合并顺序：`App.xaml` 在 `hc:ThemeResources` / `hc:Theme` 之后依次合并 `Tokens.Common.xaml`、`Overrides.xaml`；`App.OnStartup` 先调 `AppPalette.Register()`，`RootViewModel.ParametersInjected()` 再按已保存设置 `AppTheme.Apply(...)`
+- 主题面板：`RootView.xaml` 右上角齿轮 → 明 / 暗 / 跟随系统 + 6 色强调色 + 恢复默认（`RootViewModel.ChangeTheme` / `ChangeAccent` / `ResetAppearance`）
+
+### 图库界面（MainPageView）
+
+主图库用 `hc:WaterfallPanel` 瀑布流（`DesiredLength` 绑 `CardWidth`，滚动懒加载依赖它，**不要改成等高网格**）。卡片样式为 `PictureCard`，状态语言如下：
+
+| 状态 | 表现 |
+|---|---|
+| 默认 / 悬停 | 白卡 + 1px 描边 + 轻阴影；悬停上浮 2px 并加深阴影 |
+| 选中 | **整卡** 2px 强调色描边（`DataTrigger` 改 `BorderThickness` / `BorderBrush`），不再有 ✓ 角标 |
+| 添加模式·接受 | 左上角 `AppCircleCheck`：强调色填充 + 白勾 |
+| 添加模式·未接受 | 圆形只剩灰色描边；图片与信息区降到 55% 不透明度，中央浮出「不添加」大字（深色底片，无图标） |
+| 冲突（重复 / 相似） | 右上角红色文字角标（`ConflictText`），圆形勾禁用（灰、不描红），**不变暗** |
+| 悬停快捷操作 | 右下角两个圆钮：贴片式打开 / 用外部程序打开；**添加图片界面不显示** |
+
+- 图片顶角跟随卡片圆角、底部两角为直角：`controls:CornerClip.TopRadius="10"`
+- 空图库：矢量插画 + 添加图片/文件夹按钮（由 `HasPictures` 取反控制）；首批加载先渲染骨架屏（`IsLoading`，`RefreshPicture` 用 `Dispatcher.BeginInvoke` 让骨架先出一帧）
+- 状态栏：`● N 张图片` +「已选 N」胶囊 + 卡片宽度滑块（120 ~ `MaxCardWidth`）
+- 卡片右键菜单为**原生声明式 `MenuItem`**（与画布空白处菜单同一套样式，图标用主题画刷），普通 / 添加模式靠 `IsAddPictureMode` 切换可见性；批量操作用 `AcceptAdd()` / `RejectAdd()` 薄包装，避免 `CommandParameter="True"` 字符串直接传给 `bool` 参数。早期的 `MenuItemViewModel` + `ContextMenuItems` 数据驱动方案已删除，新增菜单项直接写 XAML
+- `PictureSelectableItemWrapper` 提供派生状态 `IsRejected`、`ContentOpacity`、`ConflictText`；`AcceptToAdd` 的 setter 里手动 `NotifyOfPropertyChange` 通知它们（依赖 `Item.*`，Fody 侦测不到）
+
+### 检查更新（UpdateView / UpdateViewModel）
+
+「帮助 → 检测更新」打开，`LoadedAsync` 走完整流程：检查 → 拉取更新日志 → 自动下载 → 启动安装程序并退出。
+
+- 状态机 `State`：`Checking` / `IsLatest` / `Updating` / `Error`；文案拆三层：`StateText`（标题）、`StateSubText`（一句说明）、`ErrorDetail`（异常原文，放淡红卡片）
+- **更新日志**解析成 `ReleaseNote`（版本号 / 日期 / 是否当前版本 / 是否待升级的新版本 / 要点列表），用 `ItemsControl` 渲染（不用 Markdown）：
+  - `IsLatest` 取**全部历史版本（不限条数）**，标题显示「更新历史」
+  - `Updating` 只取到当前版本为止，标题显示「更新内容」
+- 下载进度：`ReceivedBytes` / `TotalBytes` / `BytesPerSecond` → `DownloadProgressPercentText` 与 `DownloadProgressText`（已下载 / 总量 · 剩余时间）
+- ⚠️ `NeedUpdateAsync` 失败后不能再把状态覆盖成「已是最新版本」，否则网络异常会伪装成"已最新"
 
 ## 重要约定
 
@@ -164,7 +215,21 @@ HandyControls 主题在 `App.xaml` 中设置，支持运行时切换明/暗模�
 - **错误处理**：`App.xaml.cs` 中有全局 `UnhandledException`（同步上报后退出）和
   `DispatcherUnhandledException`（`Handled = true`，后台上报、程序继续运行）处理器，仅 Release 注册
 - **允许不安全代码**：用于 Win32 P/Invoke 和 FreeImage 互操作
-- 中文（`zh-CN`）为默认语言；XAML 中所有 UI 字符串均为中文
+- 中文（`zh-CN`）为默认语言；XAML 中所有 UI 字符串均为中文。按钮文案不用空格撑宽（写 `确定`，不写 `确    定`），宽度用 `Width` 控制
 - 安装包使用 **Inno Setup** 构建（拖放相关已知问题见 `design/development.md`）
 - **注释风格**：XML 文档注释 `<summary>` 标签后须换行、内容独立成行；
   注释简洁有重点、不啰嗦，单行过长则折行。
+
+## 界面开发注意事项（踩过的坑）
+
+- **`Border` 不裁子元素**：`CornerRadius` 只影响自身描边/背景，图片依旧直角溢出 → 用 `Controls/CornerClip`
+- **`ResourceDictionary` 会冻结 `Freezable`**：放进去的画刷不能再改 `Color`（抛"对象处于只读状态"）→ 切主题时替换资源值（`AppPalette.Apply`）
+- **主题令牌要按"目标模式"判定**：刚设置 `ApplicationTheme` 时 `ActualApplicationTheme` 可能还是旧值，读它会导致令牌不切换
+- **`DataTemplate.Triggers` 里用 `RelativeSource AncestorType` 不可靠**（卡片悬停浮层曾因此完全不出现）→ 触发器写进元素自己的 `Style`
+- **`MenuItem.Icon` 内不要用 `RelativeSource AncestorType=MenuItem` 取 `Foreground`**：取不到，图标会因 `Stroke=null` 而不显示 → 直接引用主题画刷；危险色由外层 `Foreground` + 内层 `TemplateBinding` 传递
+- **HandyControl 的 `ProgressBar` 自带百分比文字叠加**：需要纯净进度条时套自定义模板（`AppThinProgress`）
+- **MdXaml 不适合结构化日志**：`MarkdownScrollViewer` 会把 `##` 与列表渲染得松散、样式难控 → 版本历史用 `ItemsControl` + `ReleaseNote` 渲染（包仍在引用，仅更新窗口不再使用）
+- **Stylet `s:Action` 的 `CommandParameter` 是字符串**：传给 `int` / `bool` 形参会抛 `ArgumentException` → 用 `string` 形参自行解析，或加无参薄包装（如 `AcceptAdd` / `RejectAdd`）
+- **Fody 只通知同类属性**：依赖 `Item.xxx` 的派生属性（`IsRejected`、`ContentOpacity`）Fody 侦测不到，需在 setter 里手动 `NotifyOfPropertyChange`
+- **重复导入同一张图会命中 MD5 去重**：卡片显示「重复」角标且圆形勾禁用，属预期行为，不是 UI bug
+- 设计稿在 `design/mockups/`（HTML + 渲染 PNG，不参与编译），验收截图在 `design/screens/`
