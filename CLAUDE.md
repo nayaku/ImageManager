@@ -109,7 +109,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
   多线程写入由静态锁保护；`Logger.GetLogPath(date)` 供打包时定位日志文件
 - **崩溃上报**（仅 Release）：`Log(..., report: true)` 触发 `Report.ReportCrash`，
   打包 `crash.txt`（版本、OS、运行时、内存、异常）和当前进程最近 3 天的日志为 zip，
-  以 multipart 上传至 `ReportUrl`，成功即删 zip，失败则保留在 `Crashes\`；同一崩溃 10 分钟内只报一次
+  以 multipart 上传至 `ReportUrl`，zip 无论成败均保留在 `Crashes\`；同一崩溃 10 分钟内只报一次
 - **同步/异步**：默认在线程池后台上报，不阻塞 UI；进程即将退出的场景（启动失败、
   `AppDomain.UnhandledException`）须传 `waitReport: true` 同步等待，否则后台任务会被杀掉
 - `Report` 内部不抛异常，所有 Growl 通知经 `Notify` 切回 UI 线程
@@ -138,6 +138,7 @@ dotnet publish ImageManager/ImageManager.csproj -c Release
 | `MouseTool.cs` | 全局鼠标钩子，用于贴纸拖拽 |
 | `VirtualFileHelper.cs` | 通过 COM `IDataObject` 将拖入的虚拟文件落盘到临时目录 |
 | `Helper/ClipboardHelper.cs` | 剪贴板图片粘贴支持 |
+| `Helper/ImageClipboardHelper.cs` | 复制图片到剪贴板（仅写 PNG，保留透明）；`GetClipboardOpener()` 查询剪贴板占用进程，复制失败（`ExternalException`）时先记日志再弹窗 |
 | `Helper/ControlsSearchHelper.cs` | 可视化树查找子控件（如定位 `ScrollViewer`） |
 | `Extension/ContainerEx.cs` | StyletIoC `BuildUp` 扩展，注入后回调 `IInjectionAware.ParametersInjected` |
 | `Converter/` | XAML 绑定用的 WPF `IValueConverter` 实现 |
